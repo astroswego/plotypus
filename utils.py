@@ -42,7 +42,9 @@ def map_reduce(func, args, options):
         p.close()
         p.join()
         #print results
+        print("getting results")
         results = (result.get() for result in results)
+        print(results)
     else:
         for arg in args:
             append(func(arg, **options.__dict__))
