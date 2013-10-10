@@ -20,9 +20,7 @@ def main():
     clean_options = {}
     files = get_files(options.input, options.format)[:10]
 #   stars = options.cache.get('stars') or map_reduce(lightcurve, files, options)
-    print("before")
     stars = map_reduce(lightcurve, files, options)
-    print("after")
     if options.verbose:
         print("\nAnalyzing {0} of {1} stars".format(len(stars), len(files)))
     if options.output:
