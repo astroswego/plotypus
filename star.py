@@ -1,6 +1,7 @@
 import os
 import numpy
 import matplotlib.pyplot as plt
+import mdp
 import interpolation
 from scipy.signal import lombscargle
 from math import modf
@@ -101,6 +102,22 @@ def find_outliers(rephased, evaluator, coefficients, sigma):
     outliers = (expected-actual)**2 > sigma*actual.std()**2+error
     return numpy.tile(numpy.vstack(outliers), rephased.shape[1])
 
+x = numpy.arange(0, 1.01, 0.01)#numpy.linspace(0, 0.99, 100)
+
+def lightcurve_matrix(stars, evaluator, x=x):
+    iterable = (evaluator(s.coefficients, x) for s in stars)
+    m = numpy.vstack(tuple(evaluator(s.coefficients, x) for s in stars))
+    return m
+
+def principle_component_analysis(data, degree):
+    print(data)
+    pcanode = mdp.nodes.PCANode(output_dim=degree)
+    pcanode.train(data)
+    pcanode.stop_training()
+    eigenvectors = pcanode.execute(data)
+    
+    return eigenvectors
+
 def pca(star_matrix):
     """Finds the eigenvalues and eigenvectors of the covariance matrix"""
     
@@ -108,8 +125,6 @@ def pca(star_matrix):
     eigvals, eigvecs = numpy.linalg.eig(numpy.cov(star_matrix))
     return eigvals, eigvecs
     
-x = numpy.arange(0, 1.01, 0.01)#numpy.linspace(0, 0.99, 100)
-
 
 def plot_lightcurves(star, evaluator, output, **options):
     plt.gca().grid(True)

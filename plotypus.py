@@ -7,7 +7,8 @@ import re
 import os
 import interpolation
 import linearmodel
-from star import lightcurve, plot_lightcurves
+from star import (lightcurve, lightcurve_matrix, plot_lightcurves,
+                  principle_component_analysis)
 from scale import standardize
 from utils import (get_files, make_sure_path_exists, map_reduce, save_cache,
                    load_cache)
@@ -27,8 +28,9 @@ def main():
     if options.output:
         make_sure_path_exists(options.output)
     if (options.PCA_degree):
-        pca_results = interpolation.principle_component_analysis(
-                                                      stars, options.PCA_degree)
+        pca_input_matrix = lightcurve_matrix(stars, options.evaluator)
+        pca_results = principle_component_analysis(pca_input_matrix,
+                                                   options.PCA_degree)
         print(pca_results)
     if (options.plot_lightcurves_observed or
             options.plot_lightcurves_interpolated or
@@ -45,7 +47,7 @@ def main():
             print(model.summary())
     if options.save_cache:
         save_cache(stars, options)
-        
+
     #x = numpy.arange(0, 1, 0.01)
     """
     evaluator = options.evaluator

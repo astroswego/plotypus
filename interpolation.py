@@ -1,5 +1,4 @@
 import numpy
-import mdp
 
 x = numpy.arange(0, 1, 0.01)
 
@@ -52,13 +51,5 @@ def ak_bk2Ak_Phik(ak_bk_coefficients):
     Ak_Phik_coeffs[2::2] = Phik_coeffs
 
     return numpy.array(Ak_Phik_coeffs)
-
-def principle_component_analysis(data, degree):
-    pcanode = mdp.nodes.PCANode(output_dim=degree)
-    pcanode.train(data)
-    pcanode.stop_training()
-    eigenvectors = pcanode.execute(data)
-    
-    return eigenvectors
 
 
