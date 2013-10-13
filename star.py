@@ -53,15 +53,15 @@ def lightcurve(filename,
         coefficients = interpolant(rephased, degree)
         if sigma > 0:
             prev_mask = data.mask
-#            print("hey")
+ #           print("start")
             outliers = find_outliers(rephased, evaluator, coefficients, sigma)
-#            print("ho")
+   #         print(outliers.shape)
             data.mask = numpy.ma.mask_or(data.mask, outliers)
-#            print('o: {}, m: {}'.format(outliers.shape, data.shape))
             if numpy.all(data.mask == prev_mask):
                 rephased.mask = data.mask
             else:
                 continue
+ #       print("rp: {}".format(rephased.shape))
         return rephased is not None and Star(name, period, rephased,
                                              coefficients, y_min, y_max)
 

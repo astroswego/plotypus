@@ -20,16 +20,15 @@ def main():
     clean_options = {}
     files = get_files(options.input, options.format)[:10]
 #   stars = options.cache.get('stars') or map_reduce(lightcurve, files, options)
-    print("before")
-    stars = map_reduce(lightcurve, files, options)
-    print("after")
+    stars = [lightcurve(f, options=options) for f in files]
+#    stars = map_reduce(lightcurve, files, options)
     if options.verbose:
         print("\nAnalyzing {0} of {1} stars".format(len(stars), len(files)))
     if options.output:
         make_sure_path_exists(options.output)
     if (options.PCA_degree):
         pca_results = interpolation.principle_component_analysis(
-                                                      data, options.PCA_degree)
+                                                      stars, options.PCA_degree)
         print(pca_results)
     if (options.plot_lightcurves_observed or
             options.plot_lightcurves_interpolated or

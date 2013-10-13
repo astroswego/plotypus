@@ -28,13 +28,11 @@ def get_files(directory, format):
 total, progress = 0, 0
 
 def map_reduce(func, args, options):
-    print("it's starting map reduce")
     if options.verbose:
         initialize_status_bar(len(args))
     results = []
     append = results.append
     processors = options.processors
-    print("reducing")
     if processors is None or processors > 1:
         p = Pool() if processors is None else Pool(processors)
         for arg in args:
@@ -42,14 +40,12 @@ def map_reduce(func, args, options):
         p.close()
         p.join()
         #print results
-        print("getting results")
         results = (result.get() for result in results)
-        print(results)
+#        print(results)
     else:
         for arg in args:
             append(func(arg, **options.__dict__))
             task_finished()
-    print("reduced")
     return [result for result in results if result is not None]
 
 def initialize_status_bar(new_total=1):
