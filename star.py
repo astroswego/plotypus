@@ -106,7 +106,11 @@ x = numpy.arange(0, 1.01, 0.01)#numpy.linspace(0, 0.99, 100)
 
 def lightcurve_matrix(stars, evaluator, x=x):
     iterable = (evaluator(s.coefficients, x) for s in stars)
-    m = numpy.vstack(tuple(evaluator(s.coefficients, x) for s in stars))
+#    m = numpy.vstack(numpy.fromiter((evaluator(s.coefficients, x),numpy.float) for s in stars))
+
+    m = numpy.vstack(tuple(numpy.fromiter(iter(evaluator(s.coefficients, x)),
+                                          numpy.float)
+                           for s in stars))
     return m
 
 def principle_component_analysis(data, degree):
@@ -124,7 +128,13 @@ def pca(star_matrix):
 
     eigvals, eigvecs = numpy.linalg.eig(numpy.cov(star_matrix))
     return eigvals, eigvecs
-    
+
+def pca_reconstruction(eigenvectors, principle_components):
+    """Returns an array in which each row contains the magnitudes of one star's
+    lightcurve. eigenvectors is a (number of phases)x(order of PCA) array,
+    principle_components is a (number or stars)x(order of PCA) array, and the
+    return array has shape (number of stars)x(number of phases)."""
+    return dot(eigenvectors, principle_components.T).T    
 
 def plot_lightcurves(star, evaluator, output, **options):
     plt.gca().grid(True)
@@ -136,6 +146,8 @@ def plot_lightcurves(star, evaluator, output, **options):
     if options["plot_lightcurves_interpolated"]:
         #plt.errorbar(outliers.T[0], outliers.T[1], outliers.T[2], ls='none')
         plt.plot(x, evaluator(star.coefficients, x), linewidth=2.5)
+    if options["plot_lightcurves_pca"]:
+        pass
     #plt.errorbar(x, options['evaluator'](x, coefficients), rephased.T[1].std())
     plt.xlabel('Period ({0:0.5} days)'.format(star.period))
 #    plt.xlabel('Period (' + str(star.period)[:5] + ' days)')

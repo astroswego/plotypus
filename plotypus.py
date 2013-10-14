@@ -35,6 +35,8 @@ def main():
     if (options.plot_lightcurves_observed or
             options.plot_lightcurves_interpolated or
             options.plot_lightcurves_pca):
+#        for s in stars: plot_lightcurves(s, options.evaluator,
+#                                         options.output, options=options)
         map_reduce(plot_lightcurves, stars, options)
     if options.linear_model:
 #        coeff_matrix = numpy.fromiter((s.coefficients for s in stars),
@@ -144,8 +146,8 @@ def get_options():
     if options.interpolant in 'least_squares_polynomial':
         options.interpolant = interpolation.least_squares_polynomial
         options.evaluator = interpolation.polynomial_evaluator
-        if options.linear_model:
-            parser.error('Linear model not yet implemented for polynomial')
+#        if options.linear_model:
+#            parser.error('Linear model not yet implemented for polynomial')
     elif options.interpolant in 'spline':
         parser.error('Spline interpolation not yet implemented.')
         options.interpolant = interpolation.spline
@@ -153,12 +155,12 @@ def get_options():
     elif options.interpolant in 'trigonometric':
         options.interpolant = interpolation.trigonometric
         options.evaluator = interpolation.trigonometric_evaluator
-        if options.linear_model:
-            linear_model_handlers = linearmodel.parseLinearModelString(
-                options.linear_model,
-                linearmodel.TrigonometricHandler,
-                options.interpolation_degree,
-                options.PCA_degree)
+#        if options.linear_model:
+#            linear_model_handlers = linearmodel.parseLinearModelString(
+#                options.linear_model,
+#                linearmodel.TrigonometricHandler,
+#                options.interpolation_degree,
+#                options.PCA_degree)
     elif options.interpolant in 'piecewise_linear':
         parser.error('Piecewise linear interpolation not yet implemented.')
         options.interpolant = interpolation.piece_wise_linear
