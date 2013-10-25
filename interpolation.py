@@ -51,5 +51,3 @@ def ak_bk2Ak_Phik(ak_bk_coefficients):
     Ak_Phik_coeffs[2::2] = Phik_coeffs
 
     return numpy.array(Ak_Phik_coeffs)
-
-

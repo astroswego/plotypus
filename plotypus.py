@@ -1,4 +1,5 @@
 import logging
+import math
 import multiprocessing
 
 import numpy
@@ -7,9 +8,10 @@ import re
 import os
 import interpolation
 import linearmodel
+from pcat_interface import pcat
 from star import (lightcurve, lightcurve_matrix, plot_lightcurves,
-                  principle_component_analysis)
-from scale import standardize
+                  pca_reconstruction, principle_component_analysis)
+from scale import normalize, unnormalize, unnormalize_single, standardize
 from utils import (get_files, make_sure_path_exists, map_reduce, save_cache,
                    load_cache)
 
@@ -17,11 +19,17 @@ def main():
 #    logger = multiprocessing.log_to_stderr()
 #    logger.setLevel(multiprocessing.SUBDEBUG)
     options = get_options()
-#    assert False, [x for x in **options]
     clean_options = {}
-    files = get_files(options.input, options.format)[:10]
-#   stars = options.cache.get('stars') or map_reduce(lightcurve, files, options)
-    stars = [lightcurve(f, options=options) for f in files]
+    files = get_files(options.input, options.format)#[:10]
+    stars = options.cache.get('stars') or map_reduce(lightcurve, files, options)
+#   For un-normalizing
+    star_mins = numpy.reshape(
+        numpy.fromiter((star.y_min for star in stars), numpy.float),
+        (-1,1))
+    star_maxs = numpy.reshape(
+        numpy.fromiter((star.y_max for star in stars), numpy.float),
+        (-1,1))
+#    stars = [lightcurve(f, options=options) for f in files]
 #    stars = map_reduce(lightcurve, files, options)
     if options.verbose:
         print("\nAnalyzing {0} of {1} stars".format(len(stars), len(files)))
@@ -29,24 +37,52 @@ def main():
         make_sure_path_exists(options.output)
     if (options.PCA_degree):
         pca_input_matrix = lightcurve_matrix(stars, options.evaluator)
-        pca_results = principle_component_analysis(pca_input_matrix,
-                                                   options.PCA_degree)
-        print(pca_results)
+#        pca_input_matrix, mmin, mmax = normalize(pca_input_matrix)
+        eigenvectors, principle_scores, reconstruction = pcat(pca_input_matrix)
+#        (EVs, PCs, pca_lcs) = principle_component_analysis(pca_input_matrix,
+#                                                           options.PCA_degree)
+#        print(pca_results)
+        vanilla_reconstruction = unnormalize(reconstruction,
+                                             star_mins, star_maxs)
     if (options.plot_lightcurves_observed or
             options.plot_lightcurves_interpolated or
             options.plot_lightcurves_pca):
 #        for s in stars: plot_lightcurves(s, options.evaluator,
 #                                         options.output, options=options)
-        map_reduce(plot_lightcurves, stars, options)
+        if options.plot_lightcurves_pca:
+            for PCA, s in zip(vanilla_reconstruction, stars):
+                plot_lightcurves(s, options.evaluator, options.output,
+                                 PCA, options=options)
+        else:
+            map_reduce(plot_lightcurves, stars, options)
     if options.linear_model:
+        A0 = numpy.fromiter(
+                 (unnormalize_single(s.coefficients[0],s.y_min,s.y_max)
+                  for s in stars),
+                 numpy.float)
+#        assert False, "A0: {}".format(A0)
+        logP = numpy.fromiter((math.log(s.period, 10)
+                               for s in stars), numpy.float)
+        PC1, PC2 = numpy.hsplit(principle_scores[:,:2], 2)
+        PLPC1model, PLPC1fit = linearmodel.linear_model(A0, logP, PC1)
+        PLPC2model, PLPC2fit = linearmodel.linear_model(A0, logP, PC2)
+        PLPC1model.title = "PLPC1"
+        PLPC2model.title = "PLPC2"
+        linearmodel.plot_linear_model(PLPC1model, A0, logP, PC1, options.output)
+        linearmodel.plot_linear_model(PLPC2model, A0, logP, PC2, options.output)
+# Do the plot by doing coeff[0]*logP+coeff[1]*PC_i
+#        print("PC1:\n{}\n\nPC2:\n{}".format(PLPC1.summary(),PLPC2.summary()))
+            
+## Linear Model not yet implemented ##
+#    if options.linear_model:
 #        coeff_matrix = numpy.fromiter((s.coefficients for s in stars),
 #                                      None)
-        coeff_matrix = numpy.array([s.coefficients for s in stars])
-        for h in linear_model_handlers:
-            model = linearmodel.linear_model(
-                h.evaluate_coefficient(coeff_matrix, "A", 0),
-               *h.evaluate_coefficients(coeff_matrix))
-            print(model.summary())
+#        coeff_matrix = numpy.array([s.coefficients for s in stars])
+#        for h in linear_model_handlers:
+#            model = linearmodel.linear_model(
+#                h.evaluate_coefficient(coeff_matrix, "A", 0),
+#               *h.evaluate_coefficients(coeff_matrix))
+#            print(model.summary())
     if options.save_cache:
         save_cache(stars, options)
 
@@ -91,6 +127,7 @@ def get_options():
       dest='plot_lightcurves_pca',                  default=False,
       action='store_true',
       help='include PCA data in lightcurve plots')
+## Linear Model not yet implemented ##
     parser.add_option('--linear-model',
       dest='linear_model',           type='string', default=None,
       help='perform multiple regression on the interpolation results')
@@ -135,12 +172,12 @@ def get_options():
         parser.error('Need output location')
     
     options.cache = load_cache(options) if options.load_cache else {}
-    if options.load_cache:
-        options.interpolant = (options.interpolant or
-                               options.cache['interpolant'])
-        if options.interpolant != options.cache['interpolant']:
-            parser.error(
-                'Specified interpolant does not match cached interpolant')
+#    if options.load_cache:
+#        options.interpolant = (options.interpolant or
+#                               options.cache['interpolant'])
+#        if options.interpolant != options.cache['interpolant']:
+#            parser.error(
+#                'Specified interpolant does not match cached interpolant')
     # If no interpolant specified, defaults to trigonometric
     options.interpolant = options.interpolant or 'trigonometric'
     if options.interpolant in 'least_squares_polynomial':

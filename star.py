@@ -7,7 +7,7 @@ from scipy.signal import lombscargle
 from math import modf
 from re import split
 from utils import raw_string, get_masked, get_unmasked
-from scale import normalize
+from scale import normalize_single, standardize, unnormalize, unstandardize
 
 class Star:
     def __init__(self, name, period, rephased, coefficients,
@@ -49,20 +49,18 @@ def lightcurve(filename,
             return None
         period = find_period(data, min_period, max_period, period_bins)
         if not min_period <= period <= max_period:
+            print("not in range - None")
             return None
         rephased, y_min, y_max = rephase(data, period)
         coefficients = interpolant(rephased, degree)
         if sigma > 0:
             prev_mask = data.mask
- #           print("start")
             outliers = find_outliers(rephased, evaluator, coefficients, sigma)
-   #         print(outliers.shape)
             data.mask = numpy.ma.mask_or(data.mask, outliers)
             if numpy.all(data.mask == prev_mask):
                 rephased.mask = data.mask
             else:
                 continue
- #       print("rp: {}".format(rephased.shape))
         return rephased is not None and Star(name, period, rephased,
                                              coefficients, y_min, y_max)
 
@@ -82,7 +80,7 @@ def rephase(data, period):
     rephased = numpy.ma.copy(data)
     for observation in rephased:
         observation[0] = get_phase(observation[0], period, max_light_phase)
-    rephased.T[1], y_min, y_max = normalize(rephased.T[1])
+    rephased.T[1], y_min, y_max = normalize_single(rephased.T[1])
     #print mean, std
     return rephased, y_min, y_max
 
@@ -102,52 +100,58 @@ def find_outliers(rephased, evaluator, coefficients, sigma):
     outliers = (expected-actual)**2 > sigma*actual.std()**2+error
     return numpy.tile(numpy.vstack(outliers), rephased.shape[1])
 
-x = numpy.arange(0, 1.01, 0.01)#numpy.linspace(0, 0.99, 100)
+x = numpy.arange(0, 1.00, 0.01)#numpy.linspace(0, 0.99, 100)
 
 def lightcurve_matrix(stars, evaluator, x=x):
-    iterable = (evaluator(s.coefficients, x) for s in stars)
+    m = numpy.vstack(tuple(numpy.array(evaluator(s.coefficients, x))
+                           for s in stars))
+#    iterable = (evaluator(s.coefficients, x) for s in stars)
 #    m = numpy.vstack(numpy.fromiter((evaluator(s.coefficients, x),numpy.float) for s in stars))
 
-    m = numpy.vstack(tuple(numpy.fromiter(iter(evaluator(s.coefficients, x)),
-                                          numpy.float)
-                           for s in stars))
+#    m = numpy.vstack(tuple(numpy.fromiter(iter(evaluator(s.coefficients, x)),
+#                                          numpy.float)
+#                           for s in stars))
     return m
 
 def principle_component_analysis(data, degree):
-    print(data)
+    standardized_data, data_mean, data_std = standardize(data)
     pcanode = mdp.nodes.PCANode(output_dim=degree)
-    pcanode.train(data)
+    pcanode.train(standardized_data.T)
     pcanode.stop_training()
-    eigenvectors = pcanode.execute(data)
-    
-    return eigenvectors
+    eigenvectors = pcanode.execute(standardized_data.T)
+    principle_scores = numpy.dot(standardized_data, eigenvectors)
+    standardized_reconstruction_matrix = pca_reconstruction(eigenvectors,
+                                                            principle_scores)
+    reconstruction_matrix = unstandardize(standardized_reconstruction_matrix,
+                                          data_mean, data_std)
+    return eigenvectors, principle_scores, reconstruction_matrix
 
 def pca(star_matrix):
     """Finds the eigenvalues and eigenvectors of the covariance matrix"""
-    
 
     eigvals, eigvecs = numpy.linalg.eig(numpy.cov(star_matrix))
     return eigvals, eigvecs
 
-def pca_reconstruction(eigenvectors, principle_components):
+def pca_reconstruction(eigenvectors, principle_scores):
     """Returns an array in which each row contains the magnitudes of one star's
     lightcurve. eigenvectors is a (number of phases)x(order of PCA) array,
     principle_components is a (number or stars)x(order of PCA) array, and the
     return array has shape (number of stars)x(number of phases)."""
-    return dot(eigenvectors, principle_components.T).T    
+    return numpy.dot(eigenvectors, principle_scores.T).T    
 
-def plot_lightcurves(star, evaluator, output, **options):
+def plot_lightcurves(star, evaluator, output, PCA=None, **options):
+#    print("raw: {}\n\nPCA: {}".format(star.rephased.T[1],PCA))
     plt.gca().grid(True)
-    if options["plot_lightcurves_observed"]:
+    if True:# options["plot_lightcurves_observed"]:
         plt.scatter(star.rephased.T[0], star.rephased.T[1])
         #plt.errorbar(rephased.T[0], rephased.T[1], rephased.T[2], ls='none')
         outliers = get_masked(star.rephased)
         plt.scatter(outliers.T[0], outliers.T[1], color='r')
-    if options["plot_lightcurves_interpolated"]:
+    if True:#options["plot_lightcurves_interpolated"]:
         #plt.errorbar(outliers.T[0], outliers.T[1], outliers.T[2], ls='none')
         plt.plot(x, evaluator(star.coefficients, x), linewidth=2.5)
-    if options["plot_lightcurves_pca"]:
-        pass
+    if True:#options["plot_lightcurves_pca"] and PCA:
+        plt.plot(x, PCA, linewidth=1.5, color="yellow")
     #plt.errorbar(x, options['evaluator'](x, coefficients), rephased.T[1].std())
     plt.xlabel('Period ({0:0.5} days)'.format(star.period))
 #    plt.xlabel('Period (' + str(star.period)[:5] + ' days)')

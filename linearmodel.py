@@ -1,9 +1,11 @@
 import re
+import os
 
+import matplotlib.pyplot as plt
 import numpy
 import statsmodels.api as sm
 
-from utils import map_reduce, splitAtFirst
+from utils import map_reduce, raw_string, splitAtFirst
 
 # linear_model_regex = re.compile("^(\w+\d+(:\d+)*(,\w+\d+(:\d+)*)*)$")
 
@@ -98,10 +100,6 @@ def parseLinearModelString(s, handler, interpolation_degree, PCA_degree):
     tokenized = ((splitAtFirst(int, token) # Splits letters from numbers
                     for token in group.split(":"))
                  for group in s.split(","))
-#    print("if you're seeing this, linear modeling won't work")
-#    for t in tokenized:
-#        for a in t: print(a)
-#    print("tokenized: {}".format(list(tokenized)))
     handlers = (handler(coeff_sequence, interpolation_degree, PCA_degree)
                 for coeff_sequence in tokenized)
     return handlers
@@ -141,19 +139,43 @@ def makeLinearModelHandler(varmap):
         return linear_model(depvalue, *indepvalues)
     return f
 
-def linear_model(dependent_variable, *independent_variables):
+# Don't hardcode x, y. It should be a sequence of variables named
+# "independent_variables".
+def linear_model(dependent_variable, x, y):
     """Performs multiple regression on the equation
-    y = *(a_i x_i) + c
-    Where y is the dependent_variable, and 
+    y = *(c_i x_i) + c_0
+    Where y is the dependent_variable, x_i is the ith independent variable,
+    and c_i is the scalar coefficient of x_i
     """
-    # Initializes array with all ones
-    M = numpy.ones((len(dependent_variable), len(independent_variables) + 1))
-    # Replaces all but the first column with the independent variables,
-    # This leaves the first column as ones, which will make it act as a constant
-    M[:,1:] = numpy.dstack(x for x in independent_variables)
+#    # Initializes array with all ones
+#    M = numpy.ones((len(dependent_variable), len(independent_variables) + 1))
+#    # Replaces all but the first column with the independent variables,
+#    # This leaves the first column as ones, which will make it act as a constant
+#    M[:,1:] = numpy.dstack(x for x in independent_variables)
+#    print("Shape: logP: {}, PC: {}".format(x.shape, y.shape))
+    M = numpy.hstack((numpy.ones((len(dependent_variable), 1)),
+                      # Don't use indexing like this!!!
+                      numpy.reshape(x, (-1, 1)), numpy.reshape(y, (-1, 1))))
     # Sets up the linear model
     model = sm.OLS(dependent_variable, M)
     # Performs the fit
     fit = model.fit()
-    return fit
+    return model, fit
 
+def plot_linear_model(model, A0, logP, parameter, output):
+    """Plot the results of multiple regression"""
+    fit = model.fit()
+    coeffs = fit.params
+    plt.gca().grid(True)
+    fitted_output = (coeffs[0].T
+                   + logP*coeffs[1]
+                   + parameter.flatten()*coeffs[2])
+    plt.scatter(logP, A0, color='r')
+    plt.scatter(logP, fitted_output, color='0.65')
+    plt.xlabel("logP")
+    plt.ylabel("Magnitude")
+    plt.title(model.title)
+#    plt.axis([0,1,1,0])
+    out = re.split(raw_string(os.sep), model.title)[-1] + '.png'
+    plt.savefig(os.path.join(output, out))
+    plt.clf()
