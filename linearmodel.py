@@ -1,6 +1,8 @@
 import re
 import os
 
+import matplotlib
+matplotlib.use("Agg") # Uses Agg backend
 import matplotlib.pyplot as plt
 import numpy
 import statsmodels.api as sm
@@ -175,7 +177,6 @@ def plot_linear_model(model, A0, logP, parameter, output):
     plt.xlabel("logP")
     plt.ylabel("Magnitude")
     plt.title(model.title)
-#    plt.axis([0,1,1,0])
     out = re.split(raw_string(os.sep), model.title)[-1] + '.png'
     plt.savefig(os.path.join(output, out))
     plt.clf()

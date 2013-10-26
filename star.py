@@ -1,7 +1,9 @@
 import os
 import numpy
+import matplotlib
+matplotlib.use("Agg") # Uses Agg backend
 import matplotlib.pyplot as plt
-import mdp
+#import mdp # Use this for implementing PCA in python
 import interpolation
 from scipy.signal import lombscargle
 from math import modf
@@ -113,24 +115,18 @@ def lightcurve_matrix(stars, evaluator, x=x):
 #                           for s in stars))
     return m
 
-def principle_component_analysis(data, degree):
-    standardized_data, data_mean, data_std = standardize(data)
-    pcanode = mdp.nodes.PCANode(output_dim=degree)
-    pcanode.train(standardized_data.T)
-    pcanode.stop_training()
-    eigenvectors = pcanode.execute(standardized_data.T)
-    principle_scores = numpy.dot(standardized_data, eigenvectors)
-    standardized_reconstruction_matrix = pca_reconstruction(eigenvectors,
-                                                            principle_scores)
-    reconstruction_matrix = unstandardize(standardized_reconstruction_matrix,
-                                          data_mean, data_std)
-    return eigenvectors, principle_scores, reconstruction_matrix
-
-def pca(star_matrix):
-    """Finds the eigenvalues and eigenvectors of the covariance matrix"""
-
-    eigvals, eigvecs = numpy.linalg.eig(numpy.cov(star_matrix))
-    return eigvals, eigvecs
+# def principle_component_analysis(data, degree):
+#     standardized_data, data_mean, data_std = standardize(data)
+#     pcanode = mdp.nodes.PCANode(output_dim=degree)
+#     pcanode.train(standardized_data.T)
+#     pcanode.stop_training()
+#     eigenvectors = pcanode.execute(standardized_data.T)
+#     principle_scores = numpy.dot(standardized_data, eigenvectors)
+#     standardized_reconstruction_matrix = pca_reconstruction(eigenvectors,
+#                                                             principle_scores)
+#     reconstruction_matrix = unstandardize(standardized_reconstruction_matrix,
+#                                           data_mean, data_std)
+#     return eigenvectors, principle_scores, reconstruction_matrix
 
 def pca_reconstruction(eigenvectors, principle_scores):
     """Returns an array in which each row contains the magnitudes of one star's
