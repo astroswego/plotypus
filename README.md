@@ -23,4 +23,5 @@ external resources
 ==================
 
 pcat.f by F. Murtagh used for Principle Component Analysis
+
 sectparse.py by Dan Wysocki used for parsing pcat.f output
