@@ -135,19 +135,19 @@ def pca_reconstruction(eigenvectors, principle_scores):
     return array has shape (number of stars)x(number of phases)."""
     return numpy.dot(eigenvectors, principle_scores.T).T    
 
-def plot_lightcurves(star, evaluator, output, PCA=None, **options):
+def plot_lightcurves(star, evaluator, output, **options):
 #    print("raw: {}\n\nPCA: {}".format(star.rephased.T[1],PCA))
     plt.gca().grid(True)
-    if True:# options["plot_lightcurves_observed"]:
+    if "plot_lightcurves_observed" in options:
         plt.scatter(star.rephased.T[0], star.rephased.T[1])
         #plt.errorbar(rephased.T[0], rephased.T[1], rephased.T[2], ls='none')
         outliers = get_masked(star.rephased)
         plt.scatter(outliers.T[0], outliers.T[1], color='r')
-    if True:#options["plot_lightcurves_interpolated"]:
+    if "plot_lightcurves_interpolated" in options:
         #plt.errorbar(outliers.T[0], outliers.T[1], outliers.T[2], ls='none')
         plt.plot(x, evaluator(star.coefficients, x), linewidth=2.5)
-    if True:#options["plot_lightcurves_pca"] and PCA:
-        plt.plot(x, PCA, linewidth=1.5, color="yellow")
+    if "plot_lightcurves_pca" in options:
+        plt.plot(x, star.PCA, linewidth=1.5, color="yellow")
     #plt.errorbar(x, options['evaluator'](x, coefficients), rephased.T[1].std())
     plt.xlabel('Period ({0:0.5} days)'.format(star.period))
 #    plt.xlabel('Period (' + str(star.period)[:5] + ' days)')

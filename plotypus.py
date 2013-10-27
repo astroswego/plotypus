@@ -1,3 +1,4 @@
+import itertools
 import logging
 import math
 import multiprocessing
@@ -38,23 +39,25 @@ def main():
     if (options.PCA_degree):
         pca_input_matrix = lightcurve_matrix(stars, options.evaluator)
 #        pca_input_matrix, mmin, mmax = normalize(pca_input_matrix)
-        eigenvectors, principle_scores, reconstruction = pcat(pca_input_matrix)
+        eigenvectors, principle_scores, normalized_reconstruction = pcat(
+            pca_input_matrix)
 #        (EVs, PCs, pca_lcs) = principle_component_analysis(pca_input_matrix,
 #                                                           options.PCA_degree)
 #        print(pca_results)
-        vanilla_reconstruction = unnormalize(reconstruction,
+        reconstruction = unnormalize(normalized_reconstruction,
                                              star_mins, star_maxs)
+        for star, reconst in zip(stars, reconstruction):
+            star.PCA = reconst
     if (options.plot_lightcurves_observed or
             options.plot_lightcurves_interpolated or
             options.plot_lightcurves_pca):
 #        for s in stars: plot_lightcurves(s, options.evaluator,
 #                                         options.output, options=options)
-        if options.plot_lightcurves_pca:
-            for PCA, s in zip(vanilla_reconstruction, stars):
-                plot_lightcurves(s, options.evaluator, options.output,
-                                 PCA, options=options)
-        else:
-            map_reduce(plot_lightcurves, stars, options)
+#        if options.plot_lightcurves_pca:
+#            for PCA, s in zip(vanilla_reconstruction, stars):
+#                plot_lightcurves(s, options.evaluator, options.output,
+#                                 PCA, options=options)
+        map_reduce(plot_lightcurves, stars, options)
     if options.linear_model:
         A0 = numpy.fromiter(
                  (unnormalize_single(s.coefficients[0],s.y_min,s.y_max)
@@ -138,7 +141,7 @@ def get_options():
       dest='interpolation_degree',   type='int',    default=10,
       help='degree of interpolation')
     parser.add_option('--PCA-degree',
-      dest='PCA_degree',             type='int',    default=10,
+        dest='PCA_degree',             type='int',    default=10,
       help='degree of PCA')
     parser.add_option('--min-obs',
       dest='min_obs',                type='int',    default=100,
