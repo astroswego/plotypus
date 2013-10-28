@@ -146,7 +146,7 @@ def plot_lightcurves(star, evaluator, output, **options):
     if "plot_lightcurves_interpolated" in options:
         #plt.errorbar(outliers.T[0], outliers.T[1], outliers.T[2], ls='none')
         plt.plot(x, evaluator(star.coefficients, x), linewidth=2.5)
-    if "plot_lightcurves_pca" in options:
+    if True:# "plot_lightcurves_pca" in options:
         plt.plot(x, star.PCA, linewidth=1.5, color="yellow")
     #plt.errorbar(x, options['evaluator'](x, coefficients), rephased.T[1].std())
     plt.xlabel('Period ({0:0.5} days)'.format(star.period))
