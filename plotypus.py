@@ -55,9 +55,6 @@ def main():
 #                                         options.output, options=options)
 #        if options.plot_lightcurves_pca:
 #            for PCA, s in zip(vanilla_reconstruction, stars):
-#                plot_lightcurves(s, options.evaluator, options.output,
-#                                 PCA, options=options)
-        map_reduce(plot_lightcurves, stars, options)
     if options.linear_model:
         A0 = numpy.fromiter(
                  (unnormalize_single(s.coefficients[0],s.y_min,s.y_max)
@@ -73,6 +70,8 @@ def main():
         PLPC2model.title = "PLPC2"
         linearmodel.plot_linear_model(PLPC1model, A0, logP, PC1, options.output)
         linearmodel.plot_linear_model(PLPC2model, A0, logP, PC2, options.output)
+        plot_principle_component(logP, PC1, "PC1", options.output)
+        plot_principle_component(logP, PC2, "PC2", options.output)
 # Do the plot by doing coeff[0]*logP+coeff[1]*PC_i
 #        print("PC1:\n{}\n\nPC2:\n{}".format(PLPC1.summary(),PLPC2.summary()))
             

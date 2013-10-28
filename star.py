@@ -166,3 +166,14 @@ def plot(star, evaluator, output, **options):
     plt.savefig(os.path.join(output, out))
     plt.clf()
 """
+
+def plot_principle_component(logP, PC, PC_name, output):
+    plt.gca().grid(True)
+    plt.scatter(logP, PC)
+    plt.xlabel("logP")
+    plt.ylabel(PC_name)
+    title = PC_name + " vs logP"
+    plt.title(title)
+    out = title + ".png"
+    plt.savefig(os.path.join(output, out))
+    plt.clf()
