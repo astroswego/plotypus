@@ -1,6 +1,7 @@
 #import commands
 import os
 import subprocess
+import sys
 
 import numpy
 from numpy import fromstring, savetxt, vstack
@@ -10,6 +11,9 @@ from star import pca_reconstruction
 import sectparse
 
 def pcat(star_matrix, degree=7):
+    root = sys.path[0]
+    os.chdir(root)
+    
     N = star_matrix.shape[0]
     with open("pcat_template.f", "r") as tempcat, open("pcat.f", "w") as pcat:
         tempcat_source = "".join(tempcat.readlines())

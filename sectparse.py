@@ -17,7 +17,7 @@ Simple usage example:
 {None: '', 'Section 1': 'Some text\n', 'Section 2': 'Some more text'}
 """
 
-__version__ = "0.1.0"
+__version__ = "0.1.1"
 
 __all__ = ["SectionParser",
            "MissingSectionError",
@@ -78,7 +78,6 @@ class SectionParser:
     Each iteration returns the 2-tuple (<section heading>, <section text>)
 
     """
-    
     def __init__(self, input, keylist):
         # Makes sure the input is an iterator and not a sequence
         self.__input = iter(input)
@@ -112,9 +111,8 @@ class SectionParser:
     def __nextSection(self):
         """Returns the next key, the current key, the section's contents, and
         the rest of the input.
-
-        """
         
+        """
         nextKey = None
         sectionKey = self.__nextkey
         sectionText = ""
