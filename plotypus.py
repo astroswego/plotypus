@@ -51,6 +51,7 @@ def main():
     if (options.plot_lightcurves_observed or
             options.plot_lightcurves_interpolated or
             options.plot_lightcurves_pca):
+        map_reduce(plot_lightcurves, stars, options)
 #        for s in stars: plot_lightcurves(s, options.evaluator,
 #                                         options.output, options=options)
 #        if options.plot_lightcurves_pca:
