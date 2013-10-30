@@ -11,7 +11,7 @@ import interpolation
 import linearmodel
 from pcat_interface import pcat
 from star import (lightcurve, lightcurve_matrix, plot_lightcurves,
-                  pca_reconstruction)
+                  plot_pca, pca_reconstruction)
 from scale import normalize, unnormalize, unnormalize_single, standardize
 from utils import (get_files, make_sure_path_exists, map_reduce, save_cache,
                    load_cache)
