@@ -3,6 +3,8 @@ import logging
 import math
 import multiprocessing
 
+import matplotlib
+matplotlib.use("Agg") # Uses Agg backend
 from matplotlib.pyplot import cm, matshow, savefig
 import numpy
 import re
