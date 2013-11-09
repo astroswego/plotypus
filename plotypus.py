@@ -3,6 +3,7 @@ import logging
 import math
 import multiprocessing
 
+from matplotlib.pyplot import cm, matshow, savefig
 import numpy
 import re
 
@@ -38,6 +39,10 @@ def main():
         make_sure_path_exists(options.output)
     if (options.PCA_degree):
         pca_input_matrix = lightcurve_matrix(stars, options.evaluator)
+        matshow(pca_input_matrix, cmap=cm.gray)
+        savefig("matrix_full.png")
+        matshow(pca_input_matrix, fignum=100, cmap=cm.gray)
+        
 #        pca_input_matrix, mmin, mmax = normalize(pca_input_matrix)
         eigenvectors, principle_scores, normalized_reconstruction = pcat(
             pca_input_matrix)

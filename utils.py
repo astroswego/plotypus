@@ -39,9 +39,7 @@ def map_reduce(func, args, options):
             append(p.apply_async(func, (arg,), options.__dict__, task_finished))
         p.close()
         p.join()
-        #print results
         results = (result.get() for result in results)
-#        print(results)
     else:
         for arg in args:
             append(func(arg, **options.__dict__))
