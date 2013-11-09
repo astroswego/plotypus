@@ -5,7 +5,7 @@ import multiprocessing
 
 import matplotlib
 matplotlib.use("Agg") # Uses Agg backend
-from matplotlib.pyplot import cm, matshow, savefig
+from matplotlib.pyplot import clf, cm, matshow, savefig
 import numpy
 import re
 
@@ -40,12 +40,14 @@ def main():
         print("\nAnalyzing {0} of {1} stars".format(len(stars), len(files)))
     if options.output:
         make_sure_path_exists(options.output)
-    if (options.PCA_degree):
         pca_input_matrix = lightcurve_matrix(stars, options.evaluator)
         matshow(pca_input_matrix, cmap=cm.gray)
         savefig("matrix_full.png")
+        clf()
         matshow(pca_input_matrix, fignum=100, cmap=cm.gray)
-        
+        savefig("matrix_part.png")
+    if (options.PCA_degree):
+        pca_input_matrix = lightcurve_matrix(stars, options.evaluator)
 #        pca_input_matrix, mmin, mmax = normalize(pca_input_matrix)
         eigenvectors, principle_scores, normalized_reconstruction = pcat(
             pca_input_matrix)
