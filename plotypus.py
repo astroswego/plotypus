@@ -27,7 +27,7 @@ def main():
     files = get_files(options.input, options.format)#[:10]
     
     stars = options.cache.get('stars') or map_reduce(lightcurve, files, options)
-    assert False, "options: " + options.__dict__ + "\nfiles: " + files
+    assert False, "options: " + str(options.__dict__) + "\nfiles: " + str(files)
     #   For un-normalizing
     star_mins = numpy.reshape(
         numpy.fromiter((star.y_min for star in stars), numpy.float),
