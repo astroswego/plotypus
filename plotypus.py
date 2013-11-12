@@ -44,7 +44,7 @@ def main():
         matshow(pca_input_matrix, cmap=cm.gray)
         savefig("matrix_full.png")
         clf()
-        matshow(pca_input_matrix, fignum=100, cmap=cm.gray)
+        matshow(pca_input_matrix[:100,:], cmap=cm.gray)
         savefig("matrix_part.png")
     if (options.PCA_degree):
         pca_input_matrix = lightcurve_matrix(stars, options.evaluator)
