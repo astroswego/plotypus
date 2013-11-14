@@ -1,7 +1,7 @@
 import os
 import numpy
-#import matplotlib
-#matplotlib.use("Agg") # Uses Agg backend
+import matplotlib
+matplotlib.use("Agg") # Uses Agg backend
 import matplotlib.pyplot as plt
 #import mdp # Use this for implementing PCA in python
 import interpolation
