@@ -24,7 +24,7 @@ def main():
     files = get_files(options.input, options.format)#[:10]
     
     stars = options.cache.get('stars') or map_reduce(lightcurve, files, options)
-    if options.plot_parameters and options.interpolant in "trigonometric":
+    if options.plot_parameters:
         trig_param_plot(stars, options.output)
 #   For un-normalizing pcat output
     star_mins = numpy.reshape(
@@ -189,6 +189,8 @@ def get_options():
 #        if options.interpolant != options.cache['interpolant']:
 #            parser.error(
 #                'Specified interpolant does not match cached interpolant')
+    if options.plot_parameters and not options.interpolant in 'trigonometric':
+        parser.error('Parameter plots only implemented for trig interpolation')
     # If no interpolant specified, defaults to trigonometric
     options.interpolant = options.interpolant or 'trigonometric'
     if options.interpolant in 'least_squares_polynomial':
