@@ -158,14 +158,14 @@ def plot_lightcurves(star, evaluator, output, **options):
     plt.savefig(os.path.join(output, out))
     plt.clf()
 
- """
- def plot(star, evaluator, output, **options):
-     plt.gca().grid(True)
-     plt.scatter(star.T[0], star.T[1])
-     out = split(raw_string(os.sep), str(star[0][0]))[-1]+'.png'
-     plt.savefig(os.path.join(output, out))
-     plt.clf()
- """
+"""
+def plot(star, evaluator, output, **options):
+    plt.gca().grid(True)
+    plt.scatter(star.T[0], star.T[1])
+    out = split(raw_string(os.sep), str(star[0][0]))[-1]+'.png'
+    plt.savefig(os.path.join(output, out))
+    plt.clf()
+"""
 
 def plot_parameter(logP, parameter, parameter_name, output):
     plt.gca().grid(True)
