@@ -1,5 +1,6 @@
 import os
 import numpy
+import math
 import matplotlib
 matplotlib.use("Agg") # Uses Agg backend
 import matplotlib.pyplot as plt
