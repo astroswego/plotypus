@@ -11,7 +11,7 @@ import interpolation
 import linearmodel
 from pcat_interface import pcat
 from star import (lightcurve, lightcurve_matrix, plot_lightcurves,
-                  plot_principle_component, pca_reconstruction)
+                  plot_parameter, pca_reconstruction, trig_param_plot)
 from scale import normalize, unnormalize, unnormalize_single, standardize
 from utils import (get_files, make_sure_path_exists, map_reduce, save_cache,
                    load_cache)
@@ -24,7 +24,9 @@ def main():
     files = get_files(options.input, options.format)#[:10]
     
     stars = options.cache.get('stars') or map_reduce(lightcurve, files, options)
-    #   For un-normalizing
+    if options.plot_parameters and options.interpolant in "trigonometric":
+        trig_param_plot(stars, options.output)
+#   For un-normalizing pcat output
     star_mins = numpy.reshape(
         numpy.fromiter((star.y_min for star in stars), numpy.float),
         (-1,1))
@@ -73,8 +75,8 @@ def main():
         PLPC2model.title = "PLPC2"
         linearmodel.plot_linear_model(PLPC1model, A0, logP, PC1, options.output)
         linearmodel.plot_linear_model(PLPC2model, A0, logP, PC2, options.output)
-        plot_principle_component(logP, PC1, "PC1", options.output)
-        plot_principle_component(logP, PC2, "PC2", options.output)
+        plot_parameter(logP, PC1, "PC1", options.output)
+        plot_parameter(logP, PC2, "PC2", options.output)
 # Do the plot by doing coeff[0]*logP+coeff[1]*PC_i
 #        print("PC1:\n{}\n\nPC2:\n{}".format(PLPC1.summary(),PLPC2.summary()))
             
@@ -132,6 +134,10 @@ def get_options():
       dest='plot_lightcurves_pca',                  default=False,
       action='store_true',
       help='include PCA data in lightcurve plots')
+    parser.add_option('--plot-parameters',
+      dest='plot_parameters',                       default=False,
+      action='store_true',
+      help='include R21, R31, Phi21, Phi31 plots')
 ## Linear Model not yet implemented ##
     parser.add_option('--linear-model',
       dest='linear_model',           type='string', default=None,

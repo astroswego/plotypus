@@ -13,7 +13,7 @@ from scale import normalize_single, standardize, unnormalize, unstandardize
 
 class Star:
     def __init__(self, name, period, rephased, coefficients,
-                       y_min=None, y_max=None):
+                 y_min=None, y_max=None):
         self.name = name
         self.period = period
         self.rephased = rephased
@@ -37,10 +37,10 @@ def lightcurve(filename,
     3) the rephased observations, and 
     4) a list of interpolation coefficients, or 
     None if no adequate model can be found. 
-    
+
     Searches for periods within the specified bounds discretized by the 
     specified number of period bins. 
-    
+
     If sigma is greater than zero, then outliers will be sigma clipped with the 
     specified value. 
     """
@@ -110,23 +110,23 @@ def lightcurve_matrix(stars, evaluator, x=x):
 #    iterable = (evaluator(s.coefficients, x) for s in stars)
 #    m = numpy.vstack(numpy.fromiter((evaluator(s.coefficients, x),numpy.float) for s in stars))
 
-#    m = numpy.vstack(tuple(numpy.fromiter(iter(evaluator(s.coefficients, x)),
-#                                          numpy.float)
-#                           for s in stars))
+ #    m = numpy.vstack(tuple(numpy.fromiter(iter(evaluator(s.coefficients, x)),
+ #                                          numpy.float)
+ #                           for s in stars))
     return m
 
-# def principle_component_analysis(data, degree):
-#     standardized_data, data_mean, data_std = standardize(data)
-#     pcanode = mdp.nodes.PCANode(output_dim=degree)
-#     pcanode.train(standardized_data.T)
-#     pcanode.stop_training()
-#     eigenvectors = pcanode.execute(standardized_data.T)
-#     principle_scores = numpy.dot(standardized_data, eigenvectors)
-#     standardized_reconstruction_matrix = pca_reconstruction(eigenvectors,
-#                                                             principle_scores)
-#     reconstruction_matrix = unstandardize(standardized_reconstruction_matrix,
-#                                           data_mean, data_std)
-#     return eigenvectors, principle_scores, reconstruction_matrix
+ # def principle_component_analysis(data, degree):
+ #     standardized_data, data_mean, data_std = standardize(data)
+ #     pcanode = mdp.nodes.PCANode(output_dim=degree)
+ #     pcanode.train(standardized_data.T)
+ #     pcanode.stop_training()
+ #     eigenvectors = pcanode.execute(standardized_data.T)
+ #     principle_scores = numpy.dot(standardized_data, eigenvectors)
+ #     standardized_reconstruction_matrix = pca_reconstruction(eigenvectors,
+ #                                                             principle_scores)
+ #     reconstruction_matrix = unstandardize(standardized_reconstruction_matrix,
+ #                                           data_mean, data_std)
+ #     return eigenvectors, principle_scores, reconstruction_matrix
 
 def pca_reconstruction(eigenvectors, principle_scores):
     """Returns an array in which each row contains the magnitudes of one star's
@@ -158,22 +158,39 @@ def plot_lightcurves(star, evaluator, output, **options):
     plt.savefig(os.path.join(output, out))
     plt.clf()
 
-"""
-def plot(star, evaluator, output, **options):
-    plt.gca().grid(True)
-    plt.scatter(star.T[0], star.T[1])
-    out = split(raw_string(os.sep), str(star[0][0]))[-1]+'.png'
-    plt.savefig(os.path.join(output, out))
-    plt.clf()
-"""
+ """
+ def plot(star, evaluator, output, **options):
+     plt.gca().grid(True)
+     plt.scatter(star.T[0], star.T[1])
+     out = split(raw_string(os.sep), str(star[0][0]))[-1]+'.png'
+     plt.savefig(os.path.join(output, out))
+     plt.clf()
+ """
 
-def plot_principle_component(logP, PC, PC_name, output):
+def plot_parameter(logP, parameter, parameter_name, output):
     plt.gca().grid(True)
-    plt.scatter(logP, PC)
+    plt.scatter(logP, parameter)
     plt.xlabel("logP")
-    plt.ylabel(PC_name)
-    title = PC_name + " vs logP"
+    plt.ylabel(parameter_name)
+    title = parameter_name + " vs logP"
     plt.title(title)
     out = title + ".png"
     plt.savefig(os.path.join(output, out))
     plt.clf()
+
+
+def trig_param_plot(stars, output):
+    logP = numpy.log(numpy.fromiter((star.period for star in stars),
+                                    numpy.float),
+                     10)
+    parameters = numpy.vstack(tuple(ak_bk2Ak_Phik(star.coefficients)
+                                    for star in stars))
+    (A0, A1, Phi1, A2, Phi2, A3, Phi3) = parameters[:,:7]
+    (R21, R31, R32) = (A2/A1, A3/A1, A3/A2)
+    (Phi21, Phi31, Phi32) = (Phi2/Phi1, Phi3/Phi1, Phi3/Phi2)
+    plot_parameter(logP, R21, "R21", output)
+    plot_parameter(logP, R31, "R31", output)
+    plot_parameter(logP, R32, "R32", output)
+    plot_parameter(logP, Phi21, "Phi21", output)
+    plot_parameter(logP, Phi31, "Phi31", output)
+    plot_parameter(logP, Phi32, "Phi32", output)
