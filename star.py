@@ -13,16 +13,13 @@ from utils import raw_string, get_masked, get_unmasked
 from scale import normalize_single, standardize, unnormalize, unstandardize
 
 class Star:
-    __slots__ = ['name', 'period', 'rephased', 'coefficients', 'y_min', 'y_max']
+    __slots__ = ['name', 'period', 'rephased', 'coefficients']
     
-    def __init__(self, name, period, rephased, coefficients,
-                 y_min=None, y_max=None):
+    def __init__(self, name, period, rephased, coefficients):
         self.name = name
         self.period = period
         self.rephased = rephased
         self.coefficients = coefficients
-        self.y_min = y_min
-        self.y_max = y_max
 
 def lightcurve(filename,
                interpolant = interpolation.least_squares_polynomial,
@@ -56,7 +53,7 @@ def lightcurve(filename,
         if not min_period <= period <= max_period:
             print("not in range - None")
             return None
-        rephased, y_min, y_max = rephase(data, period)
+        rephased = rephase(data, period)
         coefficients = interpolant(rephased, degree)
         if sigma > 0:
             prev_mask = data.mask
@@ -67,7 +64,7 @@ def lightcurve(filename,
             else:
                 continue
         return rephased is not None and Star(name, period, rephased,
-                                             coefficients, y_min, y_max)
+                                             coefficients)
 
 def find_period(data, min_period, max_period, period_bins):
     """Uses the Lomb-Scargle Periodogram to discover the period."""

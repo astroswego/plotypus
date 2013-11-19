@@ -38,7 +38,6 @@ def main():
         print("\nAnalyzing {0} of {1} stars".format(len(stars), len(files)))
     if options.output:
         make_sure_path_exists(options.output)
-        pca_input_matrix = lightcurve_matrix(stars, options.evaluator)
     if (options.PCA_degree):
         raw_matrix = lightcurve_matrix(stars, options.evaluator)
         normalized_matrix, star_mins, star_maxes = normalize(raw_matrix)
