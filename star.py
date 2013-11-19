@@ -181,14 +181,16 @@ def trig_param_plot(stars, output):
     logP = numpy.fromiter((math.log(star.period, 10) for star in stars),
                                     numpy.float)
 #    assert False, str([star.coefficients for star in stars])
+    assert False, str(tuple(
+        interpolation.ak_bk2Ak_Phik(star.coefficients) for star in stars))
     parameters = numpy.vstack(tuple(
         interpolation.ak_bk2Ak_Phik(star.coefficients) for star in stars))
     (A0, A1, Phi1, A2, Phi2, A3, Phi3) = numpy.hsplit(parameters[:,:7], 7)
     (R21, R31, R32) = (A2/A1, A3/A1, A3/A2)
     (Phi21, Phi31, Phi32) = (Phi2/Phi1, Phi3/Phi1, Phi3/Phi2)
-    plot_parameter(logP, R21, "R21", output)
-    plot_parameter(logP, R31, "R31", output)
-    plot_parameter(logP, R32, "R32", output)
+    plot_parameter(logP, R21,   "R21",   output)
+    plot_parameter(logP, R31,   "R31",   output)
+    plot_parameter(logP, R32,   "R32",   output)
     plot_parameter(logP, Phi21, "Phi21", output)
     plot_parameter(logP, Phi31, "Phi31", output)
     plot_parameter(logP, Phi32, "Phi32", output)
