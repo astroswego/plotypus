@@ -51,4 +51,4 @@ def ak_bk2Ak_Phik(ak_bk_coefficients):
     Ak_Phik_coeffs[2::2] = Phik_coeffs
 
 #    assert False, str(Ak_Phik_coeffs.shape)
-    return numpy.array(Ak_Phik_coeffs).reshape(-1,1)
+    return numpy.array(Ak_Phik_coeffs).reshape(1,-1)
