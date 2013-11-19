@@ -4,12 +4,13 @@ from numpy.testing import assert_array_almost_equal
 
 def standardize(x):
     tolerance = 1e-6
-    y = x.T
+    y = array(x.T, copy=True)
     y_mean = reshape(fromiter((col.mean() for col in y), nfloat), (1,-1))
     y_std = reshape(fromiter((col.std() if col.std() > tolerance else 1.0
                               for col in y), nfloat),
                              (1,-1))
-    return ((y-y_mean.T)/y_std.T).T, y_mean, y_std
+    std_y = ((y-y_mean.T)/y_std.T).T
+    return std_y, y_mean, y_std
 
 def unstandardize(x, x_mean, x_std):
     return x*x_std + x_mean
@@ -18,7 +19,8 @@ def normalize(x):
     """Scales a matrix so that each row ranges from 0 to 1"""
     x_min = reshape(fromiter((row.min() for row in x), nfloat), (-1,1))
     x_max = reshape(fromiter((row.max() for row in x), nfloat), (-1,1))
-    return (x-x_min)/(x_max-x_min), x_min, x_max
+    norm_x = (x-x_min)/(x_max-x_min)
+    return norm_x, x_min, x_max
 
 def unnormalize(x, x_min, x_max):
     """Reverses normalization of a matrix's rows"""
