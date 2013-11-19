@@ -20,7 +20,7 @@ def main():
 #    logger = multiprocessing.log_to_stderr()
 #    logger.setLevel(multiprocessing.SUBDEBUG)
     options = get_options()
-    files = get_files(options.input, options.format)#[:10]
+    files = get_files(options.input, options.format)[:10]
     
     stars = options.cache.get('stars') or map_reduce(lightcurve, files, options)
     if options.plot_parameters:

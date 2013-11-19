@@ -22,6 +22,8 @@ def normalize(x):
 
 def unnormalize(x, x_min, x_max):
     """Reverses normalization of a matrix's rows"""
+    print("x: {}, x_max: {}, x_min: {}"
+          .format(x.shape, x_max.shape, x_min.shape))
     return x*(x_max-x_min) + x_min
 
 def normalize_single(x):
