@@ -12,7 +12,7 @@ import linearmodel
 from pcat_interface import pcat
 from star import (lightcurve, lightcurve_matrix, plot_lightcurves,
                   plot_parameter, pca_reconstruction, trig_param_plot)
-from scale import normalize, unnormalize, unnormalize_single, standardize
+from scale import normalize, unnormalize, standardize, unstandardize
 from utils import (get_files, make_sure_path_exists, map_reduce, save_cache,
                    load_cache)
 
@@ -50,11 +50,8 @@ def main():
 #        if options.plot_lightcurves_pca:
 #            for PCA, s in zip(vanilla_reconstruction, stars):
     if options.linear_model:
-        A0 = numpy.fromiter(
-                 (unnormalize_single(s.coefficients[0],s.y_min,s.y_max)
-                  for s in stars),
-                 numpy.float)
-#        assert False, "A0: {}".format(A0)
+        A0 = numpy.fromiter((star.coefficients[0] for star in stars),
+                            numpy.float)
         logP = numpy.fromiter((math.log(s.period, 10)
                                for s in stars), numpy.float)
         PC1, PC2 = numpy.hsplit(principle_scores[:,:2], 2)
