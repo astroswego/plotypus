@@ -182,8 +182,9 @@ def trig_param_plot(stars, output):
     logP = numpy.fromiter((math.log(star.period, 10) for star in stars),
                                     numpy.float)
 #    assert False, str([star.coefficients for star in stars])
-#    assert False, str(tuple(
-#        interpolation.ak_bk2Ak_Phik(star.coefficients).shape for star in stars))
+    assert False, str(tuple(
+        interpolation.ak_bk2Ak_Phik(star.coefficients).shape for star in stars))
+
     parameters = numpy.vstack(tuple(
         interpolation.ak_bk2Ak_Phik(star.coefficients) for star in stars))
 #    assert False, parameters.shape
