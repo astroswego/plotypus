@@ -13,7 +13,7 @@ from utils import raw_string, get_masked, get_unmasked
 from scale import normalize_single, standardize, unnormalize, unstandardize
 
 class Star:
-    __slots__ = ['name', 'period', 'rephased', 'coefficients']
+    __slots__ = ['name', 'period', 'rephased', 'coefficients', 'PCA']
     
     def __init__(self, name, period, rephased, coefficients):
         self.name = name
