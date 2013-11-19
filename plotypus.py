@@ -31,14 +31,15 @@ def main():
         make_sure_path_exists(options.output)
     if (options.PCA_degree):
         raw_matrix = lightcurve_matrix(stars, options.evaluator)
-        normalized_matrix, star_mins, star_maxes = normalize(raw_matrix)
-        standardized_matrix, column_means, column_stds = standardize(
-            normalized_matrix)
-        eigenvectors, principle_scores, normalized_reconstruction = pcat(
-            normalized_matrix)
-        reconstruction = unstandardize(unnormalize(normalized_reconstruction,
-                                                   star_mins, star_maxes),
-                                       column_means, column_stds)
+        norm_matrix, star_mins, star_maxes = normalize(raw_matrix)
+        std_norm_matrix, column_means, column_stds = standardize(
+            norm_matrix)
+        eigenvectors, principle_scores, std_norm_reconstruction = pcat(
+            norm_matrix)
+        reconstruction = unstandardize(unnormalize(
+                std_norm_reconstruction,
+                star_mins, star_maxes),
+            column_means, column_stds)
         for star, reconst in zip(stars, reconstruction):
             star.PCA = reconst
     if (options.plot_lightcurves_observed or

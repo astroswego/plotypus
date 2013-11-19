@@ -40,8 +40,9 @@ def pcat(star_matrix, degree=7):
         fromstring(line,dtype=numpy.float,sep=' ') for line in
         pcat_map["0PROJECTIONS OF ROW-POINTS FOLLOW."].splitlines()[2:])[:,1:]
     reconstruction_matrix = pca_reconstruction(eigenvectors, principle_scores)
-    std_x, x_mean, x_std = standardize(star_matrix)
-    reconstruction_matrix = unstandardize(reconstruction_matrix, x_mean, x_std)
+#    standardized_x, x_mean, x_std = standardize(star_matrix)
+#    reconstruction_matrix = unstandardize(reconstruction_matrix, x_mean, x_std)
+#   Delete temporary files
     for f in ["pcat.f", "pcat", "data"]:
         os.remove(f)
     return eigenvectors, principle_scores, reconstruction_matrix
