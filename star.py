@@ -13,6 +13,8 @@ from utils import raw_string, get_masked, get_unmasked
 from scale import normalize_single, standardize, unnormalize, unstandardize
 
 class Star:
+    __slots__ = ['name', 'period', 'rephased', 'coefficients', 'y_min', 'y_max']
+    
     def __init__(self, name, period, rephased, coefficients,
                  y_min=None, y_max=None):
         self.name = name
@@ -83,9 +85,7 @@ def rephase(data, period):
     rephased = numpy.ma.copy(data)
     for observation in rephased:
         observation[0] = get_phase(observation[0], period, max_light_phase)
-    rephased.T[1], y_min, y_max = normalize_single(rephased.T[1])
-    #print mean, std
-    return rephased, y_min, y_max
+    return rephased
 
 def max_light_time(data):
     """Returns the time at which the star is at its brightest, i.e. the Julian

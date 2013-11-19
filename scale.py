@@ -10,45 +10,22 @@ def standardize(x):
                               for col in y), nfloat),
                              (1,-1))
     return ((y-y_mean.T)/y_std.T).T, y_mean, y_std
-#    standardizedCols = array([(col-col.mean())/col.std()
-#                              for col in unstandardizedCols])
-#    return standardizedCols.transpose()
 
 def unstandardize(x, x_mean, x_std):
-#    print("x: {}, x_mean: {}, x_std: {}".format(x.shape,
-#                                                x_mean.shape,
-#                                                x_std.shape))
     return x*x_std + x_mean
-#    return (x.T*x_std.T + x_mean.T).T
 
 def normalize(x):
+    """Scales a matrix so that each row ranges from 0 to 1"""
     x_min = reshape(fromiter((row.min() for row in x), nfloat), (1,-1))
     x_max = reshape(fromiter((row.max() for row in x), nfloat), (1,-1))
     return (x-x_min.T)/(x_max.T-x_min.T), x_min, x_max
-#    return array([(row-row.min())/(row.max()-row.min())
-#                           for row in x])
 
 def unnormalize(x, x_min, x_max):
+    """Reverses normalization of a matrix's rows"""
     return x*(x_max-x_min) + x_min
 
-# def standardize(x):
-#     """Scales a matrix so that its mean is 0 and its standard deviation is 1
-#     >>> 5==4
-#     """
-#     x_mean, x_std = x.mean(), x.std()
-#     z = (x-x_mean)/x_std
-#     return z, x_mean, x_std
-
-# def unstandardize(z, x_mean, x_std):
-#     """Reverses standardization.
-    
-#     >>> x = random([10])
-#     >>> assert_array_almost_equal(x, unstandardize(*standardize(x)))
-#     """
-#     return z*x_std + x_mean
-
 def normalize_single(x):
-    """Scales a matrix so that it ranges from 0 to 1"""
+    """Scales a vector so that it ranges from 0 to 1"""
     x_max, x_min = x.max(), x.min()
     return (x-x_min)/(x_max-x_min), x_min, x_max
 

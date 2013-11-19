@@ -20,7 +20,6 @@ def main():
 #    logger = multiprocessing.log_to_stderr()
 #    logger.setLevel(multiprocessing.SUBDEBUG)
     options = get_options()
-    clean_options = {}
     files = get_files(options.input, options.format)#[:10]
     
     stars = options.cache.get('stars') or map_reduce(lightcurve, files, options)
@@ -41,15 +40,15 @@ def main():
         make_sure_path_exists(options.output)
         pca_input_matrix = lightcurve_matrix(stars, options.evaluator)
     if (options.PCA_degree):
-        pca_input_matrix = lightcurve_matrix(stars, options.evaluator)
-#        pca_input_matrix, mmin, mmax = normalize(pca_input_matrix)
+        raw_matrix = lightcurve_matrix(stars, options.evaluator)
+        normalized_matrix, star_mins, star_maxes = normalize(raw_matrix)
+        standardized_matrix, column_means, column_stds = standardize(
+            normalized_matrix)
         eigenvectors, principle_scores, normalized_reconstruction = pcat(
-            pca_input_matrix)
-#        (EVs, PCs, pca_lcs) = principle_component_analysis(pca_input_matrix,
-#                                                           options.PCA_degree)
-#        print(pca_results)
-        reconstruction = unnormalize(normalized_reconstruction,
-                                             star_mins, star_maxs)
+            normalized_matrix)
+        reconstruction = unstandardize(unnormalize(normalized_reconstruction,
+                                                   star_mins, star_maxes),
+                                       column_means, column_stds)
         for star, reconst in zip(stars, reconstruction):
             star.PCA = reconst
     if (options.plot_lightcurves_observed or
