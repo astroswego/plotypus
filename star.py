@@ -135,7 +135,8 @@ def pca_reconstruction(eigenvectors, principle_scores):
 
 def plot_lightcurves(star, evaluator, output, **options):
 #    print("raw: {}\n\nPCA: {}".format(star.rephased.T[1],PCA))
-    plt.gca().grid(True)
+    ax = plt.gca()
+    ax.grid(True); ax.invert_yaxis()
     if "plot_lightcurves_observed" in options:
         plt.scatter(star.rephased.T[0], star.rephased.T[1])
         #plt.errorbar(rephased.T[0], rephased.T[1], rephased.T[2], ls='none')
@@ -151,7 +152,7 @@ def plot_lightcurves(star, evaluator, output, **options):
 #    plt.xlabel('Period (' + str(star.period)[:5] + ' days)')
     plt.ylabel('Magnitude')
     plt.title(star.name)
-    plt.axis([0,1,1,0])
+#    plt.axis([0,1,1,0])
     out = split(raw_string(os.sep), star.name)[-1]+'.png'
     plt.savefig(os.path.join(output, out))
     plt.clf()
@@ -181,10 +182,11 @@ def trig_param_plot(stars, output):
     logP = numpy.fromiter((math.log(star.period, 10) for star in stars),
                                     numpy.float)
 #    assert False, str([star.coefficients for star in stars])
-    assert False, str(tuple(
-        interpolation.ak_bk2Ak_Phik(star.coefficients) for star in stars))
+#    assert False, str(tuple(
+#        interpolation.ak_bk2Ak_Phik(star.coefficients).shape for star in stars))
     parameters = numpy.vstack(tuple(
         interpolation.ak_bk2Ak_Phik(star.coefficients) for star in stars))
+#    assert False, parameters.shape
     (A0, A1, Phi1, A2, Phi2, A3, Phi3) = numpy.hsplit(parameters[:,:7], 7)
     (R21, R31, R32) = (A2/A1, A3/A1, A3/A2)
     (Phi21, Phi31, Phi32) = (Phi2/Phi1, Phi3/Phi1, Phi3/Phi2)
