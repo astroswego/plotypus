@@ -36,8 +36,8 @@ def main():
             normalized_matrix)
         eigenvectors, principle_scores, normalized_reconstruction = pcat(
             normalized_matrix)
-        print("x: {}, x_max: {}, x_min: {}".format(
-            normalized_reconstruction.shape, star_mins.shape, star_maxes.shape))
+        assert False, "x: {}, x_max: {}, x_min: {}".format(
+            normalized_reconstruction.shape, star_mins.shape, star_maxes.shape)
         reconstruction = unstandardize(unnormalize(normalized_reconstruction,
                                                    star_mins, star_maxes),
                                        column_means, column_stds)
