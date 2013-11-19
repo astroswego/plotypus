@@ -25,15 +25,6 @@ def main():
     stars = options.cache.get('stars') or map_reduce(lightcurve, files, options)
     if options.plot_parameters:
         trig_param_plot(stars, options.output)
-#   For un-normalizing pcat output
-    star_mins = numpy.reshape(
-        numpy.fromiter((star.y_min for star in stars), numpy.float),
-        (-1,1))
-    star_maxs = numpy.reshape(
-        numpy.fromiter((star.y_max for star in stars), numpy.float),
-        (-1,1))
-#    stars = [lightcurve(f, options=options) for f in files]
-#    stars = map_reduce(lightcurve, files, options)
     if options.verbose:
         print("\nAnalyzing {0} of {1} stars".format(len(stars), len(files)))
     if options.output:
