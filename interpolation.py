@@ -1,4 +1,5 @@
 import numpy
+#import mdp # Use this for implementing PCA in python
 
 x = numpy.arange(0, 1, 0.01)
 
@@ -52,3 +53,34 @@ def ak_bk2Ak_Phik(ak_bk_coefficients):
 
 #    assert False, str(Ak_Phik_coeffs.shape)
     return numpy.array(Ak_Phik_coeffs).reshape(1,-1)
+
+def lightcurve_matrix(stars, evaluator, x=x):
+    m = numpy.vstack(tuple(numpy.array(evaluator(s.coefficients, x))
+                           for s in stars))
+#    iterable = (evaluator(s.coefficients, x) for s in stars)
+#    m = numpy.vstack(numpy.fromiter((evaluator(s.coefficients, x),numpy.float) for s in stars))
+
+ #    m = numpy.vstack(tuple(numpy.fromiter(iter(evaluator(s.coefficients, x)),
+ #                                          numpy.float)
+ #                           for s in stars))
+    return m
+
+ # def principle_component_analysis(data, degree):
+ #     standardized_data, data_mean, data_std = standardize(data)
+ #     pcanode = mdp.nodes.PCANode(output_dim=degree)
+ #     pcanode.train(standardized_data.T)
+ #     pcanode.stop_training()
+ #     eigenvectors = pcanode.execute(standardized_data.T)
+ #     principle_scores = numpy.dot(standardized_data, eigenvectors)
+ #     standardized_reconstruction_matrix = pca_reconstruction(eigenvectors,
+ #                                                             principle_scores)
+ #     reconstruction_matrix = unstandardize(standardized_reconstruction_matrix,
+ #                                           data_mean, data_std)
+ #     return eigenvectors, principle_scores, reconstruction_matrix
+
+def pca_reconstruction(eigenvectors, principle_scores):
+    """Returns an array in which each row contains the magnitudes of one star's
+    lightcurve. eigenvectors is a (number of phases)x(order of PCA) array,
+    principle_components is a (number or stars)x(order of PCA) array, and the
+    return array has shape (number of stars)x(number of phases)."""
+    return numpy.dot(eigenvectors, principle_scores.T).T  

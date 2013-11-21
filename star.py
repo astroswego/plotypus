@@ -4,13 +4,11 @@ import math
 import matplotlib
 matplotlib.use("Agg") # Uses Agg backend
 import matplotlib.pyplot as plt
-#import mdp # Use this for implementing PCA in python
 import interpolation
 from scipy.signal import lombscargle
 from math import modf
 from re import split
-from utils import raw_string, get_masked, get_unmasked
-from scale import normalize_single, standardize, unnormalize, unstandardize
+from utils import raw_string, get_noise, get_signal, make_sure_path_exists
 
 class Star:
     __slots__ = ['name', 'period', 'rephased', 'coefficients', 'PCA']
@@ -21,140 +19,121 @@ class Star:
         self.rephased = rephased
         self.coefficients = coefficients
 
-def lightcurve(filename,
-               interpolant = interpolation.least_squares_polynomial,
-               evaluator = interpolation.polynomial_evaluator,
-               degree = 10,
-               min_period = 0.2,
-               max_period = 32.,
-               period_bins = 50000,
+def lightcurve(filename, min_obs = 25,
+               min_period = 0.2, max_period = 32., period_bins = 50000,
+               interpolant = interpolation.trigonometric,
+               evaluator = interpolation.trigonometric_evaluator,
+               min_degree = 4, max_degree = 15,
                sigma = 1,
-               min_obs = 25,
                **options):
-    """Returns a four-tuple containing 
-    1) the name of the star, 
-    2) the period from a Lomb-Scargle Periodogram, 
-    3) the rephased observations, and 
-    4) a list of interpolation coefficients, or 
-    None if no adequate model can be found. 
-
-    Searches for periods within the specified bounds discretized by the 
-    specified number of period bins. 
-
-    If sigma is greater than zero, then outliers will be sigma clipped with the 
-    specified value. 
-    """
+    """Takes as input the filename for a data file containing the time,
+    magnitude, and error for observations of a variable star. Uses a Lomb-
+    Scargle periodogram to detect periodicities in the data within the
+    specified bounds (discretized by the specified number of period bins).
+    Rephases observations based on the star's primary period and normalizes the
+    time domain to unit length. Creates a model of the star's light curve using
+    the specified interpolant and its corresponding evaluation function.
+    Searches for the best order of fit within the specified range
+    using the unit-lag auto-correlation subject to Baart's criterion. Rejects
+    points with a residual greater than sigma times the standard deviation
+    if sigma is positive. Returns a star object containing the name, period,
+    preprocessed data, and parameters to the fitted model."""
     name = filename.split(os.sep)[-1]
     data = numpy.ma.masked_array(data=numpy.loadtxt(filename), mask=None)
-    while True:
-        if get_unmasked(data).shape[0] < min_obs:
+    while True: # Iteratively process and find models of the data
+        if get_signal(data).shape[0] < min_obs:
+            print(name + " has too few observations - None")
             return None
         period = find_period(data, min_period, max_period, period_bins)
         if not min_period <= period <= max_period:
-            print("not in range - None")
+            print("period of " + name + " not within range - None")
             return None
         rephased = rephase(data, period)
-        coefficients = interpolant(rephased, degree)
-        if sigma > 0:
+        coefficients = find_model(get_signal(rephased), min_degree, max_degree,
+                                  interpolant, evaluator)
+        if sigma:
             prev_mask = data.mask
             outliers = find_outliers(rephased, evaluator, coefficients, sigma)
             data.mask = numpy.ma.mask_or(data.mask, outliers)
-            if numpy.all(data.mask == prev_mask):
-                rephased.mask = data.mask
-            else:
+            if not numpy.all(data.mask == prev_mask):
                 continue
+            rephased.mask = data.mask
         return rephased is not None and Star(name, period, rephased,
                                              coefficients)
 
 def find_period(data, min_period, max_period, period_bins):
     """Uses the Lomb-Scargle Periodogram to discover the period."""
-    time, mags = data.T[0], data.T[1]
+    if min_period >= max_period: return min_period
+    time, mags = data.T[0:2]
     scaled_mags = (mags-mags.mean())/mags.std()
     minf, maxf = 2*numpy.pi/max_period, 2*numpy.pi/min_period
     freqs = numpy.linspace(minf, maxf, period_bins)
     pgram = lombscargle(time, scaled_mags, freqs)
     return 2*numpy.pi/freqs[numpy.argmax(pgram)]
 
-def rephase(data, period):
-    """Non-destructively rephases all of the points in the given data set to
-    be between 0 and 1 and shifted to max light."""
-    max_light_phase = get_phase(max_light_time(data), period)
+def rephase(data, period, col=0):
+    """Non-destructively rephases all of the values in the given column by the
+    given period and scales to be between 0 and 1."""
     rephased = numpy.ma.copy(data)
-    for observation in rephased:
-        observation[0] = get_phase(observation[0], period, max_light_phase)
+    rephased.T[col] = [modf(x[col]/period)[0] for x in rephased]
     return rephased
 
-def max_light_time(data):
-    """Returns the time at which the star is at its brightest, i.e. the Julian
-    Date of the smallest magnitude."""
-    return data.T[0][data.T[1].argmin()]
+def find_model(signal, min_degree, max_degree, interpolant, evaluator):
+    """Iterates through the degree space to find the model that best fits the
+    data with the fewest parameters as judged by the unit-lag auto-correlation
+    method subject to Baart's criterion."""
+    if min_degree >= max_degree: return interpolant(signal, min_degree)
+    cutoff = (2 * (signal.shape[0] - 1)) ** (-1/2) # Baart's tolerance
+    for degree in range(min_degree, max_degree+1):
+        coefficients = interpolant(signal, degree)
+        if auto_correlation(signal, evaluator, coefficients) <= cutoff:
+            break
+    return coefficients
 
-def get_phase(time, period, offset=0):
-    """Returns the phase associated with a given time based on the period."""
-    return (modf(time/period)[0]-offset)%1
+def auto_correlation(signal, evaluator, coefficients):
+    """Calculates trends in the residuals between the data and its model."""
+    sorted = signal[signal[:,0].argsort()]
+    residuals = sorted.T[1] - evaluator(coefficients, sorted.T[0])
+    mean = residuals.mean()
+    return sum((residuals[i  ] - mean) \
+             * (residuals[i+1] - mean) for i in range(sorted.shape[0]-1)) \
+         / sum((residuals[i  ] - mean) ** 2
+                                       for i in range(sorted.shape[0]-1))
 
 def find_outliers(rephased, evaluator, coefficients, sigma):
     """Finds rephased values that are too far from the light curve."""
-    expected = evaluator(coefficients, rephased.T[0])
-    actual, error = rephased.T[1], rephased.T[2]
-    outliers = (expected-actual)**2 > sigma*actual.std()**2+error
+    if sigma <= 0: return None
+    phases, actual, error = rephased.T
+    expected = evaluator(coefficients, phases)
+    outliers = (expected - actual)**2 > (sigma * actual.std())**2 + error
     return numpy.tile(numpy.vstack(outliers), rephased.shape[1])
 
-x = numpy.arange(0, 1.00, 0.01)#numpy.linspace(0, 0.99, 100)
-
-def lightcurve_matrix(stars, evaluator, x=x):
-    m = numpy.vstack(tuple(numpy.array(evaluator(s.coefficients, x))
-                           for s in stars))
-#    iterable = (evaluator(s.coefficients, x) for s in stars)
-#    m = numpy.vstack(numpy.fromiter((evaluator(s.coefficients, x),numpy.float) for s in stars))
-
- #    m = numpy.vstack(tuple(numpy.fromiter(iter(evaluator(s.coefficients, x)),
- #                                          numpy.float)
- #                           for s in stars))
-    return m
-
- # def principle_component_analysis(data, degree):
- #     standardized_data, data_mean, data_std = standardize(data)
- #     pcanode = mdp.nodes.PCANode(output_dim=degree)
- #     pcanode.train(standardized_data.T)
- #     pcanode.stop_training()
- #     eigenvectors = pcanode.execute(standardized_data.T)
- #     principle_scores = numpy.dot(standardized_data, eigenvectors)
- #     standardized_reconstruction_matrix = pca_reconstruction(eigenvectors,
- #                                                             principle_scores)
- #     reconstruction_matrix = unstandardize(standardized_reconstruction_matrix,
- #                                           data_mean, data_std)
- #     return eigenvectors, principle_scores, reconstruction_matrix
-
-def pca_reconstruction(eigenvectors, principle_scores):
-    """Returns an array in which each row contains the magnitudes of one star's
-    lightcurve. eigenvectors is a (number of phases)x(order of PCA) array,
-    principle_components is a (number or stars)x(order of PCA) array, and the
-    return array has shape (number of stars)x(number of phases)."""
-    return numpy.dot(eigenvectors, principle_scores.T).T    
+x = numpy.arange(0, 1.00, 0.01)  
 
 def plot_lightcurves(star, evaluator, output, **options):
 #    print("raw: {}\n\nPCA: {}".format(star.rephased.T[1],PCA))
     ax = plt.gca()
     ax.grid(True); ax.invert_yaxis()
     if "plot_lightcurves_observed" in options:
-        plt.scatter(star.rephased.T[0], star.rephased.T[1])
+        #plt.scatter(star.rephased.T[0], star.rephased.T[1])
+        plt.scatter(*star.rephased.T[0:2])
         #plt.errorbar(rephased.T[0], rephased.T[1], rephased.T[2], ls='none')
-        outliers = get_masked(star.rephased)
+        outliers = get_noise(star.rephased)
         plt.scatter(outliers.T[0], outliers.T[1], color='r')
     if "plot_lightcurves_interpolated" in options:
         #plt.errorbar(outliers.T[0], outliers.T[1], outliers.T[2], ls='none')
-        plt.plot(x, evaluator(star.coefficients, x), linewidth=2.5)
-    if True:# "plot_lightcurves_pca" in options:
+        plt.plot(x, evaluator(star.coefficients, x), linewidth=2.5, color='g')
+    if "plot_lightcurves_pca" in options:
         plt.plot(x, star.PCA, linewidth=1.5, color="yellow")
     #plt.errorbar(x, options['evaluator'](x, coefficients), rephased.T[1].std())
     plt.xlabel('Period ({0:0.5} days)'.format(star.period))
 #    plt.xlabel('Period (' + str(star.period)[:5] + ' days)')
-    plt.ylabel('Magnitude')
+    plt.ylabel('Magnitude ({0}th order fit)'.format((star.coefficients.shape[0]-1)//2))
     plt.title(star.name)
 #    plt.axis([0,1,1,0])
-    out = split(raw_string(os.sep), star.name)[-1]+'.png'
-    plt.savefig(os.path.join(output, out))
+    out = os.path.join(output, split(raw_string(os.sep), star.name)[-1]+'.png')
+    make_sure_path_exists(output)
+    plt.savefig(out)
     plt.clf()
 
 """

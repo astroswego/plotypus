@@ -83,14 +83,13 @@ def make_sure_path_exists(path):
       if not isdir(path):
         raise
 
-def get_unmasked(data):
+def get_signal(data):
     """Returns all of the values that are not outliers."""
-    return data[~data.mask].reshape(-1, data.shape[1])
+    return data[~data.mask].data.reshape(-1, data.shape[1])
 
-def get_masked(data):
+def get_noise(data):
     """Returns all identified outliers"""
     return data[data.mask].data.reshape(-1, data.shape[1])
-
 
 def splitOn(split_type, string):
     same = type(string[0]) == split_type
@@ -106,3 +105,17 @@ def splitAtFirst(split_type, string):
         except: pass
 #        if type(character) == split_type:
 #            return string[:index], string[index:]
+
+"""
+def get_phase(time, period, offset=0):
+    ""Returns the phase associated with a given time based on the period.""
+    return (modf(time/period)[0]-offset)%1
+
+def shift_to_max_light(data, col=0):
+    ""Non-destructively rephases, scales, and shifts the given column.""
+    shifted = numpy.ma.copy(data)
+    max_light = get_phase(data.T[col][data.T[col+1].argmin()], period)
+    #shifted.T[col] = map(lambda x: get_phase(x[col], period, max_light), shifted)
+    shifted.T[col] = [get_phase(x[col], period, max_light) for x in shifted]
+    return shifted
+"""
