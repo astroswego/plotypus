@@ -105,32 +105,30 @@ def find_outliers(rephased, evaluator, coefficients, sigma):
     if sigma <= 0: return None
     phases, actual, error = rephased.T
     expected = evaluator(coefficients, phases)
-    outliers = (expected - actual)**2 > (sigma * actual.std())**2 + error
+    outliers = (expected - actual)**2 > sigma * actual.std()**2 + error
     return numpy.tile(numpy.vstack(outliers), rephased.shape[1])
 
-x = numpy.arange(0, 1.00, 0.01)  
+x = numpy.arange(0, 2.00, 0.01)  
 
 def plot_lightcurves(star, evaluator, output, **options):
 #    print("raw: {}\n\nPCA: {}".format(star.rephased.T[1],PCA))
     ax = plt.gca()
-    ax.grid(True); ax.invert_yaxis()
-    if "plot_lightcurves_observed" in options:
-        #plt.scatter(star.rephased.T[0], star.rephased.T[1])
-        plt.scatter(*star.rephased.T[0:2])
-        #plt.errorbar(rephased.T[0], rephased.T[1], rephased.T[2], ls='none')
-        outliers = get_noise(star.rephased)
-        plt.scatter(outliers.T[0], outliers.T[1], color='r')
+    ax.grid(True)
+    ax.invert_yaxis()
+    plt.xlim(0,2)
     if "plot_lightcurves_interpolated" in options:
-        #plt.errorbar(outliers.T[0], outliers.T[1], outliers.T[2], ls='none')
-        plt.plot(x, evaluator(star.coefficients, x), linewidth=2.5, color='g')
+        plt.plot(x, evaluator(star.coefficients, x), linewidth=2, color='g')
     if "plot_lightcurves_pca" in options:
         plt.plot(x, star.PCA, linewidth=1.5, color="yellow")
-    #plt.errorbar(x, options['evaluator'](x, coefficients), rephased.T[1].std())
+    if "plot_lightcurves_observed" in options:
+        time, mags = star.rephased.T[0:2]
+        plt.scatter(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),s=4)
+        time, mags = get_noise(star.rephased).T[0:2]
+        plt.scatter(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),
+                    color='r', s=4)
     plt.xlabel('Period ({0:0.5} days)'.format(star.period))
-#    plt.xlabel('Period (' + str(star.period)[:5] + ' days)')
-    plt.ylabel('Magnitude ({0}th order fit)'.format((star.coefficients.shape[0]-1)//2))
+    plt.ylabel('Magnitude ({0}th order)'.format((star.coefficients.shape[0]-1)//2))
     plt.title(star.name)
-#    plt.axis([0,1,1,0])
     out = os.path.join(output, split(raw_string(os.sep), star.name)[-1]+'.png')
     make_sure_path_exists(output)
     plt.savefig(out)
