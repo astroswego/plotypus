@@ -24,7 +24,7 @@ def lightcurve(filename, min_obs = 25,
                interpolant = interpolation.trigonometric,
                evaluator = interpolation.trigonometric_evaluator,
                min_degree = 4, max_degree = 15,
-               sigma = 1,
+               sigma = 3,
                **options):
     """Takes as input the filename for a data file containing the time,
     magnitude, and error for observations of a variable star. Uses a Lomb-
@@ -58,6 +58,8 @@ def lightcurve(filename, min_obs = 25,
             if not numpy.all(data.mask == prev_mask):
                 continue
             rephased.mask = data.mask
+        coefficients = shift_to_max_light(rephased, interpolant, evaluator,
+                                          coefficients)
         return rephased is not None and Star(name, period, rephased,
                                              coefficients)
 
@@ -71,44 +73,65 @@ def find_period(data, min_period, max_period, period_bins):
     pgram = lombscargle(time, scaled_mags, freqs)
     return 2*numpy.pi/freqs[numpy.argmax(pgram)]
 
-def rephase(data, period, col=0):
+def rephase(data, period=1, col=0):
     """Non-destructively rephases all of the values in the given column by the
     given period and scales to be between 0 and 1."""
     rephased = numpy.ma.copy(data)
-    rephased.T[col] = [modf(x[col]/period)[0] for x in rephased]
+    rephased.T[col] = [get_phase(x[col], period) for x in rephased]
     return rephased
+
+def get_phase(time, period=1, offset=0):
+    """Returns the phase associated with a given time based on the period."""
+    return (modf(time/period)[0]-offset)%1
 
 def find_model(signal, min_degree, max_degree, interpolant, evaluator):
     """Iterates through the degree space to find the model that best fits the
-    data with the fewest parameters as judged by the unit-lag auto-correlation
-    method subject to Baart's criterion."""
+    data with the fewest parameters and best fit as measured by the unit-lag
+    autocorrelation function subject to Baart's criterion."""
     if min_degree >= max_degree: return interpolant(signal, min_degree)
     cutoff = (2 * (signal.shape[0] - 1)) ** (-1/2) # Baart's tolerance
+    p_values = [] # To hold (autocorrelation, coefficients) for each degree
     for degree in range(min_degree, max_degree+1):
         coefficients = interpolant(signal, degree)
-        if auto_correlation(signal, evaluator, coefficients) <= cutoff:
-            break
-    return coefficients
+        p_c = auto_correlation(signal, evaluator, coefficients)
+        if p_c <= cutoff: # Baart's criterion satisfied 
+            return coefficients
+        p_values += [(p_c, coefficients)]
+    ps, cs = list(zip(*p_values)) # If we run out of range,
+    return cs[numpy.argmin(ps)]   # Return the model best we saw.
 
 def auto_correlation(signal, evaluator, coefficients):
     """Calculates trends in the residuals between the data and its model."""
     sorted = signal[signal[:,0].argsort()]
     residuals = sorted.T[1] - evaluator(coefficients, sorted.T[0])
     mean = residuals.mean()
-    return sum((residuals[i  ] - mean) \
-             * (residuals[i+1] - mean) for i in range(sorted.shape[0]-1)) \
-         / sum((residuals[i  ] - mean) ** 2
-                                       for i in range(sorted.shape[0]-1))
+    indices = range(sorted.shape[0]-1)
+    return sum((residuals[i] - mean) * (residuals[i+1] - mean)
+                                          for i in indices) \
+         / sum((residuals[i] - mean) ** 2 for i in indices)
 
 def find_outliers(rephased, evaluator, coefficients, sigma):
     """Finds rephased values that are too far from the light curve."""
     if sigma <= 0: return None
-    phases, actual, error = rephased.T
-    expected = evaluator(coefficients, phases)
-    outliers = (expected - actual)**2 > sigma * actual.std()**2 + error
+    phases, actual, errors = rephased.T
+    residuals = abs(evaluator(coefficients, phases) - actual)
+    mse = numpy.array([0 if residual < error else (residual - error)**2
+                       for residual, error in zip(residuals, errors)])
+    outliers = mse > sigma * mse.std()
     return numpy.tile(numpy.vstack(outliers), rephased.shape[1])
 
-x = numpy.arange(0, 2.00, 0.01)  
+def shift_to_max_light(rephased, interpolant, evaluator, coefficients):
+    """Destructively shifts the data and its model so that the brightest part
+    of the cycle occurs at phase 0. Returns the coefficients for the new
+    model."""
+    phases = numpy.arange(0, 1, 0.01)
+    model = evaluator(coefficients, phases)
+    max_light = phases[model.argmin()]
+    rephased.T[0] = [get_phase(phase, 1, max_light)
+                     for phase in rephased.T[0].data]
+    return interpolant(get_signal(rephased), (coefficients.shape[0]-1)//2)
+
+x = numpy.arange(0, 2, 0.01)
 
 def plot_lightcurves(star, evaluator, output, **options):
 #    print("raw: {}\n\nPCA: {}".format(star.rephased.T[1],PCA))
@@ -117,15 +140,19 @@ def plot_lightcurves(star, evaluator, output, **options):
     ax.invert_yaxis()
     plt.xlim(0,2)
     if "plot_lightcurves_interpolated" in options:
-        plt.plot(x, evaluator(star.coefficients, x), linewidth=2, color='g')
+        plt.plot(x, evaluator(star.coefficients, x), linewidth=1.5, color='r')
     if "plot_lightcurves_pca" in options:
         plt.plot(x, star.PCA, linewidth=1.5, color="yellow")
     if "plot_lightcurves_observed" in options:
-        time, mags = star.rephased.T[0:2]
-        plt.scatter(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),s=4)
-        time, mags = get_noise(star.rephased).T[0:2]
-        plt.scatter(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),
-                    color='r', s=4)
+        time, mags, err = star.rephased.T
+        plt.errorbar(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),
+              yerr = numpy.hstack((err,err)), ls='None', ms=.01, mew=.01)
+        #plt.scatter(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),s=4)
+        time, mags, err = get_noise(star.rephased).T#[0:2]
+        plt.errorbar(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),
+              yerr = numpy.hstack((err,err)), ls='None', ms=.01, mew=.01, color='r')
+        #plt.scatter(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),
+        #            color='r', s=4)
     plt.xlabel('Period ({0:0.5} days)'.format(star.period))
     plt.ylabel('Magnitude ({0}th order)'.format((star.coefficients.shape[0]-1)//2))
     plt.title(star.name)

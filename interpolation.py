@@ -20,8 +20,7 @@ def trigonometric(data, degree):
     sorted = data[data[:,0].argsort()].T
     phases, mags = sorted[:2]
     coefficient_matrix = trigonometric_coefficient_matrix(phases, degree)
-    x = numpy.linalg.lstsq(coefficient_matrix, mags)[0]
-    return x
+    return numpy.linalg.lstsq(coefficient_matrix, mags)[0]
     
 def trigonometric_evaluator(coefficients, x=x):
     degree = int((len(coefficients)-1) / 2)
