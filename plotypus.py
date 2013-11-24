@@ -36,7 +36,7 @@ def main():
             norm_matrix)
         eigenvectors, principle_scores, std_norm_reconstruction = pcat(
             norm_matrix)
-        reconstruction = unnormalize(unstandardize(
+        reconstruction = unnormalize(unstandardize(std_norm_reconstruction,
                 column_means, column_stds),
             star_mins, star_maxes)
         for star, reconst in zip(stars, reconstruction):
