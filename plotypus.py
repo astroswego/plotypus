@@ -36,10 +36,9 @@ def main():
             norm_matrix)
         eigenvectors, principle_scores, std_norm_reconstruction = pcat(
             norm_matrix)
-        reconstruction = unstandardize(unnormalize(
-                std_norm_reconstruction,
-                star_mins, star_maxes),
-            column_means, column_stds)
+        reconstruction = unnormalize(unstandardize(
+                column_means, column_stds),
+            star_mins, star_maxes)
         for star, reconst in zip(stars, reconstruction):
             star.PCA = reconst
     if (options.plot_lightcurves_observed or
