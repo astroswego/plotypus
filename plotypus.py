@@ -135,6 +135,12 @@ def get_options():
     parser.add_option('--interpolation-degree',
       dest='interpolation_degree',   type='int',    default=10,
       help='degree of interpolation')
+    parser.add_option('--min-degree',
+      dest='min_degree',             type='int',    default=4,
+      help='minimum degree of interpolation')
+    parser.add_option('--max-degree',
+      dest='max_degree',             type='int',    default=10,
+      help='maximum degree of interpolation')
     parser.add_option('--PCA-degree',
         dest='PCA_degree',             type='int',    default=10,
       help='degree of PCA')

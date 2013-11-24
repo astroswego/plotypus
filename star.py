@@ -19,12 +19,11 @@ class Star:
         self.rephased = rephased
         self.coefficients = coefficients
 
-def lightcurve(filename, min_obs = 25,
-               min_period = 0.2, max_period = 32., period_bins = 50000,
-               interpolant = interpolation.trigonometric,
-               evaluator = interpolation.trigonometric_evaluator,
-               min_degree = 4, max_degree = 15,
-               sigma = 3,
+def lightcurve(filename, min_obs=25,
+               min_period=0.2, max_period=32., period_bins=50000,
+               interpolant=interpolation.trigonometric,
+               evaluator=interpolation.trigonometric_evaluator,
+               min_degree=4, max_degree=15, sigma=3,
                **options):
     """Takes as input the filename for a data file containing the time,
     magnitude, and error for observations of a variable star. Uses a Lomb-
@@ -106,9 +105,10 @@ def auto_correlation(signal, evaluator, coefficients):
     residuals = sorted.T[1] - evaluator(coefficients, sorted.T[0])
     mean = residuals.mean()
     indices = range(sorted.shape[0]-1)
-    return sum((residuals[i] - mean) * (residuals[i+1] - mean)
-                                          for i in indices) \
-         / sum((residuals[i] - mean) ** 2 for i in indices)
+    return (sum((residuals[i] - mean) * (residuals[i+1] - mean)
+                for i in indices)
+          / sum((residuals[i] - mean) ** 2
+                for i in indices))
 
 def find_outliers(rephased, evaluator, coefficients, sigma):
     """Finds rephased values that are too far from the light curve."""
@@ -147,14 +147,13 @@ def plot_lightcurves(star, evaluator, output, **options):
         time, mags, err = star.rephased.T
         plt.errorbar(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),
               yerr = numpy.hstack((err,err)), ls='None', ms=.01, mew=.01)
-        #plt.scatter(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),s=4)
         time, mags, err = get_noise(star.rephased).T#[0:2]
         plt.errorbar(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),
-              yerr = numpy.hstack((err,err)), ls='None', ms=.01, mew=.01, color='r')
-        #plt.scatter(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),
-        #            color='r', s=4)
+              yerr = numpy.hstack(
+                  (err,err)), ls='None', ms=.01, mew=.01, color='r')
     plt.xlabel('Period ({0:0.5} days)'.format(star.period))
-    plt.ylabel('Magnitude ({0}th order)'.format((star.coefficients.shape[0]-1)//2))
+    plt.ylabel('Magnitude ({0}th order)'.format(
+        (star.coefficients.shape[0]-1)//2))
     plt.title(star.name)
     out = os.path.join(output, split(raw_string(os.sep), star.name)[-1]+'.png')
     make_sure_path_exists(output)
@@ -185,13 +184,8 @@ def plot_parameter(logP, parameter, parameter_name, output):
 def trig_param_plot(stars, output):
     logP = numpy.fromiter((math.log(star.period, 10) for star in stars),
                                     numpy.float)
-#    assert False, str([star.coefficients for star in stars])
-#    assert False, str(tuple(
-#        interpolation.ak_bk2Ak_Phik(star.coefficients).shape for star in stars))
-
     parameters = numpy.vstack(tuple(
         interpolation.ak_bk2Ak_Phik(star.coefficients) for star in stars))
-#    assert False, parameters.shape
     (A0, A1, Phi1, A2, Phi2, A3, Phi3) = numpy.hsplit(parameters[:,:7], 7)
     (R21, R31, R32) = (A2/A1, A3/A1, A3/A2)
     (Phi21, Phi31, Phi32) = (Phi2/Phi1, Phi3/Phi1, Phi3/Phi2)
