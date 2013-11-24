@@ -142,7 +142,8 @@ def plot_lightcurves(star, evaluator, output, **options):
     if "plot_lightcurves_interpolated" in options:
         plt.plot(x, evaluator(star.coefficients, x), linewidth=1.5, color='r')
     if "plot_lightcurves_pca" in options:
-        plt.plot(x, star.PCA, linewidth=1.5, color="yellow")
+        plt.plot(x, numpy.hstack((star.PCA,star.PCA)),
+                 linewidth=1.5, color="yellow")
     if "plot_lightcurves_observed" in options:
         time, mags, err = star.rephased.T
         plt.errorbar(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),
