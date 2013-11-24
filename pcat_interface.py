@@ -7,7 +7,7 @@ import numpy
 from numpy import fromstring, savetxt, vstack
 
 from scale import standardize, unstandardize
-from star import pca_reconstruction
+from interpolation import pca_reconstruction
 import sectparse
 
 def pcat(star_matrix, degree=7):
