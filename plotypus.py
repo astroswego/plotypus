@@ -132,9 +132,6 @@ def get_options():
     parser.add_option('--interpolant',
       dest='interpolant',            type='string', default=None,
       help='type of interpolation (poly, spline, trig, lin)')
-    parser.add_option('--interpolation-degree',
-      dest='interpolation_degree',   type='int',    default=10,
-      help='degree of interpolation')
     parser.add_option('--min-degree',
       dest='min_degree',             type='int',    default=4,
       help='minimum degree of interpolation')
@@ -147,9 +144,12 @@ def get_options():
     parser.add_option('--min-obs',
       dest='min_obs',                type='int',    default=100,
       help='minimum number of observations per star')
-    parser.add_option('--period-bins',
-      dest='period_bins',            type='int',    default=50000,
-      help='the size of the period space')
+    parser.add_option('--coarse-precision',
+      dest='coarse_precision',       type='float',  default=0.001,
+      help='the precision to use in the first sweep for finding the period')
+    parser.add_option('--fine-precision',
+      dest='fine_precision',         type='float',  default=0.0000001,
+      help='the precision to use in the second sweep for finding the period')
     parser.add_option('--min-period',
       dest='min_period',             type='float',  default=0.2,
       help='minimum period of each star')
