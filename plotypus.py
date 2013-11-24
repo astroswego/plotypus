@@ -23,8 +23,8 @@ def main():
     files = get_files(options.input, options.format)#[:10]
     
     stars = options.cache.get('stars') or map_reduce(lightcurve, files, options)
-    if options.plot_parameters:
-        trig_param_plot(stars, options.output)
+#    if options.plot_parameters:
+#        trig_param_plot(stars, options.output)
     if options.verbose:
         print("\nAnalyzing {0} of {1} stars".format(len(stars), len(files)))
     if options.output:
