@@ -182,6 +182,7 @@ def plot_parameter(logP, parameter, parameter_name, output):
     title = parameter_name + " vs logP"
     plt.title(title)
     out = title + ".png"
+    out = out.replace(" ", "_")
     plt.savefig(os.path.join(output, out))
     plt.clf()
 
