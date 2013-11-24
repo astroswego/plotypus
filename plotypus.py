@@ -8,10 +8,10 @@ import re
 
 import os
 import interpolation
+from interpolation import lightcurve_matrix, pca_reconstruction
 import linearmodel
 from pcat_interface import pcat
-from star import (lightcurve, lightcurve_matrix, plot_lightcurves,
-                  plot_parameter, pca_reconstruction, trig_param_plot)
+from star import lightcurve, plot_lightcurves, plot_parameter, trig_param_plot
 from scale import normalize, unnormalize, standardize, unstandardize
 from utils import (get_files, make_sure_path_exists, map_reduce, save_cache,
                    load_cache)
