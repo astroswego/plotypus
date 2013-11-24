@@ -19,12 +19,11 @@ class Star:
         self.rephased = rephased
         self.coefficients = coefficients
 
-def lightcurve(filename, min_obs=25,
-               min_period=0.2, max_period=32., period_bins=50000,
+def lightcurve(filename, min_obs=25, min_period=0.2, max_period=32.,
+               coarse_precision=0.001, fine_precision=0.0000001,
                interpolant=interpolation.trigonometric,
                evaluator=interpolation.trigonometric_evaluator,
-               min_degree=4, max_degree=15, sigma=3,
-               **options):
+               min_degree=4, max_degree=15, sigma=3, **options):
     """Takes as input the filename for a data file containing the time,
     magnitude, and error for observations of a variable star. Uses a Lomb-
     Scargle periodogram to detect periodicities in the data within the
@@ -43,10 +42,8 @@ def lightcurve(filename, min_obs=25,
         if get_signal(data).shape[0] < min_obs:
             print(name + " has too few observations - None")
             return None
-        period = find_period(data, min_period, max_period, period_bins)
-        if not min_period <= period <= max_period:
-            print("period of " + name + " not within range - None")
-            return None
+        period = find_period(data, min_period, max_period, coarse_precision,
+                             fine_precision)
         rephased = rephase(data, period)
         coefficients = find_model(get_signal(rephased), min_degree, max_degree,
                                   interpolant, evaluator)
@@ -54,21 +51,28 @@ def lightcurve(filename, min_obs=25,
             prev_mask = data.mask
             outliers = find_outliers(rephased, evaluator, coefficients, sigma)
             data.mask = numpy.ma.mask_or(data.mask, outliers)
-            if not numpy.all(data.mask == prev_mask):
-                continue
+            if not numpy.all(data.mask == prev_mask): continue
             rephased.mask = data.mask
         coefficients = shift_to_max_light(rephased, interpolant, evaluator,
                                           coefficients)
         return rephased is not None and Star(name, period, rephased,
                                              coefficients)
 
-def find_period(data, min_period, max_period, period_bins):
+def find_period(data, min_period, max_period, coarse_precision, fine_precision):
     """Uses the Lomb-Scargle Periodogram to discover the period."""
     if min_period >= max_period: return min_period
     time, mags = data.T[0:2]
     scaled_mags = (mags-mags.mean())/mags.std()
+    coarse_period = periodogram(time, scaled_mags, coarse_precision,
+                                min_period, max_period)
+    if coarse_precision <= fine_precision: return coarse_period
+    return periodogram(time, scaled_mags, fine_precision,
+                       coarse_period - coarse_precision,
+                       coarse_period + coarse_precision)
+
+def periodogram(time, scaled_mags, precision, min_period, max_period):
     minf, maxf = 2*numpy.pi/max_period, 2*numpy.pi/min_period
-    freqs = numpy.linspace(minf, maxf, period_bins)
+    freqs = numpy.arange(minf, maxf, precision)
     pgram = lombscargle(time, scaled_mags, freqs)
     return 2*numpy.pi/freqs[numpy.argmax(pgram)]
 
@@ -152,7 +156,7 @@ def plot_lightcurves(star, evaluator, output, **options):
         plt.errorbar(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),
               yerr = numpy.hstack(
                   (err,err)), ls='None', ms=.01, mew=.01, color='r')
-    plt.xlabel('Period ({0:0.5} days)'.format(star.period))
+    plt.xlabel('Period ({0:0.7} days)'.format(star.period))
     plt.ylabel('Magnitude ({0}th order)'.format(
         (star.coefficients.shape[0]-1)//2))
     plt.title(star.name)
