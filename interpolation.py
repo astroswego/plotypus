@@ -80,6 +80,6 @@ def lightcurve_matrix(stars, evaluator, x=x):
 def pca_reconstruction(eigenvectors, principle_scores):
     """Returns an array in which each row contains the magnitudes of one star's
     lightcurve. eigenvectors is a (number of phases)x(order of PCA) array,
-    principle_components is a (number or stars)x(order of PCA) array, and the
+    principle_scores is a (number or stars)x(order of PCA) array, and the
     return array has shape (number of stars)x(number of phases)."""
     return numpy.dot(eigenvectors, principle_scores.T).T  

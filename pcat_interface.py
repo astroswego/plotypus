@@ -14,10 +14,11 @@ def pcat(star_matrix, degree=7):
     root = sys.path[0]
     os.chdir(root)
     
-    N = star_matrix.shape[0]
+    number_of_stars = star_matrix.shape[0]
     with open("pcat_template.f", "r") as tempcat, open("pcat.f", "w") as pcat:
         tempcat_source = "".join(tempcat.readlines())
-        pcat_source = tempcat_source.replace("PYTHON_NUMBER_OF_STARS", str(N))
+        pcat_source = tempcat_source.replace("PYTHON_NUMBER_OF_STARS",
+                                             str(number_of_stars))
         pcat.write(pcat_source)
     pcat_compile = subprocess.check_output(["gfortran", "-o", "pcat", "pcat.f"])
     savetxt("data", star_matrix)
@@ -33,12 +34,12 @@ def pcat(star_matrix, degree=7):
 #   labels, parses the rest into a 2D array, and then removes the first column,
 #   which is also just labels, giving the actual eigenvector and principle
 #   score matrices.
-    eigenvectors = vstack(
-        fromstring(line,dtype=numpy.float,sep=' ') for line in
-        pcat_map["0EIGENVECTORS FOLLOW."].splitlines()[2:])[:,1:]
-    principle_scores = vstack(
-        fromstring(line,dtype=numpy.float,sep=' ') for line in
-        pcat_map["0PROJECTIONS OF ROW-POINTS FOLLOW."].splitlines()[2:])[:,1:]
+    eigenvectors = parse_to_array(
+        pcat_map["0EIGENVECTORS FOLLOW."],
+        start_row=2, start_col=1)
+    principle_scores = parse_to_array(
+        pcat_map["0PROJECTIONS OF ROW-POINTS FOLLOW."],
+        start_row=2, start_col=1)
     reconstruction_matrix = pca_reconstruction(eigenvectors, principle_scores)
 #    standardized_x, x_mean, x_std = standardize(star_matrix)
 #    reconstruction_matrix = unstandardize(reconstruction_matrix, x_mean, x_std)
@@ -46,3 +47,9 @@ def pcat(star_matrix, degree=7):
     for f in ["pcat.f", "pcat", "data"]:
         os.remove(f)
     return eigenvectors, principle_scores, reconstruction_matrix
+
+def parse_to_array(string, dtype=numpy.float, sep=' ',
+                   start_row=None, end_row=None, start_col=None, end_col=None):
+    return vstack(
+        fromstring(line, dtype=dtype, sep=sep) for line in
+        string.splitlines()[start_row:end_row])[:,start_col:end_col]
