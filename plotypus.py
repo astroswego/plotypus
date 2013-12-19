@@ -26,7 +26,7 @@ def main():
         verbose_init = lambda args: initialize_status_bar(len(args))
         callback = lambda: task_finished()
     stars = (options.cache.get('stars') or
-             map_reduce(lightcurve, files, verbose_init, callback, options)
+             map_reduce(lightcurve, files, verbose_init, callback, options))
     if options.plot_parameters:
         trig_param_plot(stars, options.output)
     if options.verbose:
