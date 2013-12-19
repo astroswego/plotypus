@@ -27,23 +27,23 @@ def get_files(directory, format):
 
 total, progress = 0, 0
 
-def map_reduce(func, args, options):
+def map_reduce(func, args, verbose_init, callback, options):
     if options.verbose:
-        initialize_status_bar(len(args))
+        verbose_init(args)
     results = []
     append = results.append
     processors = options.processors
     if processors is None or processors > 1:
         p = Pool() if processors is None else Pool(processors)
         for arg in args:
-            append(p.apply_async(func, (arg,), options.__dict__, task_finished))
+            append(p.apply_async(func, (arg,), options.__dict__, callback))
         p.close()
         p.join()
         results = (result.get() for result in results)
     else:
         for arg in args:
             append(func(arg, **options.__dict__))
-            task_finished()
+            callback()
     return [result for result in results if result is not None]
 
 def initialize_status_bar(new_total=1):

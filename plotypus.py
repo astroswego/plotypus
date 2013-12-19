@@ -14,15 +14,19 @@ from pcat_interface import pcat
 from star import lightcurve, plot_lightcurves, plot_parameter, trig_param_plot
 from scale import normalize, unnormalize, standardize, unstandardize
 from utils import (get_files, make_sure_path_exists, map_reduce, save_cache,
-                   load_cache)
+                   load_cache, initialize_status_bar, task_finished)
 
 def main():
 #    logger = multiprocessing.log_to_stderr()
 #    logger.setLevel(multiprocessing.SUBDEBUG)
     options = get_options()
     files = get_files(options.input, options.format)#[:10]
-    
-    stars = options.cache.get('stars') or map_reduce(lightcurve, files, options)
+
+    if options.verbose:
+        verbose_init = lambda args: initialize_status_bar(len(args))
+        callback = lambda: task_finished()
+    stars = (options.cache.get('stars') or
+             map_reduce(lightcurve, files, verbose_init, callback, options)
     if options.plot_parameters:
         trig_param_plot(stars, options.output)
     if options.verbose:
@@ -57,7 +61,7 @@ def main():
     if (options.plot_lightcurves_observed or
             options.plot_lightcurves_interpolated or
             options.plot_lightcurves_pca):
-        map_reduce(plot_lightcurves, stars, options)
+        map_reduce(plot_lightcurves, stars, verbose_init, callback, options)
 #        for s in stars: plot_lightcurves(s, options.evaluator,
 #                                         options.output, options=options)
 #        if options.plot_lightcurves_pca:
