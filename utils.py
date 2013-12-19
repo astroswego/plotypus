@@ -25,7 +25,7 @@ def get_files(directory, format):
             for filename in sorted(listdir(directory))
             if filename[-4:] == format]
 
-total, progress = 0, 0
+total, progress = 1, Value('I', 0)
 
 def map_reduce(func, args, options):
     if options.verbose:
@@ -49,7 +49,7 @@ def map_reduce(func, args, options):
 def initialize_status_bar(new_total=1):
     global total, progress
     total = new_total
-    progress = Value('I', 0)
+#    progress = Value('I', 0)
     update_status_bar()
 
 def task_finished(a=None):
