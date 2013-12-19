@@ -22,11 +22,12 @@ def main():
     options = get_options()
     files = get_files(options.input, options.format)#[:10]
 
-    verbose_init = lambda args: (initialize_status_bar(len(args))
-                                 if options.verbose else None)
-    callback = lambda: task_finished() if options.verbose else None
+    # defining callback function, depending on verbose/quiet mode
+    callback = task_finished if options.verbose else lambda a: None
+    
     stars = (options.cache.get('stars') or
-             map_reduce(lightcurve, files, verbose_init, callback, options))
+             map_reduce(lightcurve, files, initialize_status_bar, callback,
+                        options))
     if options.plot_parameters:
         trig_param_plot(stars, options.output)
     if options.verbose:
@@ -61,7 +62,8 @@ def main():
     if (options.plot_lightcurves_observed or
             options.plot_lightcurves_interpolated or
             options.plot_lightcurves_pca):
-        map_reduce(plot_lightcurves, stars, verbose_init, callback, options)
+        map_reduce(plot_lightcurves, stars, initialize_status_bar, callback,
+                   options)
 #        for s in stars: plot_lightcurves(s, options.evaluator,
 #                                         options.output, options=options)
 #        if options.plot_lightcurves_pca:
