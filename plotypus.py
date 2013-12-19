@@ -8,7 +8,7 @@ import re
 
 import os
 import interpolation
-from interpolation import lightcurve_matrix, pca_reconstruction
+from interpolation import lightcurve_matrix
 import linearmodel
 from pcat_interface import pcat
 from star import lightcurve, plot_lightcurves, plot_parameter, trig_param_plot
@@ -30,17 +30,30 @@ def main():
     if options.output:
         make_sure_path_exists(options.output)
     if (options.PCA_degree):
+#       Creates the unstandardized/unnormalized lightcurve matrix
         raw_matrix = lightcurve_matrix(stars, options.evaluator)
+#       Normalizes the lightcurve matrix
         norm_matrix, star_mins, star_maxes = normalize(raw_matrix)
+#       Standardizes the lightcurve matrix, but only to find the means and
+#       standard deviations. The standrdized matrix is not used, as pcat
+#       standardizes its input
         std_norm_matrix, column_means, column_stds = standardize(
             norm_matrix)
+#       Performs PCA with pcat.f, finding the eigenvectors and principle
+#       scores of the lightcurve matrix, and produces the
+#       standardized/normalized reconstructed lightcurve matrix
+#       lightcurves matrix
         eigenvectors, principle_scores, std_norm_reconstruction = pcat(
             norm_matrix)
+#       Unstandardizes/unnormalizes the lightcurve matrix
         reconstruction = unnormalize(unstandardize(std_norm_reconstruction,
                 column_means, column_stds),
             star_mins, star_maxes)
+#       Takes the lightcurve matrix and attributes each lightcurve to the
+#       appropriate star
         for star, reconst in zip(stars, reconstruction):
             star.PCA = reconst
+#   Produces lightcurve plots if any plots are requested at the command-line
     if (options.plot_lightcurves_observed or
             options.plot_lightcurves_interpolated or
             options.plot_lightcurves_pca):
