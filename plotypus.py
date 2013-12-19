@@ -22,9 +22,9 @@ def main():
     options = get_options()
     files = get_files(options.input, options.format)#[:10]
 
-    if options.verbose:
-        verbose_init = lambda args: initialize_status_bar(len(args))
-        callback = lambda: task_finished()
+    verbose_init = lambda args: (initialize_status_bar(len(args))
+                                 if options.verbose else None)
+    callback = lambda: task_finished() if options.verbose else None
     stars = (options.cache.get('stars') or
              map_reduce(lightcurve, files, verbose_init, callback, options))
     if options.plot_parameters:
