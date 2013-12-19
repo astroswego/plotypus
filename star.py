@@ -40,7 +40,8 @@ def lightcurve(filename, min_obs=25, min_period=0.2, max_period=32.,
     data = numpy.ma.masked_array(data=numpy.loadtxt(filename), mask=None)
     while True: # Iteratively process and find models of the data
         if get_signal(data).shape[0] < min_obs:
-            print(name + " has too few observations - None")
+            if options.verbose:
+                print(name + " has too few observations - None")
             return None
         period = find_period(data, min_period, max_period, coarse_precision,
                              fine_precision)
