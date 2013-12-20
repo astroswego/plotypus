@@ -30,6 +30,8 @@ def pcat(star_matrix, output, degree=7):
     with open(pcat_source_template_fname, "r") as pcat_template, \
          open(pcat_source_fname, "w") as pcat_source:
         pcat_template_text = "".join(pcat_template.readlines())
+        # Also replace the "pcat_input.txt" with the full path. Do this here
+        # with the replace function
         pcat_source_text = pcat_template_text.replace("PYTHON_NUMBER_OF_STARS",
                                                       str(number_of_stars))
         pcat_source.write(pcat_source_text)
