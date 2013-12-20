@@ -13,14 +13,21 @@ import sectparse
 # When and if degree can be something other than 7, swap degree with output
 # output should be the last argument, and give degree no default value
 def pcat(star_matrix, output, degree=7):
+    assert degree == 7, \
+        "PCA of degree != 7 is not yet implemented. Please use degree == 7"
     pcat_source_template_fname = "pcat_template.f"
     pcat_compile_fname = os.path.join(output, "pcat")
     pcat_source_fname = pcat_compile_name + ".f"
+    pcat_input_fname = os.path.join(output, "pcat_input.txt")
+    pcat_output_fname = os.path.join(output, "pcat_output.txt")
+    eigenvectors_fname = os.path.join(output, "eigenvectors.txt")
+    principle_scores_fname = os.path.join(output, "principle_scores.txt")
+    reconstruction_fname = os.path.join(output, "reconstruction.txt")
     root = sys.path[0]
     os.chdir(root)
     
     number_of_stars = star_matrix.shape[0]
-    with open(pcat_source_template_fname, "r") as tempcat,\
+    with open(pcat_source_template_fname, "r") as tempcat, \
          open(pcat_source_fname, "w") as pcat:
         tempcat_source = "".join(tempcat.readlines())
         pcat_source = tempcat_source.replace("PYTHON_NUMBER_OF_STARS",
@@ -28,11 +35,12 @@ def pcat(star_matrix, output, degree=7):
         pcat.write(pcat_source)
     pcat_compile = subprocess.check_output(["gfortran", pcat_source_fname,
                                             "-o", pcat_compile_fname])
-                                            
-    savetxt(os.path.join(output, "data"), star_matrix)
-    pcat_output = subprocess.check_output("./pcat").decode("utf-8").splitlines()
+
+    savetxt(pcat_input_fname, star_matrix)
+    pcat_output = subprocess.check_output(pcat_compile_fname).decode("utf-8")
+                                                             .splitlines()
     ## DEBUG ## Saves pcat's raw output to pcat_output.txt
-    savetxt(os.path.join(output, "pcat_output.txt"), pcat_output)
+    savetxt(pcat_output_fname, pcat_output)
     ###########
     textiter = iter(pcat_output)
     keylist = [" CORRELATION MATRIX FOLLOWS.",
@@ -53,10 +61,14 @@ def pcat(star_matrix, output, degree=7):
         pcat_map["0PROJECTIONS OF ROW-POINTS FOLLOW."],
         start_row=2, start_col=1)
     reconstruction_matrix = pca_reconstruction(eigenvectors, principle_scores)
+    ## DEBUG ## Saves parsed output and reconstruction matrix to files
+    savetxt(eigenvectors_fname, eigenvectors)
+    savetxt(principle_scores_fname, principle_scores)
+    savetxt(reconstruction_fname, reconstruction_matrix)
 #    standardized_x, x_mean, x_std = standardize(star_matrix)
 #    reconstruction_matrix = unstandardize(reconstruction_matrix, x_mean, x_std)
 #   Delete temporary files
-    for f in ["pcat.f", "pcat"]:#, "data"]:
+    for f in [pcat_compiled_fname, pcat_source_fname]:
         os.remove(f)
     return eigenvectors, principle_scores, reconstruction_matrix
 
