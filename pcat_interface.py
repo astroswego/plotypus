@@ -37,8 +37,8 @@ def pcat(star_matrix, output, degree=7):
                                             "-o", pcat_compile_fname])
 
     savetxt(pcat_input_fname, star_matrix)
-    pcat_output = subprocess.check_output(pcat_compile_fname).decode("utf-8")
-                                                             .splitlines()
+    pcat_output = (subprocess.check_output(pcat_compile_fname).decode("utf-8")
+                                                              .splitlines())
     ## DEBUG ## Saves pcat's raw output to pcat_output.txt
     savetxt(pcat_output_fname, pcat_output)
     ###########
