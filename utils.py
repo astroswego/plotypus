@@ -28,6 +28,7 @@ def get_files(directory, format):
 total, progress = 0, 0
 
 def map_reduce(func, args, verbose_init, callback, options):
+    assert False, str(type(options))
     if options.verbose:
         verbose_init(len(args))
     results = []
