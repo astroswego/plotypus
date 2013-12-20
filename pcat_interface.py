@@ -27,12 +27,12 @@ def pcat(star_matrix, output, degree=7):
     os.chdir(root)
     
     number_of_stars = star_matrix.shape[0]
-    with open(pcat_source_template_fname, "r") as tempcat, \
-         open(pcat_source_fname, "w") as pcat:
-        tempcat_source = "".join(tempcat.readlines())
-        pcat_source = tempcat_source.replace("PYTHON_NUMBER_OF_STARS",
-                                             str(number_of_stars))
-        pcat.write(pcat_source)
+    with open(pcat_source_template_fname, "r") as pcat_template, \
+         open(pcat_source_fname, "w") as pcat_source:
+        tempcat_source_text = "".join(pcat_template.readlines())
+        pcat_source_text = pcat_template_text.replace("PYTHON_NUMBER_OF_STARS",
+                                                      str(number_of_stars))
+        pcat_source.write(pcat_source_text)
     pcat_compile = subprocess.check_output(["gfortran", pcat_source_fname,
                                             "-o", pcat_compile_fname])
 
