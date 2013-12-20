@@ -29,7 +29,7 @@ def pcat(star_matrix, output, degree=7):
     number_of_stars = star_matrix.shape[0]
     with open(pcat_source_template_fname, "r") as pcat_template, \
          open(pcat_source_fname, "w") as pcat_source:
-        tempcat_source_text = "".join(pcat_template.readlines())
+        pcat_template_text = "".join(pcat_template.readlines())
         pcat_source_text = pcat_template_text.replace("PYTHON_NUMBER_OF_STARS",
                                                       str(number_of_stars))
         pcat_source.write(pcat_source_text)
