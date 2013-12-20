@@ -49,7 +49,7 @@ def main():
 #       standardized/normalized reconstructed lightcurve matrix
 #       lightcurves matrix
         eigenvectors, principle_scores, std_norm_reconstruction = pcat(
-            norm_matrix, output)
+            norm_matrix, options.output)
 #       Unstandardizes/unnormalizes the lightcurve matrix
         reconstruction = unnormalize(unstandardize(std_norm_reconstruction,
                 column_means, column_stds),
