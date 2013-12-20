@@ -17,7 +17,7 @@ def pcat(star_matrix, output, degree=7):
         "PCA of degree != 7 is not yet implemented. Please use degree == 7"
     pcat_source_template_fname = "pcat_template.f"
     pcat_compile_fname = os.path.join(output, "pcat")
-    pcat_source_fname = pcat_compile_name + ".f"
+    pcat_source_fname = pcat_compile_fname + ".f"
     pcat_input_fname = os.path.join(output, "pcat_input.txt")
     pcat_output_fname = os.path.join(output, "pcat_output.txt")
     eigenvectors_fname = os.path.join(output, "eigenvectors.txt")
