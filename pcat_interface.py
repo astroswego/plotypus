@@ -15,7 +15,11 @@ import sectparse
 def pcat(star_matrix, output, degree=7):
     assert degree == 7, \
         "PCA of degree != 7 is not yet implemented. Please use degree == 7"
-    pcat_source_template_fname = "pcat_template.f"
+    original_directory = os.getcwd()
+    os.chdir(output)
+    
+    pcat_source_template_fname = os.path.join(original_directory,
+                                              "pcat_template.f")
     pcat_compile_fname = os.path.join(output, "pcat")
     pcat_source_fname = pcat_compile_fname + ".f"
     pcat_input_fname = os.path.join(output, "pcat_input.txt")
@@ -24,8 +28,6 @@ def pcat(star_matrix, output, degree=7):
     principle_scores_fname = os.path.join(output, "principle_scores.txt")
     reconstruction_fname = os.path.join(output, "reconstruction.txt")
 #    root = sys.path[0]
-    original_directory = os.getcwd()
-    os.chdir(output)
 
     number_of_stars = star_matrix.shape[0]
     with open(pcat_source_template_fname, "r") as pcat_template, \
