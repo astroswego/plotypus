@@ -48,7 +48,8 @@ def pcat(star_matrix, output, degree=7):
                                                               .splitlines())
     os.chdir(original_directory)
     ## DEBUG ## Saves pcat's raw output to pcat_output.txt
-    savetxt(pcat_output_fname, pcat_output)
+    with open(pcat_output_fname, "w") as pcat_output_file:
+        pcat_output_file.write(pcat_output)
     ###########
     textiter = iter(pcat_output)
     keylist = [" CORRELATION MATRIX FOLLOWS.",
