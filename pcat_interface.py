@@ -15,10 +15,14 @@ import sectparse
 def pcat(star_matrix, output, degree=7):
     assert degree == 7, \
         "PCA of degree != 7 is not yet implemented. Please use degree == 7"
+#   Saving original directory to go back to later
     original_directory = os.getcwd()
+#   Saving directory of package to use to reference pcat_template.f
     source_directory = sys.path[0]
+#   Changing working directory to output directory so that pcat.f works
     os.chdir(output)
-    
+
+##  Creating all filenames to use throughout function ##
     pcat_source_template_fname = os.path.join(source_directory,
                                               "pcat_template.f")
     pcat_compile_fname = os.path.join(output, "pcat")
@@ -28,7 +32,6 @@ def pcat(star_matrix, output, degree=7):
     eigenvectors_fname = os.path.join(output, "eigenvectors.txt")
     principle_scores_fname = os.path.join(output, "principle_scores.txt")
     reconstruction_fname = os.path.join(output, "reconstruction.txt")
-#    root = sys.path[0]
 
     number_of_stars = star_matrix.shape[0]
     with open(pcat_source_template_fname, "r") as pcat_template, \
