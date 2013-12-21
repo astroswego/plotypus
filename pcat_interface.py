@@ -44,14 +44,14 @@ def pcat(star_matrix, output, degree=7):
                                             "-o", pcat_compile_fname])
 
     savetxt(pcat_input_fname, star_matrix)
-    pcat_output = (subprocess.check_output(pcat_compile_fname).decode("utf-8")
-                                                              .splitlines())
+    pcat_output = subprocess.check_output(pcat_compile_fname)
+    parsed_pcat_output = pcat_output.decode("utf-8").splitlines()
     os.chdir(original_directory)
     ## DEBUG ## Saves pcat's raw output to pcat_output.txt
-    with open(pcat_output_fname, "w") as pcat_output_file:
+    with open(pcat_output_fname, "wb") as pcat_output_file:
         pcat_output_file.write(pcat_output)
     ###########
-    textiter = iter(pcat_output)
+    textiter = iter(parsed_pcat_output)
     keylist = [" CORRELATION MATRIX FOLLOWS.",
                "0EIGENVECTORS FOLLOW.",
                "0PROJECTIONS OF ROW-POINTS FOLLOW.",
