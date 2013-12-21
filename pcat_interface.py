@@ -77,7 +77,7 @@ def pcat(star_matrix, output, degree=7):
 #    standardized_x, x_mean, x_std = standardize(star_matrix)
 #    reconstruction_matrix = unstandardize(reconstruction_matrix, x_mean, x_std)
 #   Delete temporary files
-    for f in [pcat_compiled_fname, pcat_source_fname]:
+    for f in [pcat_compile_fname, pcat_source_fname]:
         os.remove(f)
     return eigenvectors, principle_scores, reconstruction_matrix
 
