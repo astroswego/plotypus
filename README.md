@@ -1,8 +1,8 @@
 plotypus
 ========
 
-A command line utility written in python for plotting stellar lightcurves,
-performing interpolation, and principle component analysis
+A library and command line utility written in python for plotting stellar
+lightcurves, performing interpolation, and principle component analysis
 
 authors
 =======
@@ -23,5 +23,3 @@ external resources
 ==================
 
 pcat.f by F. Murtagh used for Principle Component Analysis
-
-sectparse.py by Dan Wysocki used for parsing pcat.f output

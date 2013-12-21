@@ -24,7 +24,7 @@ def main():
 
     # defining callback function, depending on verbose/quiet mode
     callback = task_finished if options.verbose else lambda a: None
-    
+
     stars = (options.cache.get('stars') or
              map_reduce(lightcurve, files, initialize_status_bar, callback,
                         options))
@@ -42,8 +42,7 @@ def main():
 #       Standardizes the lightcurve matrix, but only to find the means and
 #       standard deviations. The standrdized matrix is not used, as pcat
 #       standardizes its input
-        std_norm_matrix, column_means, column_stds = standardize(
-            norm_matrix)
+        std_norm_matrix, column_means, column_stds = standardize(norm_matrix)
 #       Performs PCA with pcat.f, finding the eigenvectors and principle
 #       scores of the lightcurve matrix, and produces the
 #       standardized/normalized reconstructed lightcurve matrix
@@ -52,8 +51,8 @@ def main():
             norm_matrix, options.output)
 #       Unstandardizes/unnormalizes the lightcurve matrix
         reconstruction = unnormalize(unstandardize(std_norm_reconstruction,
-                column_means, column_stds),
-            star_mins, star_maxes)
+                                                   column_means, column_stds),
+                                     star_mins, star_maxes)
 #       Takes the lightcurve matrix and attributes each lightcurve to the
 #       appropriate star
         for star, reconst in zip(stars, reconstruction):
@@ -84,7 +83,7 @@ def main():
         plot_parameter(logP, PC2, "PC2", options.output)
 # Do the plot by doing coeff[0]*logP+coeff[1]*PC_i
 #        print("PC1:\n{}\n\nPC2:\n{}".format(PLPC1.summary(),PLPC2.summary()))
-            
+
 ## Linear Model not yet implemented ##
 #    if options.linear_model:
 #        coeff_matrix = numpy.fromiter((s.coefficients for s in stars),

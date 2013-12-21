@@ -138,18 +138,22 @@ def shift_to_max_light(rephased, interpolant, evaluator, coefficients):
 
 x = numpy.arange(0, 2, 0.01)
 
-def plot_lightcurves(star, evaluator, output, **options):
+def plot_lightcurves(star, evaluator, output,
+                     plot_lightcurves_observed=True,
+                     plot_lightcurves_interpolated=False,
+                     plot_lightcurves_pca=False,
+                     **options):
 #    print("raw: {}\n\nPCA: {}".format(star.rephased.T[1],PCA))
     ax = plt.gca()
     ax.grid(True)
     ax.invert_yaxis()
     plt.xlim(0,2)
-    if "plot_lightcurves_interpolated" in options:
+    if plot_lightcurves_interpolated:
         plt.plot(x, evaluator(star.coefficients, x), linewidth=1.5, color='r')
-    if "plot_lightcurves_pca" in options:
+    if plot_lightcurves_pca:
         plt.plot(x, numpy.hstack((star.PCA,star.PCA)),
                  linewidth=1.5, color="yellow")
-    if "plot_lightcurves_observed" in options:
+    if plot_lightcurves_observed:
         time, mags, err = star.rephased.T
         plt.errorbar(numpy.hstack((time,1+time)), numpy.hstack((mags, mags)),
               yerr = numpy.hstack((err,err)), ls='None', ms=.01, mew=.01)
