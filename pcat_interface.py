@@ -23,9 +23,10 @@ def pcat(star_matrix, output, degree=7):
     eigenvectors_fname = os.path.join(output, "eigenvectors.txt")
     principle_scores_fname = os.path.join(output, "principle_scores.txt")
     reconstruction_fname = os.path.join(output, "reconstruction.txt")
-    root = sys.path[0]
-    os.chdir(root)
-    
+#    root = sys.path[0]
+    original_directory = os.getcwd()
+    os.chdir(output)
+
     number_of_stars = star_matrix.shape[0]
     with open(pcat_source_template_fname, "r") as pcat_template, \
          open(pcat_source_fname, "w") as pcat_source:
@@ -35,12 +36,14 @@ def pcat(star_matrix, output, degree=7):
         pcat_source_text = pcat_template_text.replace("PYTHON_NUMBER_OF_STARS",
                                                       str(number_of_stars))
         pcat_source.write(pcat_source_text)
+    ## Fails here. Probably because pcat isn't getting its output file ##
     pcat_compile = subprocess.check_output(["gfortran", pcat_source_fname,
                                             "-o", pcat_compile_fname])
 
     savetxt(pcat_input_fname, star_matrix)
     pcat_output = (subprocess.check_output(pcat_compile_fname).decode("utf-8")
                                                               .splitlines())
+    os.chdir(original_directory)
     ## DEBUG ## Saves pcat's raw output to pcat_output.txt
     savetxt(pcat_output_fname, pcat_output)
     ###########
