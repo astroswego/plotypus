@@ -16,9 +16,10 @@ def pcat(star_matrix, output, degree=7):
     assert degree == 7, \
         "PCA of degree != 7 is not yet implemented. Please use degree == 7"
     original_directory = os.getcwd()
+    source_directory = sys.path[0]
     os.chdir(output)
     
-    pcat_source_template_fname = os.path.join(original_directory,
+    pcat_source_template_fname = os.path.join(source_directory,
                                               "pcat_template.f")
     pcat_compile_fname = os.path.join(output, "pcat")
     pcat_source_fname = pcat_compile_fname + ".f"
