@@ -23,7 +23,7 @@ def main():
     files = get_files(options.input, options.format)#[:10]
 
     # defining callback function, depending on verbose/quiet mode
-    callback = task_finished if options.verbose else lambda a: None
+    callback = task_finished if options.verbose else lambda arg: None
 
     stars = (options.cache.get('stars') or
              map_reduce(lightcurve, files, initialize_status_bar, callback,

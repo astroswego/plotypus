@@ -19,11 +19,12 @@ class Star:
         self.rephased = rephased
         self.coefficients = coefficients
 
-def lightcurve(filename, min_obs=25, min_period=0.2, max_period=32.,
+def lightcurve(filename, min_obs=25, min_period=0.2, max_period=32.0,
                coarse_precision=0.001, fine_precision=0.0000001,
                interpolant=interpolation.trigonometric,
                evaluator=interpolation.trigonometric_evaluator,
-               min_degree=4, max_degree=15, sigma=3, **options):
+               min_degree=4, max_degree=15, sigma=3,
+               verbose=False, **options):
     """Takes as input the filename for a data file containing the time,
     magnitude, and error for observations of a variable star. Uses a Lomb-
     Scargle periodogram to detect periodicities in the data within the
@@ -39,9 +40,10 @@ def lightcurve(filename, min_obs=25, min_period=0.2, max_period=32.,
     name = filename.split(os.sep)[-1]
     data = numpy.ma.masked_array(data=numpy.loadtxt(filename), mask=None)
     while True: # Iteratively process and find models of the data
-        if get_signal(data).shape[0] < min_obs:
-            if options["verbose"]:
-                print(name + " has too few observations - None")
+        n_obs = get_signal(data).shape[0]
+        if n_obs < min_obs:
+            if verbose:
+                print(name + " has too few observations - " + n_obs)
             return None
         period = find_period(data, min_period, max_period, coarse_precision,
                              fine_precision)
@@ -186,11 +188,9 @@ def plot_parameter(logP, parameter, parameter_name, output):
     plt.ylabel(parameter_name)
     title = parameter_name + " vs logP"
     plt.title(title)
-    out = title + ".png"
-    out = out.replace(" ", "_")
+    out = title.replace(" ", "_") + ".png"
     plt.savefig(os.path.join(output, out))
     plt.clf()
-
 
 def trig_param_plot(stars, output):
     logP = numpy.fromiter((math.log(star.period, 10) for star in stars),
