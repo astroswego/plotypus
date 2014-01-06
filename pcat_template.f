@@ -701,7 +701,7 @@ C
 C        WRITE (6,1010)
 C        WRITE (6,1020)
         DO 100 K = 1, N
-           WRITE (6,1030) K,(PRJN(K,J),J=1,NUM)
+           WRITE (6,1030) (PRJN(K,J),J=1,NUM)
   100   CONTINUE
 C
  1000   FORMAT('PRINCIPLE SCORE ROW SECTION.')
@@ -711,7 +711,7 @@ C     X  PROJ-7')
 C 1020   FORMAT
 C     X  (' ------  ------  ------  ------  ------  ------  ------
 C     X  ------')
- 1030   FORMAT(I5,2X,7F8.4)
+ 1030   FORMAT(2X,7F8.4)
         RETURN
         END
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -727,7 +727,7 @@ C
 C        WRITE (6,1010)
 C        WRITE (6,1020)
         DO 100 K = 1, M
-           WRITE (6,1030) K,(PRJNS(K,J),J=1,NUM)
+           WRITE (6,1030) (PRJNS(K,J),J=1,NUM)
   100   CONTINUE
 C
  1000   FORMAT('PRINCIPLE SCORE COLUMN SECTION.')
@@ -737,7 +737,7 @@ C     X  PROJ-7')
 C 1020   FORMAT 
 C     X  (' ------  ------  ------  ------  ------  ------  ------
 C     X  ------')
- 1030   FORMAT(I5,2X,7F8.4)
+ 1030   FORMAT(2X,7F8.4)
         RETURN
         END
 C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
