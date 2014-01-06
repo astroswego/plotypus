@@ -675,7 +675,7 @@ C
 C        WRITE (6,1010)
 C        WRITE (6,1020)
         DO 100 K1 = 1, NDIM
-        WRITE (6,1030) K1,(VECS(K1,NDIM-K2+1),K2=1,NUM)
+	   WRITE (6,1030) (VECS(K1,NDIM-K2+1),K2=1,NUM)
   100   CONTINUE
 C
         RETURN
