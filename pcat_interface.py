@@ -70,8 +70,8 @@ def pcat(input_matrix, output, degree=7):
 #       appropriate values.
         pcat_source_text = pcat_template_text.replace(
             "PYTHON_NUMBER_OF_OBJECTS", str(number_of_objects))
-        pcat_source_text = pcat_source_text.replace(
-            "PYTHON_INPUT_FILENAME", pcat_input_path)
+#        pcat_source_text = pcat_source_text.replace(
+#            "PYTHON_INPUT_FILENAME", pcat_input_path)
 #       Save the source string to the file output/pcat.f
         pcat_source_file.write(pcat_source_text)
 #   Compile output/pcat.f as output/pcat

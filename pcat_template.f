@@ -1,8 +1,8 @@
 	REAL DATA(PYTHON_NUMBER_OF_STARS,100)
         REAL ARRAY1(100,100), ARRAY2(100,100), VECT1(100), VECT2(100)
-        real vect3(PYTHON_NUMBER_OF_STARS), vect4(PYTHON_NUMBER_OF_STARS)
+        real vect3(PYTHON_NUMBER_OF_STARS), vect4(PYTHON_NUMBER_OF_OBJECTS)
 C
-	OPEN(UNIT=21,STATUS='OLD',FILE='PYTHON_INPUT_FILENAME')
+	OPEN(UNIT=21,STATUS='OLD',FILE='pcat_input.txt')
 C
 	N = PYTHON_NUMBER_OF_STARS
 	M = 100
@@ -640,8 +640,8 @@ C
 C       (We only want Min(nrows,ncols) eigenvalues output:)
         M = MIN0(N,NVALS)
 C
-        WRITE (6,1010)
-        WRITE (6,1020)
+C        WRITE (6,1010)
+C        WRITE (6,1020)
   200   CONTINUE
         K = K - 1
         CUM = CUM + VALS(K)
@@ -673,8 +673,8 @@ C
         NUM = MIN0(N,NDIM,7)
 C
         WRITE (6,1000)
-        WRITE (6,1010)
-        WRITE (6,1020)
+C        WRITE (6,1010)
+C        WRITE (6,1020)
         DO 100 K1 = 1, NDIM
         WRITE (6,1030) K1,(VECS(K1,NDIM-K2+1),K2=1,NUM)
   100   CONTINUE
@@ -699,8 +699,8 @@ C-------------------------------------------------------------
 C
         NUM = MIN0(M,7)
         WRITE (6,1000)
-        WRITE (6,1010)
-        WRITE (6,1020)
+C        WRITE (6,1010)
+C        WRITE (6,1020)
         DO 100 K = 1, N
            WRITE (6,1030) K,(PRJN(K,J),J=1,NUM)
   100   CONTINUE
@@ -725,8 +725,8 @@ C-------------------------------------------------------------
 C
         NUM = MIN0(M,7)
         WRITE (6,1000)
-        WRITE (6,1010)
-        WRITE (6,1020)
+C        WRITE (6,1010)
+C        WRITE (6,1020)
         DO 100 K = 1, M
            WRITE (6,1030) K,(PRJNS(K,J),J=1,NUM)
   100   CONTINUE
