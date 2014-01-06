@@ -680,7 +680,7 @@ C        WRITE (6,1020)
   100   CONTINUE
 C
         RETURN
- 1000   FORMAT(1H0,'EIGENVECTOR SECTION.',/)
+ 1000   FORMAT('EIGENVECTOR SECTION.',/)
 C 1010   FORMAT
 C     X  ('  VBLE.   EV-1    EV-2    EV-3    EV-4    EV-5    EV-6 
 C     X   EV-7')
