@@ -2,7 +2,7 @@
         REAL ARRAY1(100,100), ARRAY2(100,100), VECT1(100), VECT2(100)
         real vect3(PYTHON_NUMBER_OF_STARS), vect4(PYTHON_NUMBER_OF_STARS)
 C
-	OPEN(UNIT=21,STATUS='OLD',FILE='pcat_input.txt')
+	OPEN(UNIT=21,STATUS='OLD',FILE='PYTHON_INPUT_FILENAME')
 C
 	N = PYTHON_NUMBER_OF_STARS
 	M = 100
@@ -610,12 +610,12 @@ C
   100   CONTINUE
 C
  1000   FORMAT
-     X  (1H0,'SUMS OF SQUARES & CROSS-PRODUCTS MATRIX FOLLOWS.',/)
- 2000   FORMAT(1H ,'COVARIANCE MATRIX FOLLOWS.',/)
- 3000   FORMAT(1H ,'CORRELATION MATRIX FOLLOWS.',/)
- 4000   FORMAT(1H ,'COV. MATRIX OF RANGE-NORMALIZED DATA FOLLOWS.',/)
- 5000   FORMAT(1H ,'SPEARMAN CORRELATION MATRIX FOLLOWS.',/)
- 6000   FORMAT(1H ,'KENDALL CORRELATION MATRIX FOLLOWS.',/)
+     X  (1H0,'SUMS OF SQUARES & CROSS-PRODUCTS MATRIX SECTION.',/)
+ 2000   FORMAT(1H ,'COVARIANCE MATRIX SECTION.',/)
+ 3000   FORMAT(1H ,'CORRELATION MATRIX SECTION.',/)
+ 4000   FORMAT(1H ,'COV. MATRIX OF RANGE-NORMALIZED DATA SECTION.',/)
+ 5000   FORMAT(1H ,'SPEARMAN CORRELATION MATRIX SECTION.',/)
+ 6000   FORMAT(1H ,'KENDALL CORRELATION MATRIX SECTION.',/)
  9000   FORMAT(8(2X,F8.4))
         RETURN
         END
@@ -654,11 +654,11 @@ C        VALS(K) = VCPC
         IF (K.GT.NVALS-M+1) GOTO 200
 C
         RETURN
- 1000   FORMAT(' EIGENVALUES FOLLOW.')
- 1010   FORMAT
-     X(' Eigenvalues        As Percentages    Cumul. Percentages')
- 1020   FORMAT
-     X(' -----------        --------------    ------------------')
+ 1000   FORMAT('EIGENVALUE SECTION.')
+C 1010   FORMAT
+C     X(' Eigenvalues        As Percentages    Cumul. Percentages')
+C 1020   FORMAT
+C     X(' -----------        --------------    ------------------')
  1030   FORMAT(F13.4,7X,F10.4,10X,F10.4)
         END
 C++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -680,13 +680,13 @@ C
   100   CONTINUE
 C
         RETURN
- 1000   FORMAT(1H0,'EIGENVECTORS FOLLOW.',/)
- 1010   FORMAT
-     X  ('  VBLE.   EV-1    EV-2    EV-3    EV-4    EV-5    EV-6 
-     X   EV-7')
- 1020   FORMAT 
-     X  (' ------  ------  ------  ------  ------  ------  ------  
-     X------')
+ 1000   FORMAT(1H0,'EIGENVECTOR SECTION.',/)
+C 1010   FORMAT
+C     X  ('  VBLE.   EV-1    EV-2    EV-3    EV-4    EV-5    EV-6 
+C     X   EV-7')
+C 1020   FORMAT 
+C     X  (' ------  ------  ------  ------  ------  ------  ------  
+C     X------')
  1030   FORMAT(I5,2X,7F8.4)
         END
 C+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
@@ -705,13 +705,13 @@ C
            WRITE (6,1030) K,(PRJN(K,J),J=1,NUM)
   100   CONTINUE
 C
- 1000   FORMAT(1H0,'PROJECTIONS OF ROW-POINTS FOLLOW.',/)
- 1010   FORMAT
-     X  (' OBJECT  PROJ-1  PROJ-2  PROJ-3  PROJ-4  PROJ-5  PROJ-6
-     X  PROJ-7')
- 1020   FORMAT
-     X  (' ------  ------  ------  ------  ------  ------  ------
-     X  ------')
+ 1000   FORMAT(1H0,'PRINCIPLE SCORE ROW SECTION.',/)
+C 1010   FORMAT
+C     X  (' OBJECT  PROJ-1  PROJ-2  PROJ-3  PROJ-4  PROJ-5  PROJ-6
+C     X  PROJ-7')
+C 1020   FORMAT
+C     X  (' ------  ------  ------  ------  ------  ------  ------
+C     X  ------')
  1030   FORMAT(I5,2X,7F8.4)
         RETURN
         END
@@ -731,13 +731,13 @@ C
            WRITE (6,1030) K,(PRJNS(K,J),J=1,NUM)
   100   CONTINUE
 C
- 1000   FORMAT(1H0,'PROJECTIONS OF COLUMN-POINTS FOLLOW.',/)
- 1010   FORMAT
-     X  ('  VBLE.  PROJ-1  PROJ-2  PROJ-3  PROJ-4  PROJ-5  PROJ-6
-     X  PROJ-7')
- 1020   FORMAT 
-     X  (' ------  ------  ------  ------  ------  ------  ------
-     X  ------')
+ 1000   FORMAT(1H0,'PRINCIPLE SCORE COLUMN SECTION.',/)
+C 1010   FORMAT
+C     X  ('  VBLE.  PROJ-1  PROJ-2  PROJ-3  PROJ-4  PROJ-5  PROJ-6
+C     X  PROJ-7')
+C 1020   FORMAT 
+C     X  (' ------  ------  ------  ------  ------  ------  ------
+C     X  ------')
  1030   FORMAT(I5,2X,7F8.4)
         RETURN
         END
