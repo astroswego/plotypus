@@ -1,9 +1,9 @@
 import numpy
 from math import floor
 from os import path
-from utils import make_sure_path_exists, get_signal, get_noise, colvec
-from periodogram import find_period, rephase, get_phase
-from Fourier import Fourier
+from .utils import make_sure_path_exists, get_signal, get_noise, colvec
+from .periodogram import find_period, rephase, get_phase
+from .Fourier import Fourier
 from sklearn.linear_model import LassoCV
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
@@ -11,6 +11,12 @@ import warnings
 import matplotlib as mpl
 mpl.use('Agg')
 import matplotlib.pyplot as plt
+
+__all__ = [
+    'get_lightcurve',
+    'find_outliers',
+    'plot_lightcurve'
+]
 
 def get_lightcurve(filename, fourier_degree=15, cv=10,
                    min_period=0.2, max_period=32,
@@ -79,10 +85,12 @@ def find_outliers(data, period, predictor, sigma):
     return numpy.tile(numpy.vstack(mse > sigma * mse.std()), data.shape[1])
 
 def plot_lightcurve(output, filename, lc, period, data,
-                    phases = numpy.arange(0, 1, 0.01)):
+                    phases=numpy.arange(0, 1, 0.01),
+                    grid=True, invert=True):
     ax = plt.gca()
-    ax.grid(True)
-    ax.invert_yaxis()
+    ax.grid(grid)
+    if invert:
+        ax.invert_yaxis()
     plt.xlim(-0.1,2.1)
     
     # Plot the fitted light curve

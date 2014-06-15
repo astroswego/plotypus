@@ -2,6 +2,13 @@ import numpy
 from scipy.signal import lombscargle
 from math import modf
 
+__all__ = [
+    'find_period',
+    'LombScargle',
+    'rephase',
+    'get_phase'
+]
+
 def find_period(time, mags, min_period, max_period,
                 coarse_precision, fine_precision, method=None):
     if min_period >= max_period: return min_period

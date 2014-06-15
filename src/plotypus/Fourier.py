@@ -1,5 +1,10 @@
 import numpy
 
+__all__ = [
+    'Fourier',
+    'trigonometric_coefficient_matrix'
+]
+
 class Fourier():
     def __init__(self, degree=3):
         self.degree = degree
@@ -23,7 +28,8 @@ class Fourier():
             self.degree = params['degree']
 
 def trigonometric_coefficient_matrix(phases, degree):
-    return numpy.array([[numpy.cos(numpy.pi*(j+1)*phases[i]) if j % 2 == 0
-                         else numpy.sin(numpy.pi*j*phases[i])
+    return numpy.array([[numpy.cos(numpy.pi*(j+1)*phases[i]) if j % 2 == 0 #even
+                         else numpy.sin(numpy.pi*j*phases[i]) #odd
                          for j in range(2*degree)]
                         for i in range(len(phases))])
+

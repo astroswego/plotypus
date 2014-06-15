@@ -2,7 +2,7 @@ import numpy
 from sys import exit
 from os import path, listdir
 from optparse import OptionParser
-from lightcurve import get_lightcurve, plot_lightcurve
+from .lightcurve import get_lightcurve, plot_lightcurve
 
 def get_ops():
     parser = OptionParser()

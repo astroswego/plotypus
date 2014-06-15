@@ -48,6 +48,12 @@ def setup_package():
         packages = [
             'plotypus'
         ],
+        entry_points = {
+            'console_scripts': [
+                'plotypus_demo = plotypus.demo:main',
+                'plotypus = plotypus.plotypus:main'
+            ]
+        },
         keywords = [
             'astronomy',
             'stellar pulsation',
@@ -60,7 +66,7 @@ def setup_package():
         ]
     )
 
-    from distutils.core import setup
+    from setuptools import setup
 
     setup(**metadata)
 
