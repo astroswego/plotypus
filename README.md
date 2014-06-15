@@ -18,3 +18,4 @@ Install using setuptools
 ```bash
 $ python setup.py install
 ```
+(Note: Depending on how your system is configured, you may need to run this as root)
