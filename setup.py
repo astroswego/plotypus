@@ -7,8 +7,6 @@ stars.
 Plotypus is built on top of numpy, matplotlib, and scikit.
 """
 
-
-
 DOCLINES = __doc__.split("\n")
 
 CLASSIFIERS = """\
@@ -46,12 +44,13 @@ def setup_package():
         version = get_version_info(),
         package_dir = {'': 'src'},
         packages = [
-            'plotypus'
+            'plotypus',
+            'plotypus_scripts'
         ],
         entry_points = {
             'console_scripts': [
-                'plotypus_demo = plotypus.demo:main',
-                'plotypus = plotypus.plotypus:main'
+                'plotypus_demo = plotypus_scripts.demo:main',
+                'plotypus = plotypus_scripts.plotypus:main'
             ]
         },
         keywords = [

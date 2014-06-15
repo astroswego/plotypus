@@ -1,8 +1,8 @@
 import numpy as np
 from sklearn.linear_model import LinearRegression, LassoCV
 from sklearn.pipeline import Pipeline
-from .Fourier import Fourier
-from .utils import colvec
+from plotypus.Fourier import Fourier
+from plotypus.utils import colvec
 
 import matplotlib
 matplotlib.use('PDF')
