@@ -1,6 +1,6 @@
 from os import makedirs
 from os.path import isdir
-from numpy import resize
+from numpy import resize, median, absolute
 
 __all__ = [
     'make_sure_path_exists',
@@ -31,4 +31,4 @@ def colvec(X):
     return resize(X, (X.shape[0], 1))
 
 def mad(data, axis=None):
-    return numpy.median(numpy.absolute(data - numpy.median(data, axis)), axis)
+    return median(absolute(data - median(data, axis)), axis)
