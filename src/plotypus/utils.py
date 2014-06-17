@@ -6,7 +6,8 @@ __all__ = [
     'make_sure_path_exists',
     'get_signal',
     'get_noise',
-    'colvec'
+    'colvec',
+    'mad'
 ]
 
 def make_sure_path_exists(path):
@@ -28,3 +29,6 @@ def get_noise(data):
 
 def colvec(X):
     return resize(X, (X.shape[0], 1))
+
+def mad(data, axis=None):
+    return numpy.median(numpy.absolute(data - numpy.median(data, axis)), axis)
