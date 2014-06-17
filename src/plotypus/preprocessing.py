@@ -13,7 +13,6 @@ class Fourier():
         return self
     
     def transform(self, X, y=None):
-        print('hi!!!')
         data = numpy.array(list(zip(numpy.array(X).T[0], range(len(X)))))
         phase, order = data[data[:,0].argsort()].T
         coefficients = trigonometric_coefficient_matrix(phase, self.degree)
