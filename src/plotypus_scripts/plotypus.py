@@ -12,6 +12,8 @@ def get_ops():
     parser.add_option('-o', '--output', type='string',
         default=path.join('..', 'results'),
         help='location of results')
+    parser.add_option('-p', '--periods', type='string',
+        default=None, help='file of star names and associated periods')
     parser.add_option('--min_period', dest='min_period', type='float',
         default=0.2, help='minimum period of each star')
     parser.add_option('--max_period', dest='max_period', type='float',
@@ -23,7 +25,7 @@ def get_ops():
     parser.add_option('--fourier_degree', dest='fourier_degree', type='int',
         default=15, help='number of coefficients to generate')
     parser.add_option('--sigma', dest='sigma', type='float',
-        default=5, help='rejection criterion for outliers')
+        default=10, help='rejection criterion for outliers')
     parser.add_option('--cv',               dest='cv', type='int',
         default=10, help='number of folds in the L1-regularization search')
     parser.add_option('--min_phase_cover', dest='min_phase_cover', type='float',
@@ -34,9 +36,16 @@ def get_ops():
 def main():
     ops = get_ops()
     lcs = []
+    if ops.periods is not None:
+        periods = {name: float(period) for (name, period)
+                   in (line.split() for line
+                       in open(ops.periods, 'r') if ' ' in line)}
     for filename in sorted(listdir(ops.input)):
+        name = filename.split('.')[0]
         print(filename)
-        star = get_lightcurve(path.join(ops.input, filename), **ops.__dict__)
+        star = get_lightcurve(path.join(ops.input, filename),
+            period=periods[name] if name in periods else None,
+            **ops.__dict__)
     
         if star is not None:
             period, lc, data = star
