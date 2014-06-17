@@ -50,6 +50,7 @@ def setup_package():
         entry_points = {
             'console_scripts': [
                 'plotypus_demo = plotypus_scripts.demo:main',
+                'plotypus_eclipse = plotypus_scripts.eclipse:main',
                 'plotypus = plotypus_scripts.plotypus:main'
             ]
         },
