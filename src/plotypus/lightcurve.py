@@ -32,7 +32,7 @@ def get_lightcurve(filename, period=None, fourier_degree=15, cv=10,
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
                    sigma=6, min_phase_cover=1/2.,
-                   phases=numpy.arange(0, 1, 0.01), **options):
+                   phases=numpy.arange(0, 1, 0.01), **ops):
     
     # Initialize predictor
     pipeline = Pipeline([('Fourier', Fourier()), ('Lasso', LassoCV(cv=cv))])
@@ -95,7 +95,7 @@ def find_outliers(data, period, predictor, sigma):
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
 def plot_lightcurve(filename, lc, period, data, output='.', filetype='.png',
-                    legend=False, phases = numpy.arange(0, 1, 0.01)):
+                    legend=False, phases = numpy.arange(0, 1, 0.01), **ops):
     ax = plt.gca()
     ax.grid(True)
     ax.invert_yaxis()
