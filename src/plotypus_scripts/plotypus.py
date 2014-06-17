@@ -23,7 +23,7 @@ def get_ops():
     parser.add_option('--fourier_degree', dest='fourier_degree', type='int',
         default=15, help='number of coefficients to generate')
     parser.add_option('--sigma', dest='sigma', type='float',
-        default=4, help='rejection criterion for outliers')
+        default=5, help='rejection criterion for outliers')
     parser.add_option('--cv',               dest='cv', type='int',
         default=10, help='number of folds in the L1-regularization search')
     parser.add_option('--min_phase_cover', dest='min_phase_cover', type='float',
@@ -36,16 +36,12 @@ def main():
     lcs = []
     for filename in sorted(listdir(ops.input)):
         print(filename)
-        star = get_lightcurve(path.join(ops.input, filename),
-                              ops.fourier_degree, ops.cv,
-                              ops.min_period, ops.max_period,
-                              ops.coarse_precision, ops.fine_precision,
-                              ops.sigma, ops.min_phase_cover)
+        star = get_lightcurve(path.join(ops.input, filename), **ops.__dict__)
     
         if star is not None:
             period, lc, data = star
             lcs += [[period] + list(lc)]
-            plot_lightcurve(ops.output, filename, lc, period, data)
+            plot_lightcurve(filename, lc, period, data, **ops.__dict__)
     
     numpy.savetxt(path.join(ops.output, 'lightcurves.dat'),
                   numpy.array(lcs), fmt='%.5f',
