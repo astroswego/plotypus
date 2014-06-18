@@ -1,6 +1,6 @@
 __all__ = [
-    'Fourier',
     'lightcurve',
     'periodogram',
+    'preprocessing',
     'utils'
 ]

@@ -12,6 +12,9 @@ def get_ops():
     parser.add_option('-o', '--output', type='string',
         default=path.join('..', 'results'),
         help='location of results')
+    parser.add_option('-f', '--format', type='string',
+        default='%.5f',
+        help='format specifier for input and output tables')
     parser.add_option('-p', '--periods', type='string',
         default=None, help='file of star names and associated periods')
     parser.add_option('--min_period', dest='min_period', type='float',
@@ -53,7 +56,7 @@ def main():
             plot_lightcurve(filename, lc, period, data, **ops.__dict__)
     
     numpy.savetxt(path.join(ops.output, 'lightcurves.dat'),
-                  numpy.array(lcs), fmt='%.5f',
+                  numpy.array(lcs), fmt=ops.format,
                   header='Period ' + \
                          ' '.join(['Phase' + str(i) for i in range(100)]))
 
