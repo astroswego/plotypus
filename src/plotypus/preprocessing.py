@@ -27,6 +27,29 @@ class Fourier():
         if 'degree' in params:
             self.degree = params['degree']
 
+    def phase_shifted_coefficients(self, amplitude_coefficients):
+        """Converts Fourier coefficients from the form
+        m(t) = A_0 + \Sum_{k=1}^n a_k \sin(k \omega t)
+                                + b_k \cos(k \omega t)
+        into the form
+        m(t) = A_0 + \Sum_{k=1}^n A_k \sin(k \omega t + \Phi_k)
+        """
+        A_0 = amplitude_coefficients[0]
+        a_k = amplitude_coefficients[1::2]
+        b_k = amplitude_coefficients[2::2]
+
+        A_k = numpy.sqrt(a_k**2 + b_k**2)
+        Phi_k = -a_k/b_k
+
+        # This should start out as a numpy zeros array, not a list
+        phase_shifted_coefficients_       = [None]*len(ak_bk_coefficients)
+        phase_shifted_coefficients_[0]    = A_0
+        phase_shifted_coefficients_[1::2] = A_k
+        phase_shifted_coefficients_[2::2] = Phi_k
+
+        # If this began as a zeros array, it wouldn't have to be reshaped
+        return numpy.array(phase_shifted_coefficients_).reshape(1, -1)
+
 def trigonometric_coefficient_matrix(phases, degree):
     return numpy.array([[1 if j == 0
                          else numpy.cos(numpy.pi*(j+1)*phases[i]) if j % 2
