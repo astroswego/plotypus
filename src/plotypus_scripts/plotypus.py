@@ -92,7 +92,7 @@ def main():
     max_coeffs = 2*ops.fourier_degree+1
     phases=numpy.arange(0, 1, 1/ops.phase_points)
 
-    file_list = get_files(ops.input)
+#    file_list = get_files(ops.input)
 
     for filename in sorted(listdir(ops.input)):
         # remove extension from end of filename
@@ -115,7 +115,7 @@ def main():
             plot_lightcurve(filename, lc, period, data, phases=phases,
                             **ops.__dict__)
 
-def get_files(input):
+#def get_files(input):
     
             
 def print_star(name, period, R_squared,
