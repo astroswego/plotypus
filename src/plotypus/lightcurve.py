@@ -1,5 +1,5 @@
 import numpy
-import sys
+from sys import stderr
 from math import floor
 from os import path
 from .utils import make_sure_path_exists, get_signal, get_noise, colvec, mad
@@ -29,7 +29,9 @@ __all__ = [
     'plot_lightcurve'
 ]
 
-def get_lightcurve(filename, period=None, fourier_degree=15, cv=10,
+def get_lightcurve(filename, period=None,
+                   fourier_degree=15, cv=10, max_iter=1000,
+                   Model=LassoCV, Predictor=GridSearchCV,
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
                    sigma=10, min_phase_cover=1/2.,
@@ -37,9 +39,9 @@ def get_lightcurve(filename, period=None, fourier_degree=15, cv=10,
 
     # Initialize predictor
     pipeline = Pipeline([('Fourier', Fourier()),
-                         ('Lasso', LassoCV(cv=cv))])
+                         ('Model', Model(cv=cv, max_iter=max_iter))])
     params = {'Fourier__degree': list(range(3, 1+fourier_degree))}
-    predictor = GridSearchCV(pipeline, params)
+    predictor = Predictor(pipeline, params)
 
     # Load file
     data = numpy.ma.array(data=numpy.loadtxt(filename), mask=None, dtype=float)
@@ -56,11 +58,11 @@ def get_lightcurve(filename, period=None, fourier_degree=15, cv=10,
         coverage = numpy.zeros((100))
         for p in phase:
             coverage[int(floor(p*100))] = 1
-        if sum(coverage)/100. < min_phase_cover:
-            print(sum(coverage)/100., min_phase_cover,
-                  file=sys.stderr)
+        if sum(coverage)/100 < min_phase_cover:
+            print(sum(coverage)/100, min_phase_cover,
+                  file=stderr)
             print("Insufficient phase coverage",
-                  file=sys.stderr)
+                  file=stderr)
             return None
 
         # Predict light curve
@@ -68,7 +70,7 @@ def get_lightcurve(filename, period=None, fourier_degree=15, cv=10,
             try:
                 predictor = predictor.fit(colvec(phase), mag)
             except Warning:
-                print(w, file=sys.stderr)
+                print(w, file=stderr)
                 return None
     
         # Reject outliers and repeat the process if there are any
@@ -81,11 +83,11 @@ def get_lightcurve(filename, period=None, fourier_degree=15, cv=10,
                 data.mask = outliers
                 if num_outliers > 0:
                     print("Rejecting", num_outliers, "outliers",
-                          file=sys.stderr)
+                          file=stderr)
                 break
             if num_outliers > 0:
                 print("Flagging", sum(outliers)[0], "outliers",
-                      file=sys.stderr)
+                      file=stderr)
             data.mask = numpy.ma.mask_or(data.mask, outliers)
     
     # Build light curve
@@ -94,10 +96,14 @@ def get_lightcurve(filename, period=None, fourier_degree=15, cv=10,
     # Shift to max light
     arg_max_light = lc.argmin()
     lc = numpy.concatenate((lc[arg_max_light:], lc[:arg_max_light]))
-    data.T[0] = numpy.fromiter((get_phase(p, _period, arg_max_light / 100.)
+
+    data.T[0] = numpy.fromiter((get_phase(p, _period,
+                                          arg_max_light / phases.size)
                                 for p in data.data.T[0]),
                                numpy.float, len(data.data.T[0]))
-    coefficients = predictor.best_estimator_.named_steps['Lasso'].coef_
+    best_model = predictor.best_estimator_.named_steps['Model']
+    coefficients = best_model.coef_
+    coefficients[0] = best_model.intercept_
     R_squared = predictor.best_score_
     
     return _period, lc, data, coefficients, R_squared
@@ -115,27 +121,27 @@ def plot_lightcurve(filename, lc, period, data, output='.', filetype='.png',
     ax.grid(True)
     ax.invert_yaxis()
     plt.xlim(0,2)
-    
+
     # Plot the fitted light curve
     signal, = plt.plot(numpy.hstack((phases,1+phases)),
                        numpy.hstack((lc, lc)),
                        linewidth=1.5, color='green')
-    
+
     # Plot points used
     phase, mag, err = get_signal(data).T
     inliers = plt.errorbar(numpy.hstack((phase,1+phase)),
-                            numpy.hstack((mag, mag)),
-                            yerr=numpy.hstack((err,err)),
-                            color='black', ls='None',
-                            ms=.01, mew=.01, capsize=0)
-    
+                           numpy.hstack((mag, mag)),
+                           yerr=numpy.hstack((err,err)),
+                           color='black', ls='None',
+                           ms=.01, mew=.01, capsize=0)
+
     # Plot outliers rejected
     phase, mag, err = get_noise(data).T
     outliers = plt.errorbar(numpy.hstack((phase,1+phase)),
-                             numpy.hstack((mag, mag)),
-                             yerr=numpy.hstack((err,err)),
-                             color='r', ls='None',
-                             ms=.01, mew=.01, capsize=0)
+                            numpy.hstack((mag, mag)),
+                            yerr=numpy.hstack((err,err)),
+                            color='r', ls='None',
+                            ms=.01, mew=.01, capsize=0)
     
     if legend:
         plt.legend([signal, inliers, outliers],
