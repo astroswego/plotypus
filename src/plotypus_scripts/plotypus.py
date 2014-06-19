@@ -92,8 +92,16 @@ def main():
     max_coeffs = 2*ops.fourier_degree+1
     phases=numpy.arange(0, 1, 1/ops.phase_points)
 
+    file_list = get_files(ops.input)
+
     for filename in sorted(listdir(ops.input)):
+        # remove extension from end of filename
         name = filename.split('.')[0]
+        ## Doing the following instead would allow for naming schemes which
+        ## include a dot in the star's ID. However, it wouldn't behave right
+        ## for filetypes with two extensions, such as .tar.gz. Instead we
+        ## should take a filetype parameter, and strip that from the end.
+        # name = '.'.join(filename.split('.')[:-1])
         star = get_lightcurve(path.join(ops.input, filename),
             period=periods[name] if name in periods else None,
             phases=phases,
@@ -107,6 +115,9 @@ def main():
             plot_lightcurve(filename, lc, period, data, phases=phases,
                             **ops.__dict__)
 
+def get_files(input):
+    
+            
 def print_star(name, period, R_squared,
                coefficients, max_coeffs, lc, formatter):
     print(' '.join([name, str(period), str(R_squared)]), end=' ')

@@ -39,6 +39,7 @@ def get_lightcurve(filename, period=None,
 
     # Initialize predictor
     pipeline = Pipeline([('Fourier', Fourier()),
+                         # this needs to be generalized
                          ('Model', Model(cv=cv, max_iter=max_iter))])
     params = {'Fourier__degree': list(range(3, 1+fourier_degree))}
     predictor = Predictor(pipeline, params)
