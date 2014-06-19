@@ -98,8 +98,9 @@ def get_lightcurve(filename, period=None, fourier_degree=15, cv=10,
                                 for p in data.data.T[0]),
                                numpy.float, len(data.data.T[0]))
     coefficients = predictor.best_estimator_.named_steps['Lasso'].coef_
+    R_squared = predictor.best_score_
     
-    return _period, lc, data, coefficients
+    return _period, lc, data, coefficients, R_squared
 
 def find_outliers(data, period, predictor, sigma):
     phase, mag, err = rephase(data, period).T

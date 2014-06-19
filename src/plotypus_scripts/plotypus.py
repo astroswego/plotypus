@@ -22,21 +22,21 @@ def get_ops():
 #    parser.add_option('--num-phase', type='int',
 #        default=100,
 #        help='number of phase points to use')
-    parser.add_option('--min_period', dest='min_period', type='float',
+    parser.add_option('--min-period', type='float',
         default=0.2, help='minimum period of each star')
-    parser.add_option('--max_period', dest='max_period', type='float',
+    parser.add_option('--max-period', type='float',
         default=32., help='maximum period of each star')
-    parser.add_option('--coarse_precision', dest='coarse_precision', type='int',
+    parser.add_option('--coarse-precision', type='int',
         default=0.001, help='level of granularity on first pass')
-    parser.add_option('--fine_precision', dest='fine_precision', type='int',
+    parser.add_option('--fine-precision', type='int',
         default=0.0000001, help='level of granularity on second pass')
-    parser.add_option('--fourier_degree', dest='fourier_degree', type='int',
+    parser.add_option('--fourier-degree', type='int',
         default=15, help='number of coefficients to generate')
     parser.add_option('--sigma', dest='sigma', type='float',
         default=10, help='rejection criterion for outliers')
-    parser.add_option('--cv',               dest='cv', type='int',
+    parser.add_option('--cv', type='int',
         default=10, help='number of folds in the L1-regularization search')
-    parser.add_option('--min_phase_cover', dest='min_phase_cover', type='float',
+    parser.add_option('--min-phase-cover', type='float',
         default=1/2., help='minimum fraction of phases that must have points')
     (options, args) = parser.parse_args()
     return options
@@ -52,6 +52,7 @@ def main():
         '#',
         'Name',
         'Period',
+        'R^2',
         'A_0',
         ' '.join(['a_{0} b_{0}'.format(i)
                   for i in range(1, ops.fourier_degree+1)]),
@@ -69,22 +70,16 @@ def main():
             **ops.__dict__)
 
         if star is not None:
-            print_star(star, name, formatter, max_coeffs)
-            period, lc, data, coeff = star
-#            lcs += [[period] + list(lc)]
+            period, lc, data, coefficients, R_squared = star
+            print_star(name, period, R_squared,
+                       coefficients, max_coeffs, lc, formatter)
             plot_lightcurve(filename, lc, period, data, **ops.__dict__)
 
-    # numpy.savetxt(path.join(ops.output, 'lightcurves.dat'),
-    #               numpy.array(lcs), fmt=ops.format,
-    #               header='Period ' + \
-    #                      ' '.join(['Phase' + str(i) for i in range(100)]))
-
-def print_star(star, name, formatter, max_coeffs):
-    period, lc, data, coeff = star
-    
-    print(' '.join([name, str(period)]), end=' ')
-    print(' '.join(map(formatter, coeff)), end=' ')
-    trailing_zeros = max_coeffs - len(coeff)
+def print_star(name, period, R_squared,
+               coefficients, max_coeffs, lc, formatter):
+    print(' '.join([name, str(period), str(R_squared)]), end=' ')
+    print(' '.join(map(formatter, coefficients)), end=' ')
+    trailing_zeros = max_coeffs - len(coefficients)
     if trailing_zeros > 0:
         print(' '.join(map(formatter, numpy.zeros(trailing_zeros))))
     print(' '.join(map(formatter, lc)))
