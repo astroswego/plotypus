@@ -30,17 +30,16 @@ __all__ = [
 ]
 
 def get_lightcurve(filename, period=None,
-                   fourier_degree=15, cv=10, max_iter=1000,
-                   Model=LassoCV, Predictor=GridSearchCV,
+                   fourier_degree=15,
+                   regressor=LassoCV(cv=10), Predictor=GridSearchCV,
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
-                   sigma=10, min_phase_cover=1/2.,
+                   sigma=10, robust_sigma_clipping=True, min_phase_cover=1/2,
                    phases=numpy.arange(0, 1, 0.01), **ops):
 
     # Initialize predictor
     pipeline = Pipeline([('Fourier', Fourier()),
-                         # this needs to be generalized
-                         ('Model', Model(cv=cv, max_iter=max_iter))])
+                         ('Regressor', regressor)])
     params = {'Fourier__degree': list(range(3, 1+fourier_degree))}
     predictor = Predictor(pipeline, params)
 
@@ -76,7 +75,8 @@ def get_lightcurve(filename, period=None,
     
         # Reject outliers and repeat the process if there are any
         if sigma:
-            outliers = find_outliers(data.data, _period, predictor, sigma)
+            outliers = find_outliers(data.data, _period, predictor, sigma,
+                                     robust_sigma_clipping)
             num_outliers = sum(outliers)[0]
             if num_outliers == 0 or \
                set.issubset(set(numpy.nonzero(outliers.T[0])[0]),
@@ -102,18 +102,22 @@ def get_lightcurve(filename, period=None,
                                           arg_max_light / phases.size)
                                 for p in data.data.T[0]),
                                numpy.float, len(data.data.T[0]))
-    best_model = predictor.best_estimator_.named_steps['Model']
+    best_model = predictor.best_estimator_.named_steps['Regressor']
     coefficients = best_model.coef_
     coefficients[0] = best_model.intercept_
     R_squared = predictor.best_score_
     
     return _period, lc, data, coefficients, R_squared
 
-def find_outliers(data, period, predictor, sigma):
+def find_outliers(data, period, predictor, sigma,
+                  robust_sigma_clipping=True):
+    # determine sigma clipping function
+    sigma_clipper = mad if robust_sigma_clipping else numpy.std
+    
     phase, mag, err = rephase(data, period).T
     residuals = numpy.absolute(predictor.predict(colvec(phase)) - mag)
     outliers = numpy.logical_and(residuals > err,
-                                 residuals > sigma * mad(residuals))
+                                 residuals > sigma * sigma_clipper(residuals))
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
 def plot_lightcurve(filename, lc, period, data, output='.', filetype='.png',
