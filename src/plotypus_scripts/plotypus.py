@@ -4,7 +4,7 @@ from os import path, listdir
 from argparse import ArgumentError, ArgumentParser, FileType
 from sklearn.linear_model import LassoCV, LinearRegression
 from sklearn.grid_search import GridSearchCV
-from plotypus.lightcurve import get_lightcurve, plot_lightcurve
+from plotypus.lightcurve import make_predictor, get_lightcurve, plot_lightcurve
 from plotypus.preprocessing import Fourier
 
 def get_args():
@@ -35,8 +35,8 @@ def get_args():
     parser.add_argument('--fine-precision', type=int,
         default=0.0000001,
         help='level of granularity on second pass')
-    parser.add_argument('--fourier-degree', type=int,
-        default=15,
+    parser.add_argument('--fourier-degree', type=int, nargs=2,
+        default=(3,15),
         help='number of coefficients to generate')
     parser.add_argument('-r', '--regressor',
         choices=['LassoCV', 'OLS'],
@@ -88,9 +88,14 @@ def main():
     if ops.periods is not None:
         periods = {name: float(period) for (name, period)
                    in (line.strip().split() for line
-                       # generalize to all whitespace
+                       # generalize to all whitespace instead of just spaces
                        in ops.periods if ' ' in line)}
         ops.periods.close()
+
+
+    formatter = lambda x: ops.format % x    
+    max_coeffs = 2*ops.fourier_degree[1]+1
+    phases=numpy.arange(0, 1, 1/ops.phase_points)
 
     print(' '.join([
         '#',
@@ -98,14 +103,10 @@ def main():
         'Period',
         'R^2',
         'A_0',
-        ' '.join(map('A_{0} Phi_{0}'.format, range(1, ops.fourier_degree+1))),
+        ' '.join(map('A_{0} Phi_{0}'.format, range(1, max_coeffs))),
         ' '.join(map('Phase{}'.format, range(ops.phase_points)))
         ])
     )
-
-    formatter = lambda x: ops.format % x    
-    max_coeffs = 2*ops.fourier_degree+1
-    phases=numpy.arange(0, 1, 1/ops.phase_points)
 
     for filename in get_files(ops.input):
         filename = filename.strip()
@@ -117,11 +118,6 @@ def main():
         except AttributeError:
             print("File {} does not exist".format(filename))
             raise Exception
-        ## Doing the following instead would allow for naming schemes which
-        ## include a dot in the star's ID. However, it wouldn't behave right
-        ## for filetypes with two extensions, such as .tar.gz. Instead we
-        ## should take a filetype parameter, and strip that from the end.
-        # name = '.'.join(filename.split('.')[:-1])
         star = get_lightcurve(filename_,
             period=periods[name] if name in periods else None,
             phases=phases,

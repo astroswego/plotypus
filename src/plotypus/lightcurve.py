@@ -29,20 +29,24 @@ __all__ = [
     'plot_lightcurve'
 ]
 
+def make_predictor(regressor=LassoCV(cv=10),
+                   Predictor=GridSearchCV,
+                   fourier_degree=(3,15)):
+    pipeline = Pipeline([('Fourier',   Fourier()),
+                         ('Regressor', regressor)])
+    min_degree, max_degree = fourier_degree
+    params = {'Fourier__degree':
+              list(range(min_degree, 1+max_degree))}
+    predictor = Predictor(pipeline, params)
+
+    return predictor
+
 def get_lightcurve(filename, period=None,
-                   fourier_degree=15,
-                   regressor=LassoCV(cv=10), Predictor=GridSearchCV,
+                   predictor=make_predictor(),
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
                    sigma=10, robust_sigma_clipping=True, min_phase_cover=1/2,
                    phases=numpy.arange(0, 1, 0.01), **ops):
-
-    # Initialize predictor
-    pipeline = Pipeline([('Fourier', Fourier()),
-                         ('Regressor', regressor)])
-    params = {'Fourier__degree': list(range(3, 1+fourier_degree))}
-    predictor = Predictor(pipeline, params)
-
     # Load file
     data = numpy.ma.array(data=numpy.loadtxt(filename), mask=None, dtype=float)
 
@@ -50,7 +54,8 @@ def get_lightcurve(filename, period=None,
         # Find the period of the inliers
         signal = get_signal(data)
         _period = period if period is not None else \
-                  find_period(signal.T[0], signal.T[1], min_period, max_period,
+                  find_period(signal.T[0], signal.T[1],
+                              min_period, max_period,
                               coarse_precision, fine_precision)
         phase, mag, err = rephase(signal, _period).T
 
@@ -63,7 +68,7 @@ def get_lightcurve(filename, period=None,
                   file=stderr)
             print("Insufficient phase coverage",
                   file=stderr)
-            return None
+            return
 
         # Predict light curve
         with warnings.catch_warnings(record=True) as w:
@@ -71,7 +76,7 @@ def get_lightcurve(filename, period=None,
                 predictor = predictor.fit(colvec(phase), mag)
             except Warning:
                 print(w, file=stderr)
-                return None
+                return
     
         # Reject outliers and repeat the process if there are any
         if sigma:
