@@ -27,6 +27,7 @@ class Fourier():
         if 'degree' in params:
             self.degree = params['degree']
 
+    @staticmethod
     def phase_shifted_coefficients(amplitude_coefficients):
         """Converts Fourier coefficients from the form
         m(t) = A_0 + \Sum_{k=1}^n a_k \sin(k \omega t)
