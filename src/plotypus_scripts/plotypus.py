@@ -117,7 +117,7 @@ def main():
     picklable_ops = {k: ops.__dict__[k]
                      for k in ops.__dict__
                      if k not in {'input', 'output', 'periods'}}
-    results = pmap(_get_lightcurve, zip(filenames, _periods),
+    results = pmap(_get_lightcurve, zip(filepaths, _periods),
                    phases=phases, **picklable_ops)
     # print file header
     print(' '.join([
