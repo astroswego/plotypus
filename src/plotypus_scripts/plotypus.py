@@ -6,6 +6,7 @@ from sklearn.linear_model import LassoCV, LinearRegression
 from sklearn.grid_search import GridSearchCV
 from plotypus.lightcurve import make_predictor, get_lightcurve, plot_lightcurve
 from plotypus.preprocessing import Fourier
+from plotypus.utils import pmap
 
 def get_args():
     parser = ArgumentParser()
@@ -18,8 +19,12 @@ def get_args():
     parser.add_argument('-f', '--format', type=str,
         default='%.5f',
         help='format specifier for output table')
-    parser.add_argument('-p', '--periods', type=FileType('r'),
-        default=None, help='file of star names and associated periods')
+    parser.add_argument('-p', '--processes', type=int,
+        default=1,
+        help='number of stars to process in parallel')
+    parser.add_argument('--periods', type=FileType('r'),
+        default=None,
+        help='file of star names and associated periods')
     parser.add_argument('--phase-points', type=int,
         default=100,
         help='number of phase points to use')
@@ -97,6 +102,24 @@ def main():
     max_coeffs = 2*ops.fourier_degree[1]+1
     phases=numpy.arange(0, 1, 1/ops.phase_points)
 
+    
+    filenames = list(map(lambda x: x.strip(), _get_files(ops.input)))
+    filepaths = map(lambda filename:
+                    filename if path.isfile(filename)
+                             else path.join(ops.input, filename),
+                    filenames)
+    star_names = list(map(lambda filename:
+                          path.basename(filename).split('.')[0],
+                          filenames))
+    _periods = map(lambda name: periods[name], star_names)
+    # a dict containing all options which can be pickled
+    # all parameters to pmap must be picklable
+    picklable_ops = {k: ops.__dict__[k]
+                     for k in ops.__dict__
+                     if k not in {'input', 'output', 'periods'}}
+    results = pmap(_get_lightcurve, zip(filenames, _periods),
+                   phases=phases, **picklable_ops)
+    # print file header
     print(' '.join([
         '#',
         'Name',
@@ -107,32 +130,21 @@ def main():
         ' '.join(map('Phase{}'.format, range(ops.phase_points)))
         ])
     )
-
-    for filename in get_files(ops.input):
-        filename = filename.strip()
-        # remove extension from end of filename
-        name = filename.split('.')[0]
-        try:
-            filename_ = filename if path.isfile(filename) \
-                                 else path.join(ops.input, filename)
-        except AttributeError:
-            print("File {} does not exist".format(filename))
-            raise Exception
-        star = get_lightcurve(filename_,
-            period=periods[name] if name in periods else None,
-            phases=phases,
-            **ops.__dict__)
-
-        if star is not None:
-            period, lc, data, coefficients, R_squared = star
-            print_star(name, period, R_squared,
+    # this needs to be parallelized as well
+    for name, result in zip(star_names, results):
+        if result is not None:
+            period, lc, data, coefficients, R_squared = result
+            _print_star(name, period, R_squared,
                        Fourier.phase_shifted_coefficients(coefficients),
                        max_coeffs, lc, formatter)
-            plot_lightcurve(path.basename(filename),
-                            lc, period, data, phases=phases,
+            plot_lightcurve(name, lc, period, data, phases=phases,
                             **ops.__dict__)
 
-def get_files(input):
+def _get_lightcurve(filename_period, **ops):
+    filename, period = filename_period
+    return get_lightcurve(filename, period=period, **ops)
+
+def _get_files(input):
     if input is stdin:
         return input
     elif path.isdir(input):
@@ -141,7 +153,7 @@ def get_files(input):
         with open(input, 'r') as f:
             return f.readlines()
             
-def print_star(name, period, R_squared,
+def _print_star(name, period, R_squared,
                coefficients, max_coeffs, lc, formatter):
     print(' '.join([name, str(period), str(R_squared)]), end=' ')
     print(' '.join(map(formatter, coefficients)), end=' ')
