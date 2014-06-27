@@ -85,6 +85,7 @@ def get_args():
 
     args.regressor = regressor_choices[args.regressor]
     args.Predictor = predictor_choices[args.Predictor]
+    args.predictor = make_predictor(**args.__dict__)
 
     return args
 

@@ -31,7 +31,8 @@ __all__ = [
 
 def make_predictor(regressor=LassoCV(cv=10),
                    Predictor=GridSearchCV,
-                   fourier_degree=(3,15)):
+                   fourier_degree=(3,15),
+                   **kwargs):
     pipeline = Pipeline([('Fourier',   Fourier()),
                          ('Regressor', regressor)])
     min_degree, max_degree = fourier_degree
