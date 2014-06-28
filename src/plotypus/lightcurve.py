@@ -24,6 +24,7 @@ rcParams['savefig.dpi'] = 300
 import matplotlib.pyplot as plt
 
 __all__ = [
+    'make_predictor',
     'get_lightcurve',
     'find_outliers',
     'plot_lightcurve'

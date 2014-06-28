@@ -47,7 +47,7 @@ def get_args():
         choices=['LassoCV', 'OLS'],
         default='LassoCV',
         help='type of regressor to use')
-    parser.add_argument('--predictor', dest='Predictor',
+    parser.add_argument('--predictor',
         choices=['Baart', 'GridSearchCV'],
         default='GridSearchCV',
         help='type of model predictor to use')
@@ -73,7 +73,7 @@ def get_args():
 
 #    if args.input is stdin:
 #        raise Exception("Reading from stdin working yet")
-    if args.Predictor is 'Baart':
+    if args.predictor is 'Baart':
         raise ArgumentError("Baart's criteria not yet implemented")
     
     regressor_choices = {'LassoCV': LassoCV(cv=args.cv,
@@ -84,8 +84,9 @@ def get_args():
                          'GridSearchCV': GridSearchCV}
 
     args.regressor = regressor_choices[args.regressor]
-    args.Predictor = predictor_choices[args.Predictor]
-    args.predictor = make_predictor(**args.__dict__)
+    Predictor = predictor_choices[args.predictor]
+    args.predictor = make_predictor(Predictor=Predictor, **args.__dict__)
+    args.phases=numpy.arange(0, 1, 1/args.phase_points)
 
     return args
 
@@ -98,12 +99,7 @@ def main():
                        in ops.periods if ' ' in line)}
         ops.periods.close()
 
-
-    formatter = lambda x: ops.format % x    
-    max_coeffs = 2*ops.fourier_degree[1]+1
-    phases=numpy.arange(0, 1, 1/ops.phase_points)
-
-    
+    max_coeffs = 2*ops.__dict__['fourier_degree'][1]+1
     filenames = list(map(lambda x: x.strip(), _get_files(ops.input)))
     filepaths = map(lambda filename:
                     filename if path.isfile(filename)
@@ -112,14 +108,11 @@ def main():
     star_names = list(map(lambda filename:
                           path.basename(filename).split('.')[0],
                           filenames))
-    _periods = map(lambda name: periods[name], star_names)
-    # a dict containing all options which can be pickled
+    # a dict containing all options which can be pickled, because
     # all parameters to pmap must be picklable
     picklable_ops = {k: ops.__dict__[k]
                      for k in ops.__dict__
-                     if k not in {'input', 'output', 'periods'}}
-    results = pmap(_get_lightcurve, zip(filepaths, _periods),
-                   phases=phases, **picklable_ops)
+                     if k not in {'input', 'periods'}}
     # print file header
     print(' '.join([
         '#',
@@ -131,37 +124,46 @@ def main():
         ' '.join(map('Phase{}'.format, range(ops.phase_points)))
         ])
     )
-    # this needs to be parallelized as well
-    for name, result in zip(star_names, results):
-        if result is not None:
-            period, lc, data, coefficients, R_squared = result
-            _print_star(name, period, R_squared,
-                       Fourier.phase_shifted_coefficients(coefficients),
-                       max_coeffs, lc, formatter)
-            plot_lightcurve(name, lc, period, data, phases=phases,
-                            **ops.__dict__)
+    printer = _star_printer(max_coeffs, ops.__dict__['format'])
+    pmap(process_star, filepaths, callback=printer, **picklable_ops)
 
-def _get_lightcurve(filename_period, **ops):
-    filename, period = filename_period
-    return get_lightcurve(filename, period=period, **ops)
+def process_star(filename, periods={}, **ops):
+    """Processes a star's lightcurve, prints its coefficients, and saves
+    its plotted lightcurve to a file. Returns the results of get_lightcurve.
+    """
+    name = path.basename(filename).split('.')[0]
+    _period = periods.get(name)
+    result = get_lightcurve(filename, period=_period, **ops)
 
-def _get_files(input):
-    if input is stdin:
-        return input
-    elif path.isdir(input):
-        return sorted(listdir(input))
-    else:
-        with open(input, 'r') as f:
-            return f.readlines()
-            
-def _print_star(name, period, R_squared,
-               coefficients, max_coeffs, lc, formatter):
+    if result is not None:
+        period, lc, data, coefficients, R_squared = result
+        plot_lightcurve(name, lc, period, data, **ops)
+        return name, period, lc, data, coefficients, R_squared
+
+def _star_printer(max_coeffs, fmt):
+    return lambda results: _print_star(results, max_coeffs, fmt)
+
+def _print_star(results, max_coeffs, fmt):
+    if results is None: return
+    formatter = lambda x: fmt % x
+
+    name, period, lc, data, coefficients, R_squared = results
     print(' '.join([name, str(period), str(R_squared)]), end=' ')
     print(' '.join(map(formatter, coefficients)), end=' ')
     trailing_zeros = max_coeffs - len(coefficients)
     if trailing_zeros > 0:
-        print(' '.join(map(formatter, numpy.zeros(trailing_zeros))), end=' ')
+        print(' '.join(map(formatter,
+                           numpy.zeros(trailing_zeros))), end=' ')
     print(' '.join(map(formatter, lc)))
+
+def _get_files(input):
+    if input is stdin:
+        return map(lambda x: x.strip(), input)
+    elif path.isdir(input):
+        return sorted(listdir(input))
+    else:
+        with open(input, 'r') as f:
+            return map(lambda x: x.strip(), f.readlines())
                          
 if __name__ == "__main__":
     exit(main())

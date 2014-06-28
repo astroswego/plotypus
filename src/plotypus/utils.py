@@ -12,15 +12,21 @@ __all__ = [
     'mad'
 ]
 
-def pmap(func, args, processes=None, **kwargs):
+def pmap(func, args, processes=None, callback=lambda *x: None, **kwargs):
     if processes is 1:
-        return map(lambda arg: func(arg, **kwargs), args)
+        results = []
+        for arg in args:
+            result = func(arg, **kwargs)
+            results.append(result)
+            callback(result)
+        return results
     else:
         p = Pool() if processes is None else Pool(processes)
-        results = [p.apply_async(func, (arg,), kwargs) for arg in args]
+        results = [p.apply_async(func, (arg,), kwargs, callback)
+                   for arg in args]
         p.close()
         p.join()
-        return map(lambda result: result.get(), results)
+        return [result.get() for result in results]
 
 def make_sure_path_exists(path):
     """Creates the supplied path. Raises OS error if the path cannot be
