@@ -21,8 +21,8 @@ Topic :: Software Development :: Libraries :: Python Modules
 """
 
 MAJOR      = 0
-MINOR      = 3
-MICRO      = 0
+MINOR      = 2
+MICRO      = 2
 ISRELEASED = False
 PRERELEASE = 1
 VERSION    = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
@@ -56,6 +56,7 @@ def setup_package():
         },
         keywords = [
             'astronomy',
+            'light curve',
             'stellar pulsation',
             'variable star'
         ],
