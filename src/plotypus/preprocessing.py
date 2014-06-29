@@ -1,8 +1,7 @@
 import numpy
 
 __all__ = [
-    'Fourier',
-    'trigonometric_coefficient_matrix'
+    'Fourier'
 ]
 
 class Fourier():
@@ -12,7 +11,7 @@ class Fourier():
     def fit(self, X, y=None):
         return self
     
-    def transform(self, X, y=None):
+    def transform(self, X, y=None, **params):
         data = numpy.array(list(zip(numpy.array(X).T[0], range(len(X)))))
         phase, order = data[data[:,0].argsort()].T
         coefficients = self.trigonometric_coefficient_matrix(phase, self.degree)

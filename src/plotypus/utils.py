@@ -9,7 +9,8 @@ __all__ = [
     'get_signal',
     'get_noise',
     'colvec',
-    'mad'
+    'mad',
+    'autocorrelation'
 ]
 
 def pmap(func, args, processes=None, callback=lambda *x: None, **kwargs):
@@ -50,3 +51,14 @@ def colvec(X):
 
 def mad(data, axis=None):
     return median(absolute(data - median(data, axis)), axis)
+
+def autocorrelation(data, lag=1):
+    """Computes the autocorrelation of the data with the given lag.
+    Autocorrelation is simply
+    autocovariance(data) / covariance(data-mean, data-mean),
+    where autocovariance is simply
+    covariance((data-mean)[:-lag], (data-mean)[lag:]).
+    """
+    differences = data - data.mean()
+    products = differences[:-lag] * differences[lag:]
+    return products.sum() / (differences**2).sum()
