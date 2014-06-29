@@ -15,7 +15,7 @@ class Fourier():
     def transform(self, X, y=None):
         data = numpy.array(list(zip(numpy.array(X).T[0], range(len(X)))))
         phase, order = data[data[:,0].argsort()].T
-        coefficients = trigonometric_coefficient_matrix(phase, self.degree)
+        coefficients = self.trigonometric_coefficient_matrix(phase, self.degree)
         return numpy.array([mag for (orig, mag) # Put back in original order
                             in sorted(zip(order, coefficients),
                                       key=lambda pair: pair[0])])
@@ -26,6 +26,15 @@ class Fourier():
     def set_params(self, **params):
         if 'degree' in params:
             self.degree = params['degree']
+
+    @staticmethod
+    def trigonometric_coefficient_matrix(phases, degree):
+        return numpy.array([
+            [1 if j == 0
+             else numpy.cos(numpy.pi*(j+1)*phases[i]) if j % 2
+             else numpy.sin(numpy.pi*j*phases[i])
+             for j in range(2*degree+1)]
+            for i in range(len(phases))])
 
     @staticmethod
     def phase_shifted_coefficients(amplitude_coefficients):
@@ -66,9 +75,3 @@ class Fourier():
 
         return phase_shifted_coefficients_
 
-def trigonometric_coefficient_matrix(phases, degree):
-    return numpy.array([[1 if j == 0
-                         else numpy.cos(numpy.pi*(j+1)*phases[i]) if j % 2
-                         else numpy.sin(numpy.pi*j*phases[i])
-                        for j in range(2*degree+1)]
-                       for i in range(len(phases))])

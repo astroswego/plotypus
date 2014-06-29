@@ -22,7 +22,7 @@ Topic :: Software Development :: Libraries :: Python Modules
 
 MAJOR      = 0
 MINOR      = 2
-MICRO      = 2
+MICRO      = 3
 ISRELEASED = False
 PRERELEASE = 1
 VERSION    = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
