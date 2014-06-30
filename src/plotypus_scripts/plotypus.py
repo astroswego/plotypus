@@ -90,16 +90,18 @@ def get_args():
                                     **args.__dict__)
     args.phases=numpy.arange(0, 1, 1/args.phase_points)
 
+    if args.periods is not None:
+        periods = {name: float(period) for (name, period)
+                   in (line.strip().split() for line
+                       # generalize to all whitespace instead of just spaces
+                       in args.periods if ' ' in line)}
+        args.periods.close()
+        args.periods = periods
+
     return args
 
 def main():
     ops = get_args()
-    if ops.periods is not None:
-        periods = {name: float(period) for (name, period)
-                   in (line.strip().split() for line
-                       # generalize to all whitespace instead of just spaces
-                       in ops.periods if ' ' in line)}
-        ops.periods.close()
 
     max_coeffs = 2*ops.__dict__['fourier_degree'][1]+1
     filenames = list(map(lambda x: x.strip(), _get_files(ops.input)))
@@ -114,7 +116,7 @@ def main():
     # all parameters to pmap must be picklable
     picklable_ops = {k: ops.__dict__[k]
                      for k in ops.__dict__
-                     if k not in {'input', 'periods'}}
+                     if k not in {'input'}}
     # print file header
     print(' '.join([
         '#',
