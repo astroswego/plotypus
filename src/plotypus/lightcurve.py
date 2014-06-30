@@ -33,12 +33,19 @@ __all__ = [
 def make_predictor(regressor=LassoCV(cv=10),
                    Predictor=GridSearchCV,
                    fourier_degree=(3,15),
+                   use_baart=False,
                    **kwargs):
-    pipeline = Pipeline([('Fourier',   Fourier()),
+    if use_baart:
+        fourier = Fourier(degree=fourier_degree, regressor=regressor)
+        params = {}
+    else:
+        fourier = Fourier()
+        min_degree, max_degree = fourier_degree
+        params = {'Fourier__degree':
+                  list(range(min_degree, 1+max_degree))}        
+    pipeline = Pipeline([('Fourier',   fourier),
                          ('Regressor', regressor)])
-    min_degree, max_degree = fourier_degree
-    params = {'Fourier__degree':
-              list(range(min_degree, 1+max_degree))}
+
     predictor = Predictor(pipeline, params)
 
     return predictor
@@ -79,7 +86,7 @@ def get_lightcurve(filename, period=None,
             except Warning:
                 print(w, file=stderr)
                 return
-    
+
         # Reject outliers and repeat the process if there are any
         if sigma:
             outliers = find_outliers(data.data, _period, predictor, sigma,

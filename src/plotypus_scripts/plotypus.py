@@ -75,7 +75,7 @@ def get_args():
 #        raise Exception("Reading from stdin working yet")
     if args.predictor is 'Baart':
         raise ArgumentError("Baart's criteria not yet implemented")
-    
+
     regressor_choices = {'LassoCV': LassoCV(cv=args.cv,
                                             max_iter=args.max_iter),
                          'OLS': LinearRegression()}
@@ -84,8 +84,10 @@ def get_args():
                          'GridSearchCV': GridSearchCV}
 
     args.regressor = regressor_choices[args.regressor]
-    Predictor = predictor_choices[args.predictor]
-    args.predictor = make_predictor(Predictor=Predictor, **args.__dict__)
+    Predictor = predictor_choices[args.predictor] or GridSearchCV
+    args.predictor = make_predictor(Predictor=Predictor,
+                                    use_baart=args.predictor is 'Baart',
+                                    **args.__dict__)
     args.phases=numpy.arange(0, 1, 1/args.phase_points)
 
     return args

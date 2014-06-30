@@ -1,14 +1,22 @@
+import collections
 import numpy
+from sklearn.linear_model import LinearRegression
+from sklearn.pipeline import Pipeline
+from .utils import autocorrelation
 
 __all__ = [
     'Fourier'
 ]
 
 class Fourier():
-    def __init__(self, degree=3):
-        self.degree = degree
+    def __init__(self, degree=3, regressor=LinearRegression()):
+        self.degree = self.baart_criteria(degree, regressor) \
+                      if isinstance(degree, collections.Sequence) \
+                      else degree
     
     def fit(self, X, y=None):
+        if isinstance(self.degree, collections.Sequence):
+            self.degree = self.bart_criteria(degree, regressor)
         return self
     
     def transform(self, X, y=None, **params):
@@ -25,6 +33,31 @@ class Fourier():
     def set_params(self, **params):
         if 'degree' in params:
             self.degree = params['degree']
+
+    def baart_criteria(self, X, y):
+        try:
+            min_degree, max_degree = self.degree
+        except Exception:
+            raise Exception("Degree must be a length two sequence")
+
+        cutoff = self.baart_tolerance(X)
+        pipeline = Pipeline([('Fourier', Fourier()),
+                             ('Regressor', self.regressor)])
+        fourier_degree_string = 'Fourier__degree'
+        for degree in range(min_degree, max_degree+1):
+            pipeline.set_params({fourier_degree_string: degree})
+            pipeline.fit(X, y)
+            lc = pipeline.predict(X)
+            residuals = numpy.sort(y) - lc
+            p_c = autocorrelation(residuals)
+            if p_c <= cutoff:
+                return degree
+        # reached max_degree without reaching cutoff
+        return max_degree
+
+    @staticmethod
+    def baart_tolerance(X):
+        return (2 * (X.shape[0] - 1))**(-1/2)
 
     @staticmethod
     def trigonometric_coefficient_matrix(phases, degree):
