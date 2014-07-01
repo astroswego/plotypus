@@ -19,6 +19,9 @@ def get_args():
     parser.add_argument('-f', '--format', type=str,
         default='%.5f',
         help='format specifier for output table')
+    parser.add_argument('--data-extension', type=str,
+        default='.dat',
+        help='extension which follows a star\'s name in data filenames')
     parser.add_argument('-p', '--processes', type=int,
         default=1,
         help='number of stars to process in parallel')
@@ -135,7 +138,13 @@ def process_star(filename, periods={}, **ops):
     """Processes a star's lightcurve, prints its coefficients, and saves
     its plotted lightcurve to a file. Returns the results of get_lightcurve.
     """
-    name = path.basename(filename).split('.')[0]
+    _name = path.basename(filename)
+    extension = ops['data_extension']
+    if _name.endswith(extension):
+        name = _name[:-len(extension)]
+    else:
+        # file has wrong extension
+        return
     _period = periods.get(name)
     result = get_lightcurve(filename, period=_period, **ops)
 
