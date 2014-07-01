@@ -1,5 +1,5 @@
 import numpy
-from sys import exit, stdin
+from sys import exit, stdin, stderr
 from os import path, listdir
 from argparse import ArgumentError, ArgumentParser, FileType
 from sklearn.linear_model import LassoCV, LinearRegression
@@ -110,7 +110,8 @@ def get_args():
 def main():
     ops = get_args()
 
-    max_coeffs = 2*ops.__dict__['fourier_degree'][1]+1
+    min_degree, max_degree = ops.__dict__['fourier_degree']
+    max_coeffs = 2*max_degree + 1
     filenames = list(map(lambda x: x.strip(), _get_files(ops.input)))
     filepaths = map(lambda filename:
                     filename if path.isfile(filename)
@@ -131,7 +132,7 @@ def main():
         'Period',
         'R^2',
         'A_0',
-        ' '.join(map('A_{0} Phi_{0}'.format, range(1, max_coeffs))),
+        ' '.join(map('A_{0} Phi_{0}'.format, range(1, max_degree+1))),
         ' '.join(map('Phase{}'.format, range(ops.phase_points)))
         ])
     )
