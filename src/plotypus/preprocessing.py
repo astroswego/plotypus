@@ -3,6 +3,7 @@ import numpy
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from .utils import autocorrelation
+from sys import stderr
 
 __all__ = [
     'Fourier'
@@ -10,13 +11,12 @@ __all__ = [
 
 class Fourier():
     def __init__(self, degree=3, regressor=LinearRegression()):
-        self.degree = self.baart_criteria(degree, regressor) \
-                      if isinstance(degree, collections.Sequence) \
-                      else degree
+        self.degree = degree
+        self.regressor = regressor
     
     def fit(self, X, y=None):
         if isinstance(self.degree, collections.Sequence):
-            self.degree = self.bart_criteria(degree, regressor)
+            self.degree = self.baart_criteria(X, y)
         return self
     
     def transform(self, X, y=None, **params):
@@ -43,9 +43,9 @@ class Fourier():
         cutoff = self.baart_tolerance(X)
         pipeline = Pipeline([('Fourier', Fourier()),
                              ('Regressor', self.regressor)])
-        fourier_degree_string = 'Fourier__degree'
-        for degree in range(min_degree, max_degree+1):
-            pipeline.set_params({fourier_degree_string: degree})
+        for degree in range(min_degree, max_degree):
+            pipeline.set_params(Fourier__degree=degree)
+            print(pipeline, file=stderr)
             pipeline.fit(X, y)
             lc = pipeline.predict(X)
             residuals = numpy.sort(y) - lc

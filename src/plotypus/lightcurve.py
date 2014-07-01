@@ -42,7 +42,7 @@ def make_predictor(regressor=LassoCV(cv=10),
         fourier = Fourier()
         min_degree, max_degree = fourier_degree
         params = {'Fourier__degree':
-                  list(range(min_degree, 1+max_degree))}        
+                  list(range(min_degree, 1+max_degree))}
     pipeline = Pipeline([('Fourier',   fourier),
                          ('Regressor', regressor)])
 

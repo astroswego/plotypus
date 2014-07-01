@@ -10,90 +10,117 @@ from plotypus.utils import pmap
 
 def get_args():
     parser = ArgumentParser()
-    parser.add_argument('-i', '--input', type=str,
+    general_group = parser.add_argument_group('General',
+                                              'general options')
+    period_group = parser.add_argument_group('Periodogram',
+                                             'periodogram options')
+    fourier_group = parser.add_argument_group('Fourier',
+                                              'fourier fitting options')
+    lasso_group = parser.add_argument_group('Lasso',
+                                            'options for Lasso regression')
+    gridsearch_group = parser.add_argument_group('GridSearch',
+                                                 'options for GridSearch')
+    
+    general_group.add_argument('-i', '--input', type=str,
         default=stdin,
-        help='location of stellar observations',)
-    parser.add_argument('-o', '--output', type=str,
-        default=path.join('..', 'results'),
-        help='location of results')
-    parser.add_argument('-f', '--format', type=str,
+        help='location of stellar observations '
+             '(default = stdin)')
+    general_group.add_argument('-o', '--output', type=str,
+        default='plots',
+        help='location of plots '
+             '(default = plots)')
+    general_group.add_argument('-f', '--format', type=str,
         default='%.5f',
         help='format specifier for output table')
-    parser.add_argument('--data-extension', type=str,
-        default='.dat',
+    general_group.add_argument('--data-extension', type=str,
+        default='.dat', metavar='EXT',
         help='extension which follows a star\'s name in data filenames '
-             '(defaults to .dat)')
-    parser.add_argument('--use-cols', type=int, nargs=3,
-        default=range(3),
-        help='columns to use for TIME, MAG, and MAG_ERR (defaults to 0 1 2)')
-    parser.add_argument('-p', '--processes', type=int,
-        default=1,
-        help='number of stars to process in parallel')
-    parser.add_argument('--periods', type=FileType('r'),
+             '(default = .dat)')
+    general_group.add_argument('--use-cols', type=int, nargs=3,
+        default=range(3), metavar=('TIME', 'MAG', 'MAG_ERR'),
+        help='columns to use from data file '
+             '(default = 0 1 2)')
+    general_group.add_argument('-p', '--processes', type=int,
+        default=1, metavar='N',
+        help='number of stars to process in parallel '
+             '(default = 1)')
+    general_group.add_argument('--phase-points', type=int,
+        default=100, metavar='N',
+        help='number of phase points to output '
+             '(default = 100)')
+    general_group.add_argument('--min-phase-cover', type=float,
+        default=0, metavar='COVER',
+        help='minimum fraction of phases that must have points '
+             '(default = 0)')
+    period_group.add_argument('--periods', type=FileType('r'),
         default=None,
-        help='file of star names and associated periods')
-    parser.add_argument('--phase-points', type=int,
-        default=100,
-        help='number of phase points to use')
-    parser.add_argument('--min-period', type=float,
-        default=0.2,
-        help='minimum period of each star')
-    parser.add_argument('--max-period', type=float,
-        default=32.0,
-        help='maximum period of each star')
-    parser.add_argument('--coarse-precision', type=int,
+        help='file of star names and associated periods '
+             '(default = None)')
+    period_group.add_argument('--min-period', type=float,
+        default=0.2, metavar='P',
+        help='minimum period of each star '
+             '(default = 0.2)')
+    period_group.add_argument('--max-period', type=float,
+        default=32.0, metavar='P',
+        help='maximum period of each star '
+             '(default = 32.0)')
+    period_group.add_argument('--coarse-precision', type=float,
         default=0.001,
-        help='level of granularity on first pass')
-    parser.add_argument('--fine-precision', type=int,
+        help='level of granularity on first pass '
+             '(default = 0.001)')
+    period_group.add_argument('--fine-precision', type=float,
         default=0.0000001,
-        help='level of granularity on second pass')
-    parser.add_argument('--fourier-degree', type=int, nargs=2,
-        default=(3,15),
-        help='number of coefficients to generate')
-    parser.add_argument('-r', '--regressor',
-        choices=['LassoCV', 'OLS'],
-        default='LassoCV',
-        help='type of regressor to use')
-    parser.add_argument('--predictor',
-        choices=['Baart', 'GridSearchCV'],
-        default='GridSearchCV',
-        help='type of model predictor to use')
-    parser.add_argument('--sigma', dest='sigma', type=float,
+        help='level of granularity on second pass '
+             '(default = 0.0000001)')
+    fourier_group.add_argument('--fourier-degree', type=int, nargs=2,
+        default=(3,15), metavar=('MIN', 'MAX'),
+        help='range of degrees of fourier fits to use '
+             '(default = 3 15)')
+    fourier_group.add_argument('-r', '--regressor',
+        choices=['Lasso', 'OLS'],
+        default='Lasso',
+        help='type of regressor to use '
+             '(default = Lasso)')
+    fourier_group.add_argument('--predictor',
+        choices=['Baart', 'GridSearch'],
+        default='GridSearch',
+        help='type of model predictor to use '
+             '(default = GridSearch)')
+    fourier_group.add_argument('--sigma', dest='sigma', type=float,
         default=10.0,
-        help='rejection criterion for outliers')
-    parser.add_argument('--standard-sigma-clipping',
+        help='rejection criterion for outliers '
+             '(default = 10)')
+    fourier_group.add_argument('--standard-sigma-clipping',
         dest='robust_sigma_clipping', action='store_false',
-        help='use standard deviation sigma clipping')
-    parser.add_argument('--robust-sigma-clipping',
+        help='use standard deviation sigma clipping '
+             '(not the default)')
+    fourier_group.add_argument('--robust-sigma-clipping',
         action='store_true',
-        help='use median absolute deviation sigma clipping')
-    parser.add_argument('--cv', type=int,
-        default=10,
-        help='number of folds in the L1-regularization search')
-    parser.add_argument('--max-iter', type=int,
-        default=1000,
-        help='maximum number of iterations in the LassoCV')
-    parser.add_argument('--min-phase-cover', type=float,
-        default=1/2,
-        help='minimum fraction of phases that must have points')
+        help='use median absolute deviation sigma clipping '
+             '(the default)')
+    lasso_group.add_argument('--cv', type=int,
+        default=10, metavar='N',
+        help='number of folds in the L1-regularization search '
+             '(default = 10)')
+    lasso_group.add_argument('--max-iter', type=int,
+        default=1000, metavar='N',
+        help='maximum number of iterations in the LassoCV '
+             '(default = 1000)')
+    
     args = parser.parse_args()
 
-#    if args.input is stdin:
-#        raise Exception("Reading from stdin working yet")
-    if args.predictor is 'Baart':
-        raise ArgumentError("Baart's criteria not yet implemented")
 
-    regressor_choices = {'LassoCV': LassoCV(cv=args.cv,
-                                            max_iter=args.max_iter),
+    regressor_choices = {'Lasso': LassoCV(cv=args.cv,
+                                          max_iter=args.max_iter),
                          'OLS': LinearRegression()}
 
     predictor_choices = {'Baart': None,
-                         'GridSearchCV': GridSearchCV}
+                         'GridSearch': GridSearchCV}
 
     args.regressor = regressor_choices[args.regressor]
     Predictor = predictor_choices[args.predictor] or GridSearchCV
     args.predictor = make_predictor(Predictor=Predictor,
-                                    use_baart=args.predictor is 'Baart',
+                                    use_baart=(args.predictor == 'Baart'),
                                     **args.__dict__)
     args.phases=numpy.arange(0, 1, 1/args.phase_points)
 
@@ -104,7 +131,6 @@ def get_args():
                        in args.periods if ' ' in line)}
         args.periods.close()
         args.periods = periods
-
     return args
 
 def main():
