@@ -55,9 +55,10 @@ def get_lightcurve(filename, period=None,
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
                    sigma=10, robust_sigma_clipping=True, min_phase_cover=1/2,
-                   phases=numpy.arange(0, 1, 0.01), **ops):
+                   phases=numpy.arange(0, 1, 0.01), use_cols=range(3), **ops):
     # Load file
-    data = numpy.ma.array(data=numpy.loadtxt(filename), mask=None, dtype=float)
+    data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),
+                          mask=None, dtype=float)
 
     while True:
         # Find the period of the inliers

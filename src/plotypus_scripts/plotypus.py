@@ -21,7 +21,11 @@ def get_args():
         help='format specifier for output table')
     parser.add_argument('--data-extension', type=str,
         default='.dat',
-        help='extension which follows a star\'s name in data filenames')
+        help='extension which follows a star\'s name in data filenames '
+             '(defaults to .dat)')
+    parser.add_argument('--use-cols', type=int, nargs=3,
+        default=range(3),
+        help='columns to use for TIME, MAG, and MAG_ERR (defaults to 0 1 2)')
     parser.add_argument('-p', '--processes', type=int,
         default=1,
         help='number of stars to process in parallel')
