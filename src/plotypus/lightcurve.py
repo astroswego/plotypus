@@ -5,6 +5,7 @@ from os import path
 from .utils import make_sure_path_exists, get_signal, get_noise, colvec, mad
 from .periodogram import find_period, rephase, get_phase
 from .preprocessing import Fourier
+from sklearn.cross_validation import cross_val_score
 from sklearn.linear_model import LassoCV
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
@@ -123,7 +124,8 @@ def get_lightcurve(filename, period=None,
     coefficients[0] = best_model.intercept_
     R_squared = predictor.best_score_ \
                 if hasattr(predictor, 'best_score_') \
-                else 0.0
+                else cross_val_score(predictor, colvec(phase), mag,
+                                     scoring='r2').mean()
 
     return _period, lc, data, coefficients, R_squared
 
