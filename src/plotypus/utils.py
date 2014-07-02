@@ -1,7 +1,7 @@
 from os import makedirs
 from os.path import isdir
 from multiprocessing import Pool
-from numpy import resize, median, absolute
+from numpy import absolute, concatenate, median, resize
 
 __all__ = [
     'pmap',
@@ -63,5 +63,6 @@ def autocorrelation(data, lag=1):
     covariance((data-mean)[:-lag], (data-mean)[lag:]).
     """
     differences = data - data.mean()
-    products = differences[:-lag] * differences[lag:]
+    products = differences * concatenate((differences[lag:],
+                                          differences[:lag]))
     return products.sum() / (differences**2).sum()
