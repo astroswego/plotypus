@@ -36,17 +36,16 @@ def make_predictor(regressor=LassoCV(cv=10),
                    use_baart=False,
                    **kwargs):
     if use_baart:
-        fourier = Fourier(degree=fourier_degree, regressor=regressor)
-        params = {}
+        predictor = Pipeline([('Fourier', Fourier(degree=fourier_degree,
+                                                  regressor=regressor)),
+                              ('Regressor', regressor)])
     else:
-        fourier = Fourier()
         min_degree, max_degree = fourier_degree
         params = {'Fourier__degree':
                   list(range(min_degree, 1+max_degree))}
-    pipeline = Pipeline([('Fourier',   fourier),
-                         ('Regressor', regressor)])
-
-    predictor = Predictor(pipeline, params)
+        pipeline = Pipeline([('Fourier',  Fourier()),
+                            ('Regressor', regressor)])
+        predictor = Predictor(pipeline, params)
 
     return predictor
 
@@ -117,10 +116,14 @@ def get_lightcurve(filename, period=None,
                                           arg_max_light / phases.size)
                                 for p in data.data.T[0]),
                                numpy.float, len(data.data.T[0]))
-    best_model = predictor.best_estimator_.named_steps['Regressor']
+    best_model = predictor.named_steps['Regressor'] \
+                 if isinstance(predictor, Pipeline) \
+                 else predictor.best_estimator_.named_steps['Regressor']
     coefficients = best_model.coef_
     coefficients[0] = best_model.intercept_
-    R_squared = predictor.best_score_
+    R_squared = predictor.best_score_ \
+                if hasattr(predictor, 'best_score_') \
+                else 0.0
 
     return _period, lc, data, coefficients, R_squared
 
