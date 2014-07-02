@@ -49,6 +49,9 @@ def get_noise(data):
 def colvec(X):
     return resize(X, (X.shape[0], 1))
 
+def rowvec(X):
+    return resize(X, (1, X.shape[0]))[0]
+
 def mad(data, axis=None):
     return median(absolute(data - median(data, axis)), axis)
 

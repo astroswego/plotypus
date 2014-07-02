@@ -37,7 +37,7 @@ def make_predictor(regressor=LassoCV(cv=10),
                    use_baart=False,
                    **kwargs):
     if use_baart:
-        predictor = Pipeline([('Fourier', Fourier(degree=fourier_degree,
+        predictor = Pipeline([('Fourier', Fourier(degree_range=fourier_degree,
                                                   regressor=regressor)),
                               ('Regressor', regressor)])
     else:

@@ -2,7 +2,7 @@ import collections
 import numpy
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
-from .utils import autocorrelation
+from .utils import autocorrelation, rowvec
 from sys import stderr
 
 __all__ = [
@@ -10,12 +10,14 @@ __all__ = [
 ]
 
 class Fourier():
-    def __init__(self, degree=3, regressor=LinearRegression()):
+    def __init__(self, degree=3, degree_range=None,
+                 regressor=LinearRegression()):
         self.degree = degree
+        self.degree_range = degree_range
         self.regressor = regressor
 
     def fit(self, X, y=None):
-        if isinstance(self.degree, collections.Sequence):
+        if self.degree_range is not None:
             self.degree = self.baart_criteria(X, y)
         return self
 
@@ -36,19 +38,21 @@ class Fourier():
 
     def baart_criteria(self, X, y):
         try:
-            min_degree, max_degree = self.degree
+            min_degree, max_degree = self.degree_range
         except Exception:
-            raise Exception("Degree must be a length two sequence")
+            raise Exception("Degree range must be a length two sequence")
 
         cutoff = self.baart_tolerance(X)
         pipeline = Pipeline([('Fourier', Fourier()),
                              ('Regressor', self.regressor)])
+        sorted_X = numpy.sort(X, axis=0)
+        X_sorting = numpy.argsort(rowvec(X))
         print("cutoff = {}".format(cutoff))
         for degree in range(min_degree, max_degree):
             pipeline.set_params(Fourier__degree=degree)
             pipeline.fit(X, y)
-            lc = pipeline.predict(numpy.sort(X))
-            residuals = y[numpy.argsort(X)] - lc
+            lc = pipeline.predict(sorted_X)
+            residuals = y[X_sorting] - lc
             p_c = autocorrelation(residuals)
             print("degree = {}; p_c = {}".format(degree, p_c))
             if abs(p_c) <= cutoff:
