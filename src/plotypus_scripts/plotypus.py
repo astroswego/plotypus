@@ -44,6 +44,10 @@ def get_args():
         default=1, metavar='N',
         help='number of stars to process in parallel '
              '(default = 1)')
+    general_group.add_argument('-s', '--scoring', type=str,
+        choices=['mean_squared_error', 'r2'], default='r2',
+        help='scoring metric to use '
+             '(default = r2)')
     general_group.add_argument('--phase-points', type=int,
         default=100, metavar='N',
         help='number of phase points to output '
@@ -156,7 +160,7 @@ def main():
         '#',
         'Name',
         'Period',
-        'R^2',
+        ops.__dict__['scoring'],
         'A_0',
         ' '.join(map('A_{0} Phi_{0}'.format, range(1, max_degree+1))),
         ' '.join(map('Phase{}'.format, range(ops.phase_points)))
@@ -191,8 +195,8 @@ def _print_star(results, max_coeffs, fmt):
     if results is None: return
     formatter = lambda x: fmt % x
 
-    name, period, lc, data, coefficients, R_squared = results
-    print(' '.join([name, str(period), str(R_squared)]), end=' ')
+    name, period, lc, data, coefficients, score = results
+    print(' '.join([name, str(period), str(score)]), end=' ')
     print(' '.join(map(formatter, coefficients)), end=' ')
     trailing_zeros = max_coeffs - len(coefficients)
     if trailing_zeros > 0:

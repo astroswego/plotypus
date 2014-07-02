@@ -34,7 +34,7 @@ __all__ = [
 def make_predictor(regressor=LassoCV(cv=10),
                    Predictor=GridSearchCV,
                    fourier_degree=(3,15),
-                   use_baart=False,
+                   use_baart=False, scoring=None,
                    **kwargs):
     if use_baart:
         predictor = Pipeline([('Fourier', Fourier(degree_range=fourier_degree,
@@ -46,7 +46,7 @@ def make_predictor(regressor=LassoCV(cv=10),
                   list(range(min_degree, 1+max_degree))}
         pipeline = Pipeline([('Fourier',  Fourier()),
                             ('Regressor', regressor)])
-        predictor = Predictor(pipeline, params)
+        predictor = Predictor(pipeline, params, scoring=scoring)
 
     return predictor
 
@@ -54,7 +54,8 @@ def get_lightcurve(filename, period=None,
                    predictor=make_predictor(),
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
-                   sigma=10, robust_sigma_clipping=True, min_phase_cover=1/2,
+                   sigma=10, robust_sigma_clipping=True, scoring=None,
+                   min_phase_cover=1/2,
                    phases=numpy.arange(0, 1, 0.01), use_cols=range(3), **ops):
     # Load file
     data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),
@@ -122,12 +123,12 @@ def get_lightcurve(filename, period=None,
                  else predictor.best_estimator_.named_steps['Regressor']
     coefficients = best_model.coef_
     coefficients[0] = best_model.intercept_
-    R_squared = predictor.best_score_ \
-                if hasattr(predictor, 'best_score_') \
-                else cross_val_score(predictor, colvec(phase), mag,
-                                     scoring='r2').mean()
+    score = predictor.best_score_ \
+            if hasattr(predictor, 'best_score_') \
+            else cross_val_score(predictor, colvec(phase), mag,
+                                 scoring=scoring).mean()
 
-    return _period, lc, data, coefficients, R_squared
+    return _period, lc, data, coefficients, score
 
 def find_outliers(data, period, predictor, sigma,
                   robust_sigma_clipping=True):
