@@ -121,7 +121,7 @@ def get_lightcurve(filename, period=None,
     coefficients = best_model.coef_
     coefficients[0] = best_model.intercept_
     R_squared = predictor.best_score_
-    
+
     return _period, lc, data, coefficients, R_squared
 
 def find_outliers(data, period, predictor, sigma,

@@ -13,12 +13,12 @@ class Fourier():
     def __init__(self, degree=3, regressor=LinearRegression()):
         self.degree = degree
         self.regressor = regressor
-    
+
     def fit(self, X, y=None):
         if isinstance(self.degree, collections.Sequence):
             self.degree = self.baart_criteria(X, y)
         return self
-    
+
     def transform(self, X, y=None, **params):
         data = numpy.array(list(zip(numpy.array(X).T[0], range(len(X)))))
         phase, order = data[data[:,0].argsort()].T
@@ -43,21 +43,22 @@ class Fourier():
         cutoff = self.baart_tolerance(X)
         pipeline = Pipeline([('Fourier', Fourier()),
                              ('Regressor', self.regressor)])
+        print("cutoff = {}".format(cutoff))
         for degree in range(min_degree, max_degree):
             pipeline.set_params(Fourier__degree=degree)
-            print(pipeline, file=stderr)
             pipeline.fit(X, y)
-            lc = pipeline.predict(X)
-            residuals = numpy.sort(y) - lc
+            lc = pipeline.predict(numpy.sort(X))
+            residuals = y[numpy.argsort(X)] - lc
             p_c = autocorrelation(residuals)
-            if p_c <= cutoff:
+            print("degree = {}; p_c = {}".format(degree, p_c))
+            if abs(p_c) <= cutoff:
                 return degree
         # reached max_degree without reaching cutoff
         return max_degree
 
     @staticmethod
     def baart_tolerance(X):
-        return (2 * (X.shape[0] - 1))**(-1/2)
+        return (2 * (len(X) - 1))**(-1/2)
 
     @staticmethod
     def trigonometric_coefficient_matrix(phases, degree):
@@ -106,4 +107,3 @@ class Fourier():
         phase_shifted_coefficients_[2::2] = Phi_k
 
         return phase_shifted_coefficients_
-
