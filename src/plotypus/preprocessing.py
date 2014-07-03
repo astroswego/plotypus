@@ -47,14 +47,12 @@ class Fourier():
                              ('Regressor', self.regressor)])
         sorted_X = numpy.sort(X, axis=0)
         X_sorting = numpy.argsort(rowvec(X))
-        print("cutoff = {}".format(cutoff))
         for degree in range(min_degree, max_degree):
             pipeline.set_params(Fourier__degree=degree)
             pipeline.fit(X, y)
             lc = pipeline.predict(sorted_X)
             residuals = y[X_sorting] - lc
             p_c = autocorrelation(residuals)
-            print("degree = {}; p_c = {}".format(degree, p_c))
             if abs(p_c) <= cutoff:
                 return degree
         # reached max_degree without reaching cutoff
