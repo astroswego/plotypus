@@ -10,17 +10,12 @@ from plotypus.utils import pmap
 
 def get_args():
     parser = ArgumentParser()
-    general_group = parser.add_argument_group('General',
-                                              'general options')
-    period_group = parser.add_argument_group('Periodogram',
-                                             'periodogram options')
-    fourier_group = parser.add_argument_group('Fourier',
-                                              'fourier fitting options')
-    lasso_group = parser.add_argument_group('Lasso',
-                                            'options for Lasso regression')
-    gridsearch_group = parser.add_argument_group('GridSearch',
-                                                 'options for GridSearch')
-    
+    general_group = parser.add_argument_group('General')
+    period_group = parser.add_argument_group('Periodogram')
+    fourier_group = parser.add_argument_group('Fourier')
+    lasso_group = parser.add_argument_group('Lasso')
+    gridsearch_group = parser.add_argument_group('GridSearch')
+
     general_group.add_argument('-i', '--input', type=str,
         default=stdin,
         help='location of stellar observations '
@@ -45,9 +40,13 @@ def get_args():
         help='number of stars to process in parallel '
              '(default = 1)')
     general_group.add_argument('-s', '--scoring', type=str,
-        choices=['mean_squared_error', 'r2'], default='r2',
+        choices=['MSE', 'R2'], default='R2',
         help='scoring metric to use '
-             '(default = r2)')
+             '(default = R2)')
+    general_group.add_argument('--scoring-cv', type=int,
+        default=3, metavar='N',
+        help='number of folds in the scoring cross validation '
+             '(default = 3)')
     general_group.add_argument('--phase-points', type=int,
         default=100, metavar='N',
         help='number of phase points to output '
@@ -102,7 +101,7 @@ def get_args():
         action='store_true',
         help='use median absolute deviation sigma clipping '
              '(the default)')
-    lasso_group.add_argument('--cv', type=int,
+    lasso_group.add_argument('--lasso-cv', type=int,
         default=10, metavar='N',
         help='number of folds in the L1-regularization search '
              '(default = 10)')
@@ -114,13 +113,17 @@ def get_args():
     args = parser.parse_args()
 
 
-    regressor_choices = {'Lasso': LassoCV(cv=args.cv,
+    regressor_choices = {'Lasso': LassoCV(cv=args.lasso_cv,
                                           max_iter=args.max_iter),
                          'OLS': LinearRegression()}
 
     predictor_choices = {'Baart': None,
                          'GridSearch': GridSearchCV}
 
+    scoring_choices = {'R2': 'r2',
+                       'MSE': 'mean_squared_error'}
+
+    args.scoring = scoring_choices[args.scoring]
     args.regressor = regressor_choices[args.regressor]
     Predictor = predictor_choices[args.predictor] or GridSearchCV
     args.predictor = make_predictor(Predictor=Predictor,
@@ -160,7 +163,8 @@ def main():
         '#',
         'Name',
         'Period',
-        ops.__dict__['scoring'],
+        'R^2',
+        'MSE',
         'A_0',
         ' '.join(map('A_{0} Phi_{0}'.format, range(1, max_degree+1))),
         ' '.join(map('Phase{}'.format, range(ops.phase_points)))
@@ -184,9 +188,9 @@ def process_star(filename, periods={}, **ops):
     result = get_lightcurve(filename, period=_period, **ops)
 
     if result is not None:
-        period, lc, data, coefficients, R_squared = result
+        period, lc, data, coefficients, R_squared, MSE = result
         plot_lightcurve(name, lc, period, data, **ops)
-        return name, period, lc, data, coefficients, R_squared
+        return name, period, lc, data, coefficients, R_squared, MSE
 
 def _star_printer(max_coeffs, fmt):
     return lambda results: _print_star(results, max_coeffs, fmt)
@@ -195,8 +199,8 @@ def _print_star(results, max_coeffs, fmt):
     if results is None: return
     formatter = lambda x: fmt % x
 
-    name, period, lc, data, coefficients, score = results
-    print(' '.join([name, str(period), str(score)]), end=' ')
+    name, period, lc, data, coefficients, R2, MSE = results
+    print(' '.join([name, str(period), str(R2), str(MSE)]), end=' ')
     print(' '.join(map(formatter, coefficients)), end=' ')
     trailing_zeros = max_coeffs - len(coefficients)
     if trailing_zeros > 0:

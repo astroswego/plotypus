@@ -35,6 +35,7 @@ def make_predictor(regressor=LassoCV(cv=10),
                    Predictor=GridSearchCV,
                    fourier_degree=(3,15),
                    use_baart=False, scoring=None,
+                   scoring_cv=3,
                    **kwargs):
     if use_baart:
         predictor = Pipeline([('Fourier', Fourier(degree_range=fourier_degree,
@@ -46,7 +47,7 @@ def make_predictor(regressor=LassoCV(cv=10),
                   list(range(min_degree, 1+max_degree))}
         pipeline = Pipeline([('Fourier',  Fourier()),
                             ('Regressor', regressor)])
-        predictor = Predictor(pipeline, params, scoring=scoring)
+        predictor = Predictor(pipeline, params, scoring=scoring, cv=scoring_cv)
 
     return predictor
 
@@ -54,7 +55,8 @@ def get_lightcurve(filename, period=None,
                    predictor=make_predictor(),
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
-                   sigma=10, robust_sigma_clipping=True, scoring=None,
+                   sigma=10, robust_sigma_clipping=True,
+                   scoring=None, scoring_cv=3,
                    min_phase_cover=1/2,
                    phases=numpy.arange(0, 1, 0.01), use_cols=range(3), **ops):
     # Load file
@@ -123,12 +125,28 @@ def get_lightcurve(filename, period=None,
                  else predictor.best_estimator_.named_steps['Regressor']
     coefficients = best_model.coef_
     coefficients[0] = best_model.intercept_
-    score = predictor.best_score_ \
-            if hasattr(predictor, 'best_score_') \
-            else cross_val_score(predictor, colvec(phase), mag,
-                                 scoring=scoring).mean()
 
-    return _period, lc, data, coefficients, score
+    # compute R^2 and MSE if they haven't already been
+    # (one or zero have been computed, depending on the predictor)
+    if hasattr(predictor, 'best_score_'):
+        if predictor.scoring == 'r2':
+            R2 = predictor.best_score_
+            MSE = cross_val_score(predictor, colvec(phase), mag,
+                                  scoring='mean_squared_error').mean()
+        else:
+            MSE = predictor.best_score_
+            R2 = cross_val_score(predictor, colvec(phase), mag,
+                                 scoring='r2').mean()
+    else:
+        phase_col = colvec(phase)
+        R2 = cross_val_score(predictor, phase_col, mag,
+                             cv=scoring_cv,
+                             scoring='r2').mean()
+        MSE = cross_val_score(predictor, phase_col, mag,
+                              cv=scoring_cv,
+                              scoring='mean_squared_error').mean()
+
+    return _period, lc, data, coefficients, R2, MSE
 
 def find_outliers(data, period, predictor, sigma,
                   robust_sigma_clipping=True):
