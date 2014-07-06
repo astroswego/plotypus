@@ -13,6 +13,7 @@ def get_args():
     general_group = parser.add_argument_group('General')
     period_group = parser.add_argument_group('Periodogram')
     fourier_group = parser.add_argument_group('Fourier')
+    outlier_group = parser.add_argument_group('Outlier Detection')
     lasso_group = parser.add_argument_group('Lasso')
     gridsearch_group = parser.add_argument_group('GridSearch')
 
@@ -89,18 +90,14 @@ def get_args():
         default='GridSearch',
         help='type of model predictor to use '
              '(default = GridSearch)')
-    fourier_group.add_argument('--sigma', dest='sigma', type=float,
+    outlier_group.add_argument('--sigma', dest='sigma', type=float,
         default=10.0,
         help='rejection criterion for outliers '
              '(default = 10)')
-    fourier_group.add_argument('--standard-sigma-clipping',
-        dest='robust_sigma_clipping', action='store_false',
-        help='use standard deviation sigma clipping '
-             '(not the default)')
-    fourier_group.add_argument('--robust-sigma-clipping',
-        action='store_true',
-        help='use median absolute deviation sigma clipping '
-             '(the default)')
+    outlier_group.add_argument('--sigma-clipping', type=str,
+        choices=['standard', 'robust'], default='robust',
+        help='sigma clipping metric to use '
+             '(default = robust)')
     lasso_group.add_argument('--lasso-cv', type=int,
         default=10, metavar='N',
         help='number of folds in the L1-regularization search '

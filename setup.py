@@ -4,7 +4,7 @@
 Plotypus is a library for the analysis of the light curves of variable
 stars.
 
-Plotypus is built on top of numpy, matplotlib, and scikit.
+Plotypus is built on top of numpy, matplotlib, and scikit-learn.
 """
 
 DOCLINES = __doc__.split("\n")

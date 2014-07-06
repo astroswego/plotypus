@@ -55,7 +55,7 @@ def get_lightcurve(filename, period=None,
                    predictor=make_predictor(),
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
-                   sigma=10, robust_sigma_clipping=True,
+                   sigma=10, sigma_clipping='robust',
                    scoring=None, scoring_cv=3,
                    min_phase_cover=1/2,
                    phases=numpy.arange(0, 1, 0.01), use_cols=range(3), **ops):
@@ -94,7 +94,7 @@ def get_lightcurve(filename, period=None,
         # Reject outliers and repeat the process if there are any
         if sigma:
             outliers = find_outliers(data.data, _period, predictor, sigma,
-                                     robust_sigma_clipping)
+                                     sigma_clipping)
             num_outliers = sum(outliers)[0]
             if num_outliers == 0 or \
                set.issubset(set(numpy.nonzero(outliers.T[0])[0]),
@@ -149,9 +149,9 @@ def get_lightcurve(filename, period=None,
     return _period, lc, data, coefficients, R2, MSE
 
 def find_outliers(data, period, predictor, sigma,
-                  robust_sigma_clipping=True):
+                  sigma_clipping='robust'):
     # determine sigma clipping function
-    sigma_clipper = mad if robust_sigma_clipping else numpy.std
+    sigma_clipper = mad if sigma_clipping == 'robust' else numpy.std
     
     phase, mag, err = rephase(data, period).T
     residuals = numpy.absolute(predictor.predict(colvec(phase)) - mag)
