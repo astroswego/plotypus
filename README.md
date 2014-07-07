@@ -9,6 +9,13 @@ Earl Bellinger
 
 Dan Wysocki
 
+## requirements
+
+- Python 3.2 or higher
+- numpy
+- matplotlib
+- scikit-learn
+
 ## usage
 
 Install using setuptools
