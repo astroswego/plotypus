@@ -4,7 +4,8 @@ from os import path, listdir
 from argparse import ArgumentError, ArgumentParser, FileType
 from sklearn.linear_model import LassoCV, LinearRegression
 from sklearn.grid_search import GridSearchCV
-from plotypus.lightcurve import make_predictor, get_lightcurve, plot_lightcurve
+from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
+                                 plot_lightcurve)
 from plotypus.preprocessing import Fourier
 from plotypus.utils import pmap
 
@@ -182,7 +183,7 @@ def process_star(filename, periods={}, **ops):
         # file has wrong extension
         return
     _period = periods.get(name)
-    result = get_lightcurve(filename, period=_period, **ops)
+    result = get_lightcurve_from_file(filename, period=_period, **ops)
 
     if result is not None:
         period, lc, data, coefficients, R_squared, MSE = result

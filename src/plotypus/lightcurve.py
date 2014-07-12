@@ -27,6 +27,7 @@ import matplotlib.pyplot as plt
 __all__ = [
     'make_predictor',
     'get_lightcurve',
+    'get_lightcurve_from_file',
     'find_outliers',
     'plot_lightcurve'
 ]
@@ -51,18 +52,14 @@ def make_predictor(regressor=LassoCV(cv=10),
 
     return predictor
 
-def get_lightcurve(filename, period=None,
+def get_lightcurve(data, period=None,
                    predictor=make_predictor(),
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
                    sigma=10, sigma_clipping='robust',
                    scoring=None, scoring_cv=3,
                    min_phase_cover=1/2,
-                   phases=numpy.arange(0, 1, 0.01), use_cols=range(3), **ops):
-    # Load file
-    data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),
-                          mask=None, dtype=float)
-
+                   phases=numpy.arange(0, 1, 0.01), **ops):
     while True:
         # Find the period of the inliers
         signal = get_signal(data)
@@ -147,6 +144,11 @@ def get_lightcurve(filename, period=None,
                               scoring='mean_squared_error').mean()
 
     return _period, lc, data, coefficients, R2, MSE
+
+def get_lightcurve_from_file(filename, *args, use_cols=range(3), **kwargs):
+    data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),
+                          mask=None, dtype=float)
+    return get_lightcurve(data, *args, **kwargs)
 
 def find_outliers(data, period, predictor, sigma,
                   sigma_clipping='robust'):
