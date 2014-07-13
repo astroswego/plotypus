@@ -64,13 +64,24 @@ class Fourier():
 
     @staticmethod
     def trigonometric_coefficient_matrix(phases, degree):
-        return numpy.array([
-            [1 if j == 0
-             else numpy.cos(numpy.pi*(j+1)*phases[i]) if j % 2
-             else numpy.sin(numpy.pi*j*phases[i])
-             for j in range(2*degree+1)]
-            for i in range(len(phases))])
-
+        """Constructs an Nx2n+1 matrix of the form:
+        / 1 sin(1*pi*phase[0]) cos(1*pi*phase[0]) ... cos(n*pi*phase[0]) \
+        | 1 sin(1*pi*phase[1]) cos(1*pi*phase[1]) ... cos(n*pi*phase[1]) |
+        | .         .                  .          .           .          |
+        | .         .                  .           .          .          |
+        | .         .                  .            .         .          |
+        \ 1 sin(1*pi*phase[N]) cos(1*pi*phase[N]) ... cos(n*pi*phase[N]) /
+        """
+        M = numpy.empty((phases.size, 2*degree+1))
+        i = numpy.arange(1, degree+1)
+        x = numpy.empty((phases.size, degree))
+        x[:,:] = i*numpy.pi
+        x.T[:,:] *= phases
+        M[:,0]    = 1
+        M[:,1::2] = numpy.sin(x)
+        M[:,2::2] = numpy.cos(x)
+        return M
+    
     @staticmethod
     def phase_shifted_coefficients(amplitude_coefficients):
         """Converts Fourier coefficients from the form
