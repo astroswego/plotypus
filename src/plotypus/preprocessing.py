@@ -72,13 +72,23 @@ class Fourier():
         | .         .                  .            .         .          |
         \ 1 sin(1*pi*phase[N]) cos(1*pi*phase[N]) ... cos(n*pi*phase[N]) /
         """
+        # initialize coefficient matrix
         M = numpy.empty((phases.size, 2*degree+1))
+        # indices
         i = numpy.arange(1, degree+1)
+        # initialize the Nxn matrix that is repeated within the
+        # sine and cosine terms
         x = numpy.empty((phases.size, degree))
+        # the Nxn matrix now has N copies of the same row, and each row is
+        # integer multiples of pi counting from 1 to the degree
         x[:,:] = i*numpy.pi
+        # multiply each row of x by the phases
         x.T[:,:] *= phases
+        # place 1's in the first column of the coefficient matrix
         M[:,0]    = 1
+        # the odd indices of the coefficient matrix have sine terms
         M[:,1::2] = numpy.sin(x)
+        # the even indices of the coefficient matrix have cosine terms
         M[:,2::2] = numpy.cos(x)
         return M
     
