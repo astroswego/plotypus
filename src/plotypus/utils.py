@@ -13,7 +13,12 @@ __all__ = [
     'autocorrelation'
 ]
 
-def pmap(func, args, processes=None, callback=lambda *x: None, **kwargs):
+def pmap(func, args, processes=None, callback=lambda *_, **__: None, **kwargs):
+    """Parallel equivalent of map(func, args), with the additional ability of
+    providing keyword arguments to func, and a callback function which is
+    applied to each element in the returned list. Unlike map, the output is a
+    non-lazy list. If processes=1, no thread pool is used.
+    """
     if processes is 1:
         results = []
         for arg in args:
@@ -22,16 +27,15 @@ def pmap(func, args, processes=None, callback=lambda *x: None, **kwargs):
             callback(result)
         return results
     else:
-        p = Pool() if processes is None else Pool(processes)
-        results = [p.apply_async(func, (arg,), kwargs, callback)
-                   for arg in args]
-        p.close()
-        p.join()
-        return [result.get() for result in results]
+        with Pool() if processes is None else Pool(processes) as p:
+            results = [p.apply_async(func, (arg,), kwargs, callback)
+                       for arg in args]
+            return [result.get() for result in results]
 
 def make_sure_path_exists(path):
     """Creates the supplied path. Raises OS error if the path cannot be
-    created."""
+    created.
+    """
     try:
       makedirs(path)
     except OSError:
@@ -39,20 +43,28 @@ def make_sure_path_exists(path):
         raise
 
 def get_signal(data):
-    """Returns all of the values that are not outliers."""
+    """Returns all of the values that are not outliers.
+    """
     return data[~data.mask].data.reshape(-1, data.shape[1])
 
 def get_noise(data):
-    """Returns all identified outliers"""
+    """Returns all identified outliers.
+    """
     return data[data.mask].data.reshape(-1, data.shape[1])
 
 def colvec(X):
+    """Converts a row-vector into a column-vector.
+    """
     return resize(X, (X.shape[0], 1))
 
 def rowvec(X):
+    """Converts a column-vector into a row-vector.
+    """
     return resize(X, (1, X.shape[0]))[0]
 
 def mad(data, axis=None):
+    """Computes the median absolute deviation of an array.
+    """
     return median(absolute(data - median(data, axis)), axis)
 
 def autocorrelation(data, lag=1):

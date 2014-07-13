@@ -38,6 +38,8 @@ def make_predictor(regressor=LassoCV(cv=10),
                    use_baart=False, scoring=None,
                    scoring_cv=3,
                    **kwargs):
+    """Makes a predictor object for use in get_lightcurve.
+    """
     if use_baart:
         predictor = Pipeline([('Fourier', Fourier(degree_range=fourier_degree,
                                                   regressor=regressor)),
@@ -149,6 +151,12 @@ def get_lightcurve_from_file(filename, *args, use_cols=range(3), **kwargs):
     data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),
                           mask=None, dtype=float)
     return get_lightcurve(data, *args, **kwargs)
+
+def get_lightcurves_from_file(filename, directories, *args, **kwargs):
+    return [
+        get_lightcurve_from_file(path.join(d, filename), *args **kwargs)
+        for d in directories
+    ]
 
 def find_outliers(data, period, predictor, sigma,
                   sigma_clipping='robust'):
