@@ -182,7 +182,7 @@ def process_star(filename, periods={}, **ops):
     else:
         # file has wrong extension
         return
-    _period = periods.get(name)
+    _period = periods.get(name) if name in periods else None
     result = get_lightcurve_from_file(filename, period=_period, **ops)
 
     if result is not None:
