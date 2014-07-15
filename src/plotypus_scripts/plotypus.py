@@ -187,9 +187,9 @@ def process_star(filename, periods={}, **ops):
     result = get_lightcurve_from_file(filename, period=_period, **ops)
 
     if result is not None:
-        period, lc, data, coefficients, R_squared, MSE = result
+        period, lc, data, coefficients, R2, MSE = result
         plot_lightcurve(name, lc, period, data, **ops)
-        return name, period, lc, data, coefficients, R_squared, MSE
+        return name, period, lc, data, coefficients, R2, MSE
 
 def _star_printer(max_coeffs, fmt):
     return lambda results: _print_star(results, max_coeffs, fmt)
