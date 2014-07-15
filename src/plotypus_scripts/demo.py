@@ -1,5 +1,6 @@
 from sys import exit
 import numpy as np
+np.random.seed(4) # chosen by fair dice roll. guaranteed to be random.
 from sklearn.linear_model import LinearRegression, LassoCV
 from sklearn.pipeline import Pipeline
 from plotypus.preprocessing import Fourier
@@ -40,7 +41,7 @@ def main():
     ax = plt.gca()
     signal, = plt.plot(np.hstack((X_true,1+X_true)),
                        np.hstack((y_true, y_true)), 
-                       linewidth=1.5,
+                       linewidth=0.75,
                        color='black')
     
     fd, = plt.plot(np.hstack((X_true,1+X_true)), np.hstack((y_pred, y_pred)), 
