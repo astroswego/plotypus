@@ -158,6 +158,26 @@ def get_lightcurves_from_file(filename, directories, *args, **kwargs):
         for d in directories
     ]
 
+def single_periods(data, period, min_points=10, *args, **kwargs):
+    time, mag, err = data.T
+    tstart, tfinal = numpy.min(time), numpy.max(time)
+    periods = numpy.arange(tstart, tfinal+period, period)
+    data_range = (
+        data[numpy.logical_and(time>pstart, time<=pend),:]
+        for pstart, pend in zip(periods[:-1], periods[1:])
+    )
+
+    return (
+        get_lightcurve(d, period=period, *args, **kwargs)
+        for d in data_range
+        if d.shape[0] > min_points
+    )
+
+def single_periods_from_file(filename, *args, use_cols=range(3), **kwargs):
+    data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),
+                          mask=None, dtype=float)
+    return single_periods(data, *args, **kwargs)
+
 def find_outliers(data, period, predictor, sigma,
                   sigma_clipping='robust'):
     # determine sigma clipping function
