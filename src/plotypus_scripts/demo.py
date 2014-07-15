@@ -41,21 +41,21 @@ def main():
     ax = plt.gca()
     signal, = plt.plot(np.hstack((X_true,1+X_true)),
                        np.hstack((y_true, y_true)), 
-                       linewidth=0.75,
+                       linewidth=0.66,
                        color='black')
     
     fd, = plt.plot(np.hstack((X_true,1+X_true)), np.hstack((y_pred, y_pred)), 
-                   linewidth=1.5, color='black', ls='dotted')
+                   linewidth=2.5, color='black', ls='dotted')
     
     lasso, = plt.plot(np.hstack((X_true,1+X_true)),
                       np.hstack((y_lasso, y_lasso)), 
-                      linewidth=1.5,
+                      linewidth=3,
                       color='black',
                       ls='dashed')
     
     sc = plt.scatter(np.hstack((X_sample,1+X_sample)),
                      np.hstack((y_sample, y_sample)),
-                     color='black')
+                     color='black', marker='+', s=20)
     
     plt.legend([signal, sc, fd, lasso],
                ["Signal", "Noisy Data", "FD", "Lasso FD"],
