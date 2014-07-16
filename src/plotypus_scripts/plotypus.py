@@ -161,6 +161,7 @@ def main():
         '#',
         'Name',
         'Period',
+        'Shift',
         'R^2',
         'MSE',
         'A_0',
@@ -187,9 +188,9 @@ def process_star(filename, periods={}, **ops):
     result = get_lightcurve_from_file(filename, period=_period, **ops)
 
     if result is not None:
-        period, lc, data, coefficients, R2, MSE = result
+        period, lc, data, coefficients, R_squared, MSE, shift = result
         plot_lightcurve(name, lc, period, data, **ops)
-        return name, period, lc, data, coefficients, R2, MSE
+        return name, period, shift, lc, data, coefficients, R_squared, MSE
 
 def _star_printer(max_coeffs, fmt):
     return lambda results: _print_star(results, max_coeffs, fmt)
@@ -198,8 +199,8 @@ def _print_star(results, max_coeffs, fmt):
     if results is None: return
     formatter = lambda x: fmt % x
 
-    name, period, lc, data, coefficients, R2, MSE = results
-    print(' '.join([name, str(period), str(R2), str(MSE)]), end=' ')
+    name, period, shift, lc, data, coefficients, R2, MSE = results
+    print(' '.join([name, str(period), str(shift), str(R2), str(MSE)]), end=' ')
     print(' '.join(map(formatter, coefficients)), end=' ')
     trailing_zeros = max_coeffs - len(coefficients)
     if trailing_zeros > 0:
