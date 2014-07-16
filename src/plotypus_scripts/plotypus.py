@@ -126,7 +126,7 @@ def get_args():
     Predictor = predictor_choices[args.predictor] or GridSearchCV
     args.predictor = make_predictor(Predictor=Predictor,
                                     use_baart=(args.predictor == 'Baart'),
-                                    **args.__dict__)
+                                    **vars(args))
     args.phases=numpy.arange(0, 1, 1/args.phase_points)
 
     if args.periods is not None:
@@ -141,7 +141,7 @@ def get_args():
 def main():
     ops = get_args()
 
-    min_degree, max_degree = ops.__dict__['fourier_degree']
+    min_degree, max_degree = vars(ops)['fourier_degree']
     max_coeffs = 2*max_degree + 1
     filenames = list(map(lambda x: x.strip(), _get_files(ops.input)))
     filepaths = map(lambda filename:
@@ -153,8 +153,8 @@ def main():
                           filenames))
     # a dict containing all options which can be pickled, because
     # all parameters to pmap must be picklable
-    picklable_ops = {k: ops.__dict__[k]
-                     for k in ops.__dict__
+    picklable_ops = {k: vars(ops)[k]
+                     for k in vars(ops)
                      if k not in {'input'}}
     # print file header
     print(' '.join([
@@ -170,7 +170,7 @@ def main():
         ' '.join(map('Phase{}'.format, range(ops.phase_points)))
         ])
     )
-    printer = _star_printer(max_coeffs, ops.__dict__['format'])
+    printer = _star_printer(max_coeffs, vars(ops)['format'])
     pmap(process_star, filepaths, callback=printer, **picklable_ops)
 
 def process_star(filename, periods={}, **ops):
