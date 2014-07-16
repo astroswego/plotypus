@@ -145,7 +145,7 @@ def get_lightcurve(data, period=None,
                               cv=scoring_cv,
                               scoring='mean_squared_error').mean()
 
-    return _period, lc, data, coefficients, R2, MSE
+    return _period, lc, data, coefficients, R2, MSE, arg_max_light
 
 def get_lightcurve_from_file(filename, *args, use_cols=range(3), **kwargs):
     data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),
