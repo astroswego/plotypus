@@ -190,7 +190,8 @@ def find_outliers(data, period, predictor, sigma,
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
 def plot_lightcurve(filename, lc, period, data, output='.', filetype='.png',
-                    legend=False, phases = numpy.arange(0, 1, 0.01), **ops):
+                    legend=False, color=True, phases=numpy.arange(0, 1, 0.01), 
+                    **ops):
     ax = plt.gca()
     ax.grid(True)
     ax.invert_yaxis()
@@ -199,7 +200,7 @@ def plot_lightcurve(filename, lc, period, data, output='.', filetype='.png',
     # Plot the fitted light curve
     signal, = plt.plot(numpy.hstack((phases,1+phases)),
                        numpy.hstack((lc, lc)),
-                       linewidth=1.5, color='green')
+                       linewidth=1.5, color='green' if color else 'black')
 
     # Plot points used
     phase, mag, err = get_signal(data).T
@@ -213,9 +214,12 @@ def plot_lightcurve(filename, lc, period, data, output='.', filetype='.png',
     phase, mag, err = get_noise(data).T
     outliers = plt.errorbar(numpy.hstack((phase,1+phase)),
                             numpy.hstack((mag, mag)),
-                            yerr=numpy.hstack((err,err)),
-                            color='r', ls='None',
-                            ms=.01, mew=.01, capsize=0)
+                            yerr=numpy.hstack((err,err)), ls='None',
+                            color='r' if color else 'black',
+                            marker='o' if color else 'x',
+                            ms=.01 if color else 4,
+                            mew=.01 if color else 1,
+                            capsize=0 if color else 1)
     
     if legend:
         plt.legend([signal, inliers, outliers],
