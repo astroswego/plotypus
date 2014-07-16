@@ -165,6 +165,7 @@ def main():
         'R^2',
         'MSE',
         'A_0',
+        'dA_0',
         ' '.join(map('A_{0} Phi_{0}'.format, range(1, max_degree+1))),
         ' '.join(map('Phase{}'.format, range(ops.phase_points)))
         ])
@@ -188,9 +189,9 @@ def process_star(filename, periods={}, **ops):
     result = get_lightcurve_from_file(filename, period=_period, **ops)
 
     if result is not None:
-        period, lc, data, coefficients, R_squared, MSE, shift = result
+        period, lc, data, coefficients, R_squared, MSE, shift, dA_0 = result
         plot_lightcurve(name, lc, period, data, **ops)
-        return name, period, shift, lc, data, coefficients, R_squared, MSE
+        return name, period, shift, lc, data, coefficients, R_squared, MSE, dA_0
 
 def _star_printer(max_coeffs, fmt):
     return lambda results: _print_star(results, max_coeffs, fmt)
@@ -199,7 +200,9 @@ def _print_star(results, max_coeffs, fmt):
     if results is None: return
     formatter = lambda x: fmt % x
 
-    name, period, shift, lc, data, coefficients, R2, MSE = results
+    name, period, shift, lc, data, coefficients, R2, MSE, dA_0 = results
+    coefficients = numpy.concatenate(([coefficients[0]], [dA_0],
+                                       coefficients[1:]))
     print(' '.join([name, str(period), str(shift), str(R2), str(MSE)]), end=' ')
     print(' '.join(map(formatter, coefficients)), end=' ')
     trailing_zeros = max_coeffs - len(coefficients)
