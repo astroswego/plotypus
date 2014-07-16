@@ -51,6 +51,7 @@ def setup_package():
             'console_scripts': [
                 'plotypus_demo = plotypus_scripts.demo:main',
                 'plotypus_eclipse = plotypus_scripts.eclipse:main',
+                'plotypus_kepler = plotypus_scripts.kepler:main',
                 'plotypus = plotypus_scripts.plotypus:main'
             ]
         },
