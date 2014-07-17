@@ -22,12 +22,10 @@ class Fourier():
         return self
 
     def transform(self, X, y=None, **params):
-        data = numpy.array(list(zip(numpy.array(X).T[0], range(len(X)))))
+        data = numpy.dstack((numpy.array(X).T[0], range(len(X))))[0]
         phase, order = data[data[:,0].argsort()].T
         coefficients = self.trigonometric_coefficient_matrix(phase, self.degree)
-        return numpy.array([mag for (orig, mag) # Put back in original order
-                            in sorted(zip(order, coefficients),
-                                      key=lambda pair: pair[0])])
+        return coefficients[order.argsort()]
     
     def get_params(self, deep):
         return {'degree': self.degree}
