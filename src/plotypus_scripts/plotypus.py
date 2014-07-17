@@ -2,7 +2,7 @@ import numpy
 from sys import exit, stdin, stderr
 from os import path, listdir
 from argparse import ArgumentError, ArgumentParser, FileType
-from sklearn.linear_model import LassoCV, LinearRegression
+from sklearn.linear_model import LassoCV, LassoLarsIC, LinearRegression
 from sklearn.grid_search import GridSearchCV
 from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
                                  plot_lightcurve)
@@ -111,7 +111,7 @@ def get_args():
     args = parser.parse_args()
 
 
-    regressor_choices = {'Lasso': LassoCV(cv=args.lasso_cv,
+    regressor_choices = {'Lasso': LassoLarsIC(#LassoCV(cv=args.lasso_cv,
                                           max_iter=args.max_iter),
                          'OLS': LinearRegression()}
 
