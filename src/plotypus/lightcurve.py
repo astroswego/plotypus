@@ -10,8 +10,11 @@ from sklearn.cross_validation import cross_val_score
 from sklearn.linear_model import LassoCV, LassoLarsIC
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
+from sklearn.utils import ConvergenceWarning
 import warnings
 warnings.filterwarnings("ignore", category=DeprecationWarning)
+warnings.filterwarnings("ignore", category=UserWarning)
+warnings.filterwarnings("ignore", category=ConvergenceWarning)
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import rcParams
