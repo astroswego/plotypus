@@ -28,9 +28,9 @@ def LombScargle(time, scaled_mags, precision, min_period, max_period):
 
 def rephase(data, period=1, col=0):
     rephased = numpy.ma.copy(data)
-    rephased.T[col] = [get_phase(x[col], period)
-                       for x in rephased]
+    rephased.T[col] = numpy.fromiter(map(lambda x: get_phase(x, period),
+                                         rephased.T[col]), dtype=float)
     return rephased
 
 def get_phase(time, period=1, offset=0):
-    return (modf(time/period)[0]-offset)%1
+    return (time / period - offset)%1
