@@ -111,8 +111,7 @@ def get_args():
     args = parser.parse_args()
 
 
-    regressor_choices = {'Lasso': LassoLarsIC(#LassoCV(cv=args.lasso_cv,
-                                          max_iter=args.max_iter),
+    regressor_choices = {'Lasso': LassoLarsIC(max_iter=args.max_iter),
                          'OLS': LinearRegression()}
 
     predictor_choices = {'Baart': None,
@@ -157,17 +156,16 @@ def main():
                      for k in vars(ops)
                      if k not in {'input'}}
     # print file header
-    print(' '.join([
-        '#',
-        'Name',
+    print('\t'.join([
+        '# Name',
         'Period',
         'Shift',
         'R^2',
         'MSE',
         'A_0',
         'dA_0',
-        ' '.join(map('A_{0} Phi_{0}'.format, range(1, max_degree+1))),
-        ' '.join(map('Phase{}'.format, range(ops.phase_points)))
+        '\t'.join(map('A_{0} Phi_{0}'.format, range(1, max_degree+1))),
+        '\t'.join(map('Phase{}'.format, range(ops.phase_points)))
         ])
     )
     printer = _star_printer(max_coeffs, vars(ops)['format'])
@@ -203,13 +201,13 @@ def _print_star(results, max_coeffs, fmt):
     name, period, shift, lc, data, coefficients, R2, MSE, dA_0 = results
     coefficients = numpy.concatenate(([coefficients[0]], [dA_0],
                                        coefficients[1:]))
-    print(' '.join([name, str(period), str(shift), str(R2), str(MSE)]), end=' ')
-    print(' '.join(map(formatter, coefficients)), end=' ')
-    trailing_zeros = max_coeffs - len(coefficients)
+    print('\t'.join([name, str(period), str(shift), str(R2), str(MSE)]),end=' ')
+    print('\t'.join(map(formatter, coefficients)), end=' ')
+    trailing_zeros = max_coeffs - len(coefficients) + 1
     if trailing_zeros > 0:
-        print(' '.join(map(formatter,
-                           numpy.zeros(trailing_zeros))), end=' ')
-    print(' '.join(map(formatter, lc)))
+        print('\t'.join(map(formatter,
+                            numpy.zeros(trailing_zeros))), end=' ')
+    print('\t'.join(map(formatter, lc)))
 
 def _get_files(input):
     if input is stdin:
