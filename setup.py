@@ -52,6 +52,8 @@ def setup_package():
                 'plotypus_demo = plotypus_scripts.demo:main',
                 'plotypus_eclipse = plotypus_scripts.eclipse:main',
                 'plotypus_kepler = plotypus_scripts.kepler:main',
+                'plotypus_gaps = plotypus_scripts.gaps:main',
+                'plotypus_sample = plotypus_scripts.sample:main',
                 'plotypus = plotypus_scripts.plotypus:main'
             ]
         },
