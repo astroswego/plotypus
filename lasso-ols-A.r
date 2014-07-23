@@ -32,7 +32,8 @@ axis(4)
 mtext(side=1, text="log P", line=2, cex=1)
 mtext(side=4, text="Lasso A3 - Baart A3", line=2, cex=1) #₃
 
-title("Differences in Amplitude Coefficients Between Lasso and Baart", outer=TRUE, line=-2.7, font.main=1)
+title("Differences in Amplitude Coefficients Between Lasso and Baart for OGLE I-Band FU Cepheids",
+      outer=TRUE, line=-2.7, font.main=1)
 dev.off()
 
 # par(mar=c(0, 5, 0, 0))
