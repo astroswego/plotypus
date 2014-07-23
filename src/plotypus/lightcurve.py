@@ -63,7 +63,7 @@ def get_lightcurve(data, period=None,
                    coarse_precision=0.001, fine_precision=0.0000001,
                    sigma=10, sigma_clipping='robust',
                    scoring=None, scoring_cv=3,
-                   min_phase_cover=1/2,
+                   min_phase_cover=0.,
                    phases=numpy.arange(0, 1, 0.01), **ops):
     while True:
         # Find the period of the inliers
