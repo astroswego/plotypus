@@ -35,7 +35,7 @@ __all__ = [
     'plot_lightcurve'
 ]
 
-def make_predictor(regressor=LassoLarsIC(),#LassoCV(cv=10),
+def make_predictor(regressor=LassoLarsIC(fit_intercept=False),#LassoCV(cv=10),
                    Predictor=GridSearchCV,
                    fourier_degree=(3,15),
                    use_baart=False, scoring=None,
@@ -126,7 +126,6 @@ def get_lightcurve(data, period=None,
                  if isinstance(predictor, Pipeline) \
                  else predictor.best_estimator_.named_steps['Regressor']
     coefficients = best_model.coef_
-    coefficients[0] = best_model.intercept_
 
     # compute R^2 and MSE if they haven't already been
     # (one or zero have been computed, depending on the predictor)
