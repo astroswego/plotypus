@@ -111,8 +111,9 @@ def get_args():
     args = parser.parse_args()
 
 
-    regressor_choices = {'Lasso': LassoLarsIC(max_iter=args.max_iter),
-                         'OLS': LinearRegression()}
+    regressor_choices = {'Lasso': LassoLarsIC(max_iter=args.max_iter,
+                                              fit_intercept=False),
+                         'OLS': LinearRegression(fit_intercept=False)}
 
     predictor_choices = {'Baart': None,
                          'GridSearch': GridSearchCV}
@@ -126,7 +127,7 @@ def get_args():
     args.predictor = make_predictor(Predictor=Predictor,
                                     use_baart=(args.predictor == 'Baart'),
                                     **vars(args))
-    args.phases=numpy.arange(0, 1, 1/args.phase_points)
+    args.phases = numpy.arange(0, 1, 1/args.phase_points)
 
     if args.periods is not None:
         periods = {name: float(period) for (name, period)
@@ -199,14 +200,18 @@ def _print_star(results, max_coeffs, fmt):
     formatter = lambda x: fmt % x
 
     name, period, shift, lc, data, coefficients, R2, MSE, dA_0 = results
-    coefficients = numpy.concatenate(([coefficients[0]], [dA_0],
-                                       coefficients[1:]))
-    print('\t'.join([name, str(period), str(shift), str(R2), str(MSE)]),end=' ')
-    print('\t'.join(map(formatter, coefficients)), end=' ')
-    trailing_zeros = max_coeffs - len(coefficients) + 1
+    coefficients_ = Fourier.phase_shifted_coefficients(coefficients)
+    coefficients_ = numpy.concatenate(([coefficients_[0]], [dA_0],
+                                       coefficients_[1:]))
+    print('\t'.join([name, str(period), str(shift), str(R2), str(MSE)]),
+          end='\t')
+    print('\t'.join(map(formatter, coefficients_)),
+          end='\t')
+    trailing_zeros = max_coeffs - len(coefficients_) + 1
     if trailing_zeros > 0:
         print('\t'.join(map(formatter,
-                            numpy.zeros(trailing_zeros))), end=' ')
+                            numpy.zeros(trailing_zeros))),
+              end='\t')
     print('\t'.join(map(formatter, lc)))
 
 def _get_files(input):
