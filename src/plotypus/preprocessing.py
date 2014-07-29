@@ -129,7 +129,7 @@ class Fourier():
         Phi_k[Q23] += numpy.pi
         Phi_k[Q4]  += 2.0*numpy.pi
 
-        phase_shifted_coefficients_ = numpy.zeros(amplitude_coefficients.shape)
+        phase_shifted_coefficients_ = numpy.empty(amplitude_coefficients.shape)
         phase_shifted_coefficients_[0]    = A_0
         phase_shifted_coefficients_[1::2] = A_k
         phase_shifted_coefficients_[2::2] = Phi_k
