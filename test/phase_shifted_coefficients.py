@@ -21,7 +21,7 @@ def phase_shifted_reconstruction(X, coeffs):
     b *= numpy.arange(1, n+1)
     b += Phi_ks
 
-    B = numpy.sin(b)
+    B = numpy.cos(b)
     y = A_0 + numpy.dot(B, A_ks)
 
     return y
@@ -44,10 +44,14 @@ def main():
     phase_coefficients = Fourier.phase_shifted_coefficients(amp_coefficients)
     phase_shifted_lc = phase_shifted_reconstruction(phases,
                                                     phase_coefficients)
-
+    arg_max_light = int(t_max * len(phases))
+#    argmin = phase_shifted_lc.argmin()
+    phase_shifted_lc = numpy.concatenate((phase_shifted_lc[arg_max_light:],
+                                          phase_shifted_lc[:arg_max_light]))
+    
     plt.plot(phase, mag, 'k.')
     plt.plot(phases, lc, 'g-')
-    plt.plot(phases, phase_shifted_lc, 'r-')
+    plt.plot(phases, phase_shifted_lc, 'r--')
     plt.show()
 
     difference = numpy.abs(phase_shifted_lc - lc)
