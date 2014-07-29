@@ -1,6 +1,8 @@
 import numpy
 from numpy import cos, pi
 
+import matplotlib.pyplot as plt
+
 from plotypus.lightcurve import get_lightcurve
 from plotypus.preprocessing import Fourier
 
@@ -15,10 +17,9 @@ def phase_shifted_reconstruction(X, coeffs):
     N, n = X.size, A_ks.size
     
     b = numpy.empty((N, n))
-    b[:] = 2*numpy.pi*X
-    bT = b.T
-    bT *= numpy.arange(1, n+1)
-    bT += Phi_ks
+    b.T[:,:] = 2*numpy.pi*X
+    b *= numpy.arange(1, n+1)
+    b += Phi_ks
 
     B = numpy.sin(b)
     y = A_0 + numpy.dot(B, A_ks)
@@ -35,14 +36,19 @@ def main():
     err[:]   = numpy.random.normal(0.0, 0.1, N)
 
     data = numpy.ma.array(data=data, mask=None, dtype=float, copy=False).T
+    phases = numpy.arange(0, 1, 0.01)
 
-    results = get_lightcurve(data, period=1.0)
+    results = get_lightcurve(data, period=1.0, phases=phases)
     period, lc, data, amp_coefficients, R2, MSE, t_max, dA_0 = results
 
     phase_coefficients = Fourier.phase_shifted_coefficients(amp_coefficients)
-    phases = numpy.arange(0, 1, 0.01)
+    phase_shifted_lc = phase_shifted_reconstruction(phases,
+                                                    phase_coefficients)
 
-    phase_shifted_lc = phase_shifted_reconstruction(phases, phase_coefficients)
+    plt.plot(phase, mag, 'k.')
+    plt.plot(phases, lc, 'g-')
+    plt.plot(phases, phase_shifted_lc, 'r-')
+    plt.show()
 
     difference = numpy.abs(phase_shifted_lc - lc)
     print('mean difference: {}, std difference: {}'.format(difference.mean(),
