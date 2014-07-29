@@ -91,13 +91,20 @@ class Fourier():
         return M
     
     @staticmethod
-    def phase_shifted_coefficients(amplitude_coefficients):
+    def phase_shifted_coefficients(amplitude_coefficients, form='cos'):
         """Converts Fourier coefficients from the form
         m(t) = A_0 + \Sum_{k=1}^n a_k \sin(k \omega t)
                                 + b_k \cos(k \omega t)
         into the form
         m(t) = A_0 + \Sum_{k=1}^n A_k \sin(k \omega t + \Phi_k)
         """
+        if 'cos' in form:
+            pass # this will do something once sine series are supported
+        elif 'sin' in form:
+            raise Exception('Fourier sine series not yet supported')
+        else:
+            raise Exception('Fourier series must have form sine or cosine')
+        
         # separate array of coefficients into respective parts
         A_0 = amplitude_coefficients[0]
         a_k = amplitude_coefficients[1::2]
