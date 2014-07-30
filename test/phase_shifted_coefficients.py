@@ -55,11 +55,12 @@ def main():
     plt.plot(phase, mag, 'k.')
     plt.plot(phases, lc, 'g-')
     plt.plot(phases, phase_shifted_lc, 'r--')
-    plt.show()
+    plt.savefig('phase_shifted_reconstruction.png')
 
-    difference = numpy.abs(phase_shifted_lc - lc)
-    print('mean difference: {}, std difference: {}'.format(difference.mean(),
-                                                           difference.std()))
+    npt.assert_almost_equal(phase_shifted_lc, lc, decimal=7)
+#    difference = numpy.abs(phase_shifted_lc - lc)
+#    print('mean difference: {}, std difference: {}'.format(difference.mean(),
+#                                                           difference.std()))
 
 if __name__ == '__main__':
     exit(main())
