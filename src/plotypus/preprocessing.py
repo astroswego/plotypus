@@ -135,3 +135,44 @@ class Fourier():
         phase_shifted_coefficients_[2::2] = Phi_k
 
         return phase_shifted_coefficients_
+
+    @staticmethod
+    def fourier_ratios(phase_shifted_coeffs, N):
+        """Returns an array containing
+        [ R_{N+1 N}, Phi_{N+1 N}, ..., R_{n N}, Phi_{n N} ],
+        where R_{i j} is the amplitude ratio R_i / R_j,
+        and Phi_{i j} is the phase delta Phi_i - Phi_j.
+        """
+        amplitudes = phase_shifted_coeffs[1::2]
+        phases = phase_shifted_coeffs[2::2]
+
+        # the number of ratios is 3 less than the number of coefficients
+        # because the 0th coefficient is not used, and there are ratios of
+        # two 
+        ratios = numpy.empty(phase_shifted_coeffs.size-3, dtype=float)
+        amplitude_ratios = ratios[::2]
+        phase_deltas = ratios[1::2]
+        
+        amplitude_ratios[:] = amplitudes[1:]
+        amplitude_ratios   /= amplitudes[0]
+
+        phase_deltas[:] = phases[1:]
+        phase_deltas   -= phases[0]
+
+        return ratios
+    
+    # @staticmethod
+    # def amplitude_ratios(amplitudes, N):
+    #     """Returns an array containing
+    #     [ R_{i N} for N < i < n ],
+    #     where n is the degree of the fit.
+    #     """
+    #     return amplitudes[N+1:] / amplitudes[N]
+
+    # @staticmethod
+    # def phase_deltas(phase_shifts, N):
+    #     """Returns an array containing
+    #     [ Phi_{i N} for N < i < n ],
+    #     where n is the degree of the fit.
+    #     """
+    #     return phase_shifts[N+1:] - phase_shifts[N]

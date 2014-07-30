@@ -142,7 +142,6 @@ def main():
     ops = get_args()
 
     min_degree, max_degree = vars(ops)['fourier_degree']
-    max_coeffs = 2*max_degree + 1
     filenames = list(map(lambda x: x.strip(), _get_files(ops.input)))
     filepaths = map(lambda filename:
                     filename if path.isfile(filename)
@@ -165,11 +164,12 @@ def main():
         'MSE',
         'A_0',
         'dA_0',
-        '\t'.join(map('A_{0} Phi_{0}'.format, range(1, max_degree+1))),
+        '\t'.join(map('A_{0}\tPhi_{0}'.format, range(1, max_degree+1))),
+        '\t'.join(map('R_{0}1\tphi_{0}1'.format, range(2,max_degree+1))),
         '\t'.join(map('Phase{}'.format, range(ops.phase_points)))
         ])
     )
-    printer = _star_printer(max_coeffs, vars(ops)['format'])
+    printer = _star_printer(max_degree, vars(ops)['format'])
     pmap(process_star, filepaths, callback=printer, **picklable_ops)
 
 def process_star(filename, periods={}, **ops):
@@ -192,22 +192,31 @@ def process_star(filename, periods={}, **ops):
         plot_lightcurve(name, lc, period, data, **ops)
         return name, period, shift, lc, data, coefficients, R_squared, MSE, dA_0
 
-def _star_printer(max_coeffs, fmt):
-    return lambda results: _print_star(results, max_coeffs, fmt)
+def _star_printer(max_degree, fmt):
+    return lambda results: _print_star(results, max_degree, fmt)
 
-def _print_star(results, max_coeffs, fmt):
+def _print_star(results, max_degree, fmt):
     if results is None: return
     formatter = lambda x: fmt % x
 
     name, period, shift, lc, data, coefficients, R2, MSE, dA_0 = results
-    coefficients_ = Fourier.phase_shifted_coefficients(coefficients)
-    coefficients_ = numpy.concatenate(([coefficients_[0]], [dA_0],
-                                       coefficients_[1:]))
+    phase_shifted_coeffs = Fourier.phase_shifted_coefficients(coefficients)
+    coefficients_ = numpy.concatenate(([phase_shifted_coeffs[0]], [dA_0],
+                                       phase_shifted_coeffs[1:]))
+    fourier_ratios = Fourier.fourier_ratios(phase_shifted_coeffs, 1)
+
     print('\t'.join([name, str(period), str(shift), str(R2), str(MSE)]),
           end='\t')
     print('\t'.join(map(formatter, coefficients_)),
           end='\t')
-    trailing_zeros = max_coeffs - len(coefficients_) + 1
+    trailing_zeros = 2*max_degree + 1 - len(coefficients_)
+    if trailing_zeros > 0:
+        print('\t'.join(map(formatter,
+                            numpy.zeros(trailing_zeros))),
+              end='\t')
+    print('\t'.join(map(formatter, fourier_ratios)),
+          end='\t')
+    trailing_zeros = 2*(max_degree-1) - len(fourier_ratios)
     if trailing_zeros > 0:
         print('\t'.join(map(formatter,
                             numpy.zeros(trailing_zeros))),
