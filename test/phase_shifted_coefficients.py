@@ -1,6 +1,9 @@
 import numpy
 from numpy import cos, pi
+import numpy.testing as npt
 
+import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 from plotypus.lightcurve import get_lightcurve
