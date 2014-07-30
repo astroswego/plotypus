@@ -49,6 +49,7 @@ def setup_package():
         ],
         entry_points = {
             'console_scripts': [
+                'plotypus_comparison = plotypus_scripts.comparison:main',
                 'plotypus_demo = plotypus_scripts.demo:main',
                 'plotypus_eclipse = plotypus_scripts.eclipse:main',
                 'plotypus_kepler = plotypus_scripts.kepler:main',
