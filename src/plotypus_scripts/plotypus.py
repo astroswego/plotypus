@@ -209,7 +209,7 @@ def _print_star(results, max_degree, fmt):
           end='\t')
     print('\t'.join(map(formatter, coefficients_)),
           end='\t')
-    trailing_zeros = 2*max_degree + 1 - len(coefficients_)
+    trailing_zeros = 2*max_degree + 1 - len(phase_shifted_coeffs)
     if trailing_zeros > 0:
         print('\t'.join(map(formatter,
                             numpy.zeros(trailing_zeros))),
