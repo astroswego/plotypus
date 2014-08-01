@@ -160,6 +160,8 @@ def main():
         '# Name',
         'Period',
         'Shift',
+        'Inliers',
+        'Outliers',
         'R^2',
         'MSE',
         'A_0',
@@ -200,12 +202,18 @@ def _print_star(results, max_degree, fmt):
     formatter = lambda x: fmt % x
 
     name, period, shift, lc, data, coefficients, R2, MSE, dA_0 = results
+
+    N = data[:,0].size # number of data points
+    outliers = numpy.ma.count_masked(data[:,0]) # number of outliers
+    inliers  = N - outliers # number of inliers
+
     phase_shifted_coeffs = Fourier.phase_shifted_coefficients(coefficients)
     coefficients_ = numpy.concatenate(([phase_shifted_coeffs[0]], [dA_0],
                                        phase_shifted_coeffs[1:]))
     fourier_ratios = Fourier.fourier_ratios(phase_shifted_coeffs, 1)
 
-    print('\t'.join([name, str(period), str(shift), str(R2), str(MSE)]),
+    print('\t'.join([name, str(period), str(shift), str(inliers), str(outliers),
+                     str(R2), str(MSE)]),
           end='\t')
     print('\t'.join(map(formatter, coefficients_)),
           end='\t')
