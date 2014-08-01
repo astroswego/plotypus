@@ -23,9 +23,9 @@ def get_args():
         help='location of stellar observations '
              '(default = stdin)')
     general_group.add_argument('-o', '--output', type=str,
-        default='plots',
-        help='location of plots '
-             '(default = plots)')
+        default=None,
+        help='location of plots, or nothing if no plots are to be generated '
+             '(default = None)')
     general_group.add_argument('-f', '--format', type=str,
         default='%.5f',
         help='format specifier for output table')
@@ -110,7 +110,6 @@ def get_args():
     
     args = parser.parse_args()
 
-
     regressor_choices = {'Lasso': LassoLarsIC(max_iter=args.max_iter,
                                               fit_intercept=False),
                          'OLS': LinearRegression(fit_intercept=False)}
@@ -174,7 +173,7 @@ def main():
     printer = _star_printer(max_degree, vars(ops)['format'])
     pmap(process_star, filepaths, callback=printer, **picklable_ops)
 
-def process_star(filename, periods={}, **ops):
+def process_star(filename, output, periods={}, **ops):
     """Processes a star's lightcurve, prints its coefficients, and saves
     its plotted lightcurve to a file. Returns the results of get_lightcurve.
     """
@@ -191,7 +190,8 @@ def process_star(filename, periods={}, **ops):
 
     if result is not None:
         period, lc, data, coefficients, R_squared, MSE, shift, dA_0 = result
-        plot_lightcurve(name, lc, period, data, **ops)
+        if output is not None:
+            plot_lightcurve(name, lc, period, data, **ops)
         return name, period, shift, lc, data, coefficients, R_squared, MSE, dA_0
 
 def _star_printer(max_degree, fmt):
