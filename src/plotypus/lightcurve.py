@@ -68,6 +68,8 @@ def get_lightcurve(data, period=None,
     while True:
         # Find the period of the inliers
         signal = get_signal(data)
+        if len(signal) < scoring_cv:
+            return None
         _period = period if period is not None else \
                   find_period(signal.T[0], signal.T[1],
                               min_period, max_period,
@@ -146,10 +148,10 @@ def get_lightcurve(data, period=None,
         MSE = cross_val_score(predictor, phase_col, mag,
                               cv=scoring_cv,
                               scoring='mean_squared_error').mean()
-
+    
     t_max = arg_max_light/len(phases)
     dA_0 = sem(lc)
-        
+    
     return _period, lc, data, coefficients, R2, MSE, t_max, dA_0
 
 
