@@ -156,7 +156,7 @@ def main():
                      if k not in {'input'}}
     # print file header
     print('\t'.join([
-        '# Name',
+        'Name',
         'Period',
         'Shift',
         'Inliers',
