@@ -66,10 +66,11 @@ def get_lightcurve(data, period=None,
                    min_phase_cover=0.,
                    phases=numpy.arange(0, 1, 0.01), **ops):
     while True:
-        # Find the period of the inliers
         signal = get_signal(data)
-        if len(signal) < scoring_cv:
-            return None
+        if len(signal)/scoring_cv <= scoring_cv: # Fix this
+            return
+        
+        # Find the period of the inliers
         _period = period if period is not None else \
                   find_period(signal.T[0], signal.T[1],
                               min_period, max_period,
@@ -131,7 +132,7 @@ def get_lightcurve(data, period=None,
 
     # compute R^2 and MSE if they haven't already been
     # (one or zero have been computed, depending on the predictor)
-    if hasattr(predictor, 'best_score_'):
+    if hasattr(predictor, 'best_score_'): # Fix this
         if predictor.scoring == 'r2':
             R2 = predictor.best_score_
             MSE = cross_val_score(predictor, colvec(phase), mag,
