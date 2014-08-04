@@ -195,7 +195,8 @@ def process_star(filename, output, periods={}, **ops):
         return name, period, shift, lc, data, coefficients, R_squared, MSE, dA_0
 
 def _star_printer(max_degree, fmt):
-    return lambda results: _print_star(results, max_degree, fmt)
+    return lambda results: _print_star(results, max_degree, fmt) \
+                           if results is not None else None
 
 def _print_star(results, max_degree, fmt):
     if results is None: return
