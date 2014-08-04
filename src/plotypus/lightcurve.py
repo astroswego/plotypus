@@ -1,246 +1,245 @@
 import numpy
-from scipy.stats import sem
-from sys import stderr
-from math import floor
-from os import path
-from .utils import make_sure_path_exists, get_signal, get_noise, colvec, mad
-from .periodogram import find_period, rephase, get_phase
-from .preprocessing import Fourier
-from sklearn.cross_validation import cross_val_score
-from sklearn.linear_model import LassoCV, LassoLarsIC
-from sklearn.pipeline import Pipeline
+from sys import exit, stdin, stderr
+from os import path, listdir
+from argparse import ArgumentError, ArgumentParser, FileType
+from sklearn.linear_model import LassoCV, LassoLarsIC, LinearRegression
 from sklearn.grid_search import GridSearchCV
-from sklearn.utils import ConvergenceWarning
-import warnings
-warnings.filterwarnings("ignore", category=ConvergenceWarning)
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib import rcParams
-rcParams['axes.labelsize'] = 10
-rcParams['xtick.labelsize'] = 10
-rcParams['ytick.labelsize'] = 10
-rcParams['legend.fontsize'] = 10
-rcParams['font.family'] = 'serif'
-rcParams['font.serif'] = ['Latin Modern']
-rcParams['text.usetex'] = True
-rcParams['figure.dpi'] = 300
-rcParams['savefig.dpi'] = 300
-import matplotlib.pyplot as plt
+from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
+                                 plot_lightcurve)
+from plotypus.preprocessing import Fourier
+from plotypus.utils import pmap
 
-__all__ = [
-    'make_predictor',
-    'get_lightcurve',
-    'get_lightcurve_from_file',
-    'find_outliers',
-    'plot_lightcurve'
-]
+def get_args():
+    parser = ArgumentParser()
+    general_group = parser.add_argument_group('General')
+    period_group = parser.add_argument_group('Periodogram')
+    fourier_group = parser.add_argument_group('Fourier')
+    outlier_group = parser.add_argument_group('Outlier Detection')
+    lasso_group = parser.add_argument_group('Lasso')
+    gridsearch_group = parser.add_argument_group('GridSearch')
 
-def make_predictor(regressor=LassoLarsIC(fit_intercept=False),#LassoCV(cv=10),
-                   Predictor=GridSearchCV,
-                   fourier_degree=(3,15),
-                   use_baart=False, scoring=None,
-                   scoring_cv=3,
-                   **kwargs):
-    """Makes a predictor object for use in get_lightcurve.
+    general_group.add_argument('-i', '--input', type=str,
+        default=stdin,
+        help='location of stellar observations '
+             '(default = stdin)')
+    general_group.add_argument('-o', '--output', type=str,
+        default=None,
+        help='location of plots, or nothing if no plots are to be generated '
+             '(default = None)')
+    general_group.add_argument('-f', '--format', type=str,
+        default='%.5f',
+        help='format specifier for output table')
+    general_group.add_argument('--data-extension', type=str,
+        default='.dat', metavar='EXT',
+        help='extension which follows a star\'s name in data filenames '
+             '(default = .dat)')
+    general_group.add_argument('--use-cols', type=int, nargs=3,
+        default=range(3), metavar=('TIME', 'MAG', 'MAG_ERR'),
+        help='columns to use from data file '
+             '(default = 0 1 2)')
+    general_group.add_argument('-p', '--processes', type=int,
+        default=1, metavar='N',
+        help='number of stars to process in parallel '
+             '(default = 1)')
+    general_group.add_argument('-s', '--scoring', type=str,
+        choices=['MSE', 'R2'], default='R2',
+        help='scoring metric to use '
+             '(default = R2)')
+    general_group.add_argument('--scoring-cv', type=int,
+        default=3, metavar='N',
+        help='number of folds in the scoring cross validation '
+             '(default = 3)')
+    general_group.add_argument('--phase-points', type=int,
+        default=100, metavar='N',
+        help='number of phase points to output '
+             '(default = 100)')
+    general_group.add_argument('--min-phase-cover', type=float,
+        default=0, metavar='COVER',
+        help='minimum fraction of phases that must have points '
+             '(default = 0)')
+    period_group.add_argument('--periods', type=FileType('r'),
+        default=None,
+        help='file of star names and associated periods '
+             '(default = None)')
+    period_group.add_argument('--min-period', type=float,
+        default=0.2, metavar='P',
+        help='minimum period of each star '
+             '(default = 0.2)')
+    period_group.add_argument('--max-period', type=float,
+        default=32.0, metavar='P',
+        help='maximum period of each star '
+             '(default = 32.0)')
+    period_group.add_argument('--coarse-precision', type=float,
+        default=0.001,
+        help='level of granularity on first pass '
+             '(default = 0.001)')
+    period_group.add_argument('--fine-precision', type=float,
+        default=0.0000001,
+        help='level of granularity on second pass '
+             '(default = 0.0000001)')
+    fourier_group.add_argument('--fourier-degree', type=int, nargs=2,
+        default=(3,15), metavar=('MIN', 'MAX'),
+        help='range of degrees of fourier fits to use '
+             '(default = 3 15)')
+    fourier_group.add_argument('-r', '--regressor',
+        choices=['Lasso', 'OLS'],
+        default='Lasso',
+        help='type of regressor to use '
+             '(default = Lasso)')
+    fourier_group.add_argument('--predictor',
+        choices=['Baart', 'GridSearch'],
+        default='GridSearch',
+        help='type of model predictor to use '
+             '(default = GridSearch)')
+    outlier_group.add_argument('--sigma', dest='sigma', type=float,
+        default=10.0,
+        help='rejection criterion for outliers '
+             '(default = 10)')
+    outlier_group.add_argument('--sigma-clipping', type=str,
+        choices=['standard', 'robust'], default='robust',
+        help='sigma clipping metric to use '
+             '(default = robust)')
+    lasso_group.add_argument('--lasso-cv', type=int,
+        default=10, metavar='N',
+        help='number of folds in the L1-regularization search '
+             '(default = 10)')
+    lasso_group.add_argument('--max-iter', type=int,
+        default=1000, metavar='N',
+        help='maximum number of iterations in the LassoCV '
+             '(default = 1000)')
+    
+    args = parser.parse_args()
+
+    regressor_choices = {'Lasso': LassoLarsIC(max_iter=args.max_iter,
+                                              fit_intercept=False),
+                         'OLS': LinearRegression(fit_intercept=False)}
+
+    predictor_choices = {'Baart': None,
+                         'GridSearch': GridSearchCV}
+
+    scoring_choices = {'R2': 'r2',
+                       'MSE': 'mean_squared_error'}
+
+    args.scoring = scoring_choices[args.scoring]
+    args.regressor = regressor_choices[args.regressor]
+    Predictor = predictor_choices[args.predictor] or GridSearchCV
+    args.predictor = make_predictor(Predictor=Predictor,
+                                    use_baart=(args.predictor == 'Baart'),
+                                    **vars(args))
+    args.phases = numpy.arange(0, 1, 1/args.phase_points)
+
+    if args.periods is not None:
+        periods = {name: float(period) for (name, period)
+                   in (line.strip().split() for line
+                       # generalize to all whitespace instead of just spaces
+                       in args.periods if ' ' in line)}
+        args.periods.close()
+        args.periods = periods
+    return args
+
+def main():
+    ops = get_args()
+
+    min_degree, max_degree = vars(ops)['fourier_degree']
+    filenames = list(map(lambda x: x.strip(), _get_files(ops.input)))
+    filepaths = map(lambda filename:
+                    filename if path.isfile(filename)
+                             else path.join(ops.input, filename),
+                    filenames)
+    star_names = list(map(lambda filename:
+                          path.basename(filename).split('.')[0],
+                          filenames))
+    # a dict containing all options which can be pickled, because
+    # all parameters to pmap must be picklable
+    picklable_ops = {k: vars(ops)[k]
+                     for k in vars(ops)
+                     if k not in {'input'}}
+    # print file header
+    print('\t'.join([
+        'Name',
+        'Period',
+        'Shift',
+        'Inliers',
+        'Outliers',
+        'R^2',
+        'MSE',
+        'A_0',
+        'dA_0',
+        '\t'.join(map('A_{0}\tPhi_{0}'.format, range(1, max_degree+1))),
+        '\t'.join(map('R_{0}1\tphi_{0}1'.format, range(2,max_degree+1))),
+        '\t'.join(map('Phase{}'.format, range(ops.phase_points)))
+        ])
+    )
+    printer = _star_printer(max_degree, vars(ops)['format'])
+    pmap(process_star, filepaths, callback=printer, **picklable_ops)
+
+def process_star(filename, output, periods={}, **ops):
+    """Processes a star's lightcurve, prints its coefficients, and saves
+    its plotted lightcurve to a file. Returns the results of get_lightcurve.
     """
-    if use_baart:
-        predictor = Pipeline([('Fourier', Fourier(degree_range=fourier_degree,
-                                                  regressor=regressor)),
-                              ('Regressor', regressor)])
+    _name = path.basename(filename)
+    extension = ops['data_extension']
+    if _name.endswith(extension):
+        name = _name[:-len(extension)]
     else:
-        min_degree, max_degree = fourier_degree
-        params = {'Fourier__degree':
-                  list(range(min_degree, 1+max_degree))}
-        pipeline = Pipeline([('Fourier',  Fourier()),
-                            ('Regressor', regressor)])
-        predictor = Predictor(pipeline, params, scoring=scoring, cv=scoring_cv)
+        # file has wrong extension
+        return
+    _period = periods.get(name) if periods is not None and \
+                                   name in periods else None
+    result = get_lightcurve_from_file(filename, period=_period, **ops)
 
-    return predictor
+    if result is not None:
+        period, lc, data, coefficients, R_squared, MSE, shift, dA_0 = result
+        if output is not None:
+            plot_lightcurve(name, lc, period, data, **ops)
+        return name, period, shift, lc, data, coefficients, R_squared, MSE, dA_0
 
-def get_lightcurve(data, period=None,
-                   predictor=make_predictor(),
-                   min_period=0.2, max_period=32,
-                   coarse_precision=0.001, fine_precision=0.0000001,
-                   sigma=10, sigma_clipping='robust',
-                   scoring=None, scoring_cv=3,
-                   min_phase_cover=0.,
-                   phases=numpy.arange(0, 1, 0.01), **ops):
-    while True:
-        signal = get_signal(data)
-        if len(signal)/scoring_cv <= scoring_cv: # Fix this
-            return
-        
-        # Find the period of the inliers
-        _period = period if period is not None else \
-                  find_period(signal.T[0], signal.T[1],
-                              min_period, max_period,
-                              coarse_precision, fine_precision)
-        phase, mag, err = rephase(signal, _period).T
+def _star_printer(max_degree, fmt):
+    return lambda results: _print_star(results, max_degree, fmt) \
+                           if results is not None else None
 
-        # Determine whether there is sufficient phase coverage
-        coverage = numpy.zeros((100))
-        for p in phase:
-            coverage[int(floor(p*100))] = 1
-        if sum(coverage)/100 < min_phase_cover:
-            print(sum(coverage)/100, min_phase_cover,
-                  file=stderr)
-            print("Insufficient phase coverage",
-                  file=stderr)
-            return
+def _print_star(results, max_degree, fmt):
+    if results is None: return
+    formatter = lambda x: fmt % x
 
-        # Predict light curve
-        with warnings.catch_warnings(record=True) as w:
-            try:
-                predictor = predictor.fit(colvec(phase), mag)
-            except Warning:
-                print(w, file=stderr)
-                return
+    name, period, shift, lc, data, coefficients, R2, MSE, dA_0 = results
 
-        # Reject outliers and repeat the process if there are any
-        if sigma:
-            outliers = find_outliers(data.data, _period, predictor, sigma,
-                                     sigma_clipping)
-            num_outliers = sum(outliers)[0]
-            if num_outliers == 0 or \
-               set.issubset(set(numpy.nonzero(outliers.T[0])[0]),
-                            set(numpy.nonzero(data.mask.T[0])[0])):
-                data.mask = outliers
-                if num_outliers > 0:
-                    print("Rejecting", num_outliers, "outliers",
-                          file=stderr)
-                break
-            if num_outliers > 0:
-                print("Flagging", sum(outliers)[0], "outliers",
-                      file=stderr)
-            data.mask = numpy.ma.mask_or(data.mask, outliers)
-    
-    # Build light curve
-    lc = predictor.predict([[i] for i in phases])
-    
-    # Shift to max light
-    arg_max_light = lc.argmin()
-    lc = numpy.concatenate((lc[arg_max_light:], lc[:arg_max_light]))
+    N = data[:,0].size # number of data points
+    outliers = numpy.ma.count_masked(data[:,0]) # number of outliers
+    inliers  = N - outliers # number of inliers
 
-    data.T[0] = numpy.fromiter((get_phase(p, _period,
-                                          arg_max_light / phases.size)
-                                for p in data.data.T[0]),
-                               numpy.float, len(data.data.T[0]))
-    best_model = predictor.named_steps['Regressor'] \
-                 if isinstance(predictor, Pipeline) \
-                 else predictor.best_estimator_.named_steps['Regressor']
-    coefficients = best_model.coef_
+    phase_shifted_coeffs = Fourier.phase_shifted_coefficients(coefficients)
+    coefficients_ = numpy.concatenate(([phase_shifted_coeffs[0]], [dA_0],
+                                       phase_shifted_coeffs[1:]))
+    fourier_ratios = Fourier.fourier_ratios(phase_shifted_coeffs, 1)
 
-    # compute R^2 and MSE if they haven't already been
-    # (one or zero have been computed, depending on the predictor)
-    if hasattr(predictor, 'best_score_'): # Fix this
-        if predictor.scoring == 'r2':
-            R2 = predictor.best_score_
-            MSE = cross_val_score(predictor, colvec(phase), mag,
-                                  scoring='mean_squared_error').mean()
-        else:
-            MSE = predictor.best_score_
-            R2 = cross_val_score(predictor, colvec(phase), mag,
-                                 scoring='r2').mean()
+    print('\t'.join([name, str(period), str(shift), str(inliers), str(outliers),
+                     str(R2), str(MSE)]),
+          end='\t')
+    print('\t'.join(map(formatter, coefficients_)),
+          end='\t')
+    trailing_zeros = 2*max_degree + 1 - len(phase_shifted_coeffs)
+    if trailing_zeros > 0:
+        print('\t'.join(map(formatter,
+                            numpy.zeros(trailing_zeros))),
+              end='\t')
+    print('\t'.join(map(formatter, fourier_ratios)),
+          end='\t')
+    trailing_zeros = 2*(max_degree-1) - len(fourier_ratios)
+    if trailing_zeros > 0:
+        print('\t'.join(map(formatter,
+                            numpy.zeros(trailing_zeros))),
+              end='\t')
+    print('\t'.join(map(formatter, lc)))
+
+def _get_files(input):
+    if input is stdin:
+        return map(lambda x: x.strip(), input)
+    elif path.isdir(input):
+        return sorted(listdir(input))
     else:
-        phase_col = colvec(phase)
-        R2 = cross_val_score(predictor, phase_col, mag,
-                             cv=scoring_cv,
-                             scoring='r2').mean()
-        MSE = cross_val_score(predictor, phase_col, mag,
-                              cv=scoring_cv,
-                              scoring='mean_squared_error').mean()
-    
-    t_max = arg_max_light/len(phases)
-    dA_0 = sem(lc)
-    
-    return _period, lc, data, coefficients, R2, MSE, t_max, dA_0
-
-
-def get_lightcurve_from_file(filename, *args, use_cols=range(3), **kwargs):
-    data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),
-                          mask=None, dtype=float)
-    return get_lightcurve(data, *args, **kwargs)
-
-def get_lightcurves_from_file(filename, directories, *args, **kwargs):
-    return [
-        get_lightcurve_from_file(path.join(d, filename), *args **kwargs)
-        for d in directories
-    ]
-
-def single_periods(data, period, min_points=10, *args, **kwargs):
-    time, mag, err = data.T
-    tstart, tfinal = numpy.min(time), numpy.max(time)
-    periods = numpy.arange(tstart, tfinal+period, period)
-    data_range = (
-        data[numpy.logical_and(time>pstart, time<=pend),:]
-        for pstart, pend in zip(periods[:-1], periods[1:])
-    )
-
-    return (
-        get_lightcurve(d, period=period, *args, **kwargs)
-        for d in data_range
-        if d.shape[0] > min_points
-    )
-
-def single_periods_from_file(filename, *args, use_cols=range(3), **kwargs):
-    data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),
-                          mask=None, dtype=float)
-    return single_periods(data, *args, **kwargs)
-
-def find_outliers(data, period, predictor, sigma,
-                  sigma_clipping='robust'):
-    # determine sigma clipping function
-    sigma_clipper = mad if sigma_clipping == 'robust' else numpy.std
-    
-    phase, mag, err = rephase(data, period).T
-    residuals = numpy.absolute(predictor.predict(colvec(phase)) - mag)
-    outliers = numpy.logical_and(residuals > err,
-                                 residuals > sigma * sigma_clipper(residuals))
-    return numpy.tile(numpy.vstack(outliers), data.shape[1])
-
-def plot_lightcurve(filename, lc, period, data, output='.', filetype='.png',
-                    legend=False, color=True, phases=numpy.arange(0, 1, 0.01), 
-                    **ops):
-    ax = plt.gca()
-    ax.grid(True)
-    ax.invert_yaxis()
-    plt.xlim(0,2)
-
-    # Plot the fitted light curve
-    signal, = plt.plot(numpy.hstack((phases,1+phases)),
-                       numpy.hstack((lc, lc)),
-                       linewidth=1.5, color='green' if color else 'black')
-
-    # Plot points used
-    phase, mag, err = get_signal(data).T
-    inliers = plt.errorbar(numpy.hstack((phase,1+phase)),
-                           numpy.hstack((mag, mag)),
-                           yerr=numpy.hstack((err,err)),
-                           color='black', ls='None',
-                           ms=.01, mew=.01, capsize=0)
-
-    # Plot outliers rejected
-    phase, mag, err = get_noise(data).T
-    outliers = plt.errorbar(numpy.hstack((phase,1+phase)),
-                            numpy.hstack((mag, mag)),
-                            yerr=numpy.hstack((err,err)), ls='None',
-                            color='r' if color else 'black',
-                            marker='o' if color else 'x',
-                            ms=.01 if color else 4,
-                            mew=.01 if color else 1,
-                            capsize=0 if color else 1)
-    
-    if legend:
-        plt.legend([signal, inliers, outliers],
-                   ["Light Curve", "Inliers", "Outliers"],
-                   loc='best')
-    
-    plt.xlabel('Phase ({0:0.7} day period)'.format(period))
-    plt.ylabel('Magnitude')
-    
-    name = filename.split('.')[0]
-    plt.title(name)
-    plt.tight_layout(pad=0.1)
-    make_sure_path_exists(output)
-    plt.savefig(path.join(output, name + filetype))
-    plt.clf()
+        with open(input, 'r') as f:
+            return map(lambda x: x.strip(), f.readlines())
+                         
+if __name__ == "__main__":
+    exit(main())
