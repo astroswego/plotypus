@@ -13,18 +13,18 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.utils import ConvergenceWarning
 import warnings
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
-import matplotlib
-matplotlib.use('Agg')
-from matplotlib import rcParams
-rcParams['axes.labelsize'] = 10
-rcParams['xtick.labelsize'] = 10
-rcParams['ytick.labelsize'] = 10
-rcParams['legend.fontsize'] = 10
-rcParams['font.family'] = 'serif'
-rcParams['font.serif'] = ['Latin Modern']
-rcParams['text.usetex'] = True
-rcParams['figure.dpi'] = 300
-rcParams['savefig.dpi'] = 300
+#import matplotlib
+# matplotlib.use('Agg')
+# from matplotlib import rcParams
+# rcParams['axes.labelsize'] = 10
+# rcParams['xtick.labelsize'] = 10
+# rcParams['ytick.labelsize'] = 10
+# rcParams['legend.fontsize'] = 10
+# rcParams['font.family'] = 'serif'
+# rcParams['font.serif'] = ['Latin Modern']
+# rcParams['text.usetex'] = True
+# rcParams['figure.dpi'] = 300
+# rcParams['savefig.dpi'] = 300
 import matplotlib.pyplot as plt
 
 __all__ = [
@@ -205,14 +205,14 @@ def plot_lightcurve(filename, lc, period, data, output='.', filetype='.png',
     # Plot the fitted light curve
     signal, = plt.plot(numpy.hstack((phases,1+phases)),
                        numpy.hstack((lc, lc)),
-                       linewidth=1.5, color='green' if color else 'black')
+                       linewidth=1.5)
 
     # Plot points used
     phase, mag, err = get_signal(data).T
     inliers = plt.errorbar(numpy.hstack((phase,1+phase)),
                            numpy.hstack((mag, mag)),
                            yerr=numpy.hstack((err,err)),
-                           color='black', ls='None',
+                           ls='None',
                            ms=.01, mew=.01, capsize=0)
 
     # Plot outliers rejected
@@ -220,7 +220,6 @@ def plot_lightcurve(filename, lc, period, data, output='.', filetype='.png',
     outliers = plt.errorbar(numpy.hstack((phase,1+phase)),
                             numpy.hstack((mag, mag)),
                             yerr=numpy.hstack((err,err)), ls='None',
-                            color='r' if color else 'black',
                             marker='o' if color else 'x',
                             ms=.01 if color else 4,
                             mew=.01 if color else 1,

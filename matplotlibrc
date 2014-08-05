@@ -1,0 +1,59 @@
+### PLOTYPUS MATPLOTLIBRC
+
+# This is the default matplotlib configuration file for use in plotypus.
+# Plotypus should still function with any other valid matplotlibrc file.
+# If it does not work with a certain matplotlibrc setting, please submit a bug
+# report at https://github.com/astroswego/plotypus/issues describing the exact
+# setting which causes it to function improperly and the manner in which it
+# functions improperly. Including a snippet of code which will reproduce the
+# error will help us fix the issue more quickly.
+
+### CONFIGURATION
+
+## MISC
+
+# default backend
+# Agg is used by default because no output window is needed
+backend : Agg
+
+
+## FONT
+
+font.family : serif
+font.serif : Latin Modern
+
+
+## TEXT
+
+text.color : black
+text.usetex : True
+
+
+## AXES
+
+axes.labelsize : 10
+# light curve plots will use the colors provided by color_cycle, in-order,
+# to color the fit line, inliers, and outliers
+# by default there is a green fit line, black inliers, and red outliers
+axes.color_cycle : g, k, r
+
+
+## TICKS
+
+xtick.labelsize : 10
+ytick.labelsize : 10
+
+
+## LEGEND
+
+legend.fontsize : 10
+
+## FIGURE
+
+figure.dpi : 300
+
+
+## SAVING FIGURES
+
+savefig.dpi : 300
+savefig.format: ps
