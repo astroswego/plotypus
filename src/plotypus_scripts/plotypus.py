@@ -193,7 +193,7 @@ def process_star(filename, output, periods={}, **ops):
     if result is not None:
         period, lc, data, coefficients, R_squared, MSE, shift, dA_0 = result
         if output is not None:
-            plot_lightcurve(name, lc, period, data, **ops)
+            plot_lightcurve(name, lc, period, data, output=output, **ops)
         return name, period, shift, lc, data, coefficients, R_squared, MSE, dA_0
 
 def _star_printer(max_degree, fmt):
