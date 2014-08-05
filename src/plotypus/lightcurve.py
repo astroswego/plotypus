@@ -194,7 +194,7 @@ def find_outliers(data, period, predictor, sigma,
                                  residuals > sigma * sigma_clipper(residuals))
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
-def plot_lightcurve(filename, lc, period, data, output='.', filetype='.png',
+def plot_lightcurve(filename, lc, period, data, output='.',
                     legend=False, color=True, phases=numpy.arange(0, 1, 0.01), 
                     **ops):
     ax = plt.gca()
@@ -237,5 +237,5 @@ def plot_lightcurve(filename, lc, period, data, output='.', filetype='.png',
     plt.title(name)
     plt.tight_layout(pad=0.1)
     make_sure_path_exists(output)
-    plt.savefig(path.join(output, name + filetype))
+    plt.savefig(path.join(output, name))
     plt.clf()
