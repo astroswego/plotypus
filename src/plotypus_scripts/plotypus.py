@@ -1,7 +1,7 @@
 import numpy
 from sys import exit, stdin, stderr
 from os import path, listdir
-from argparse import ArgumentError, ArgumentParser, FileType
+from argparse import ArgumentError, ArgumentParser, FileType, SUPPRESS
 from sklearn.linear_model import LassoCV, LassoLarsIC, LinearRegression
 from sklearn.grid_search import GridSearchCV
 from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
@@ -34,19 +34,19 @@ def get_args():
         help='extension which follows a star\'s name in data filenames '
              '(default = .dat)')
     general_group.add_argument('--use-cols', type=int, nargs=3,
-        default=range(3), metavar=('TIME', 'MAG', 'MAG_ERR'),
+        default=SUPPRESS, metavar=('TIME', 'MAG', 'MAG_ERR'),
         help='columns to use from data file '
              '(default = 0 1 2)')
     general_group.add_argument('-p', '--processes', type=int,
-        default=1, metavar='N',
+        default=SUPPRESS, metavar='N',
         help='number of stars to process in parallel '
              '(default = 1)')
     general_group.add_argument('-s', '--scoring', type=str,
-        choices=['MSE', 'R2'], default='R2',
+        choices=['MSE', 'R2'], default=SUPPRESS,
         help='scoring metric to use '
              '(default = R2)')
     general_group.add_argument('--scoring-cv', type=int,
-        default=3, metavar='N',
+        default=SUPPRESS, metavar='N',
         help='number of folds in the scoring cross validation '
              '(default = 3)')
     general_group.add_argument('--phase-points', type=int,
@@ -54,7 +54,7 @@ def get_args():
         help='number of phase points to output '
              '(default = 100)')
     general_group.add_argument('--min-phase-cover', type=float,
-        default=0, metavar='COVER',
+        default=SUPPRESS, metavar='COVER',
         help='minimum fraction of phases that must have points '
              '(default = 0)')
     period_group.add_argument('--periods', type=FileType('r'),
@@ -62,19 +62,19 @@ def get_args():
         help='file of star names and associated periods '
              '(default = None)')
     period_group.add_argument('--min-period', type=float,
-        default=0.2, metavar='P',
+        default=SUPPRESS, metavar='P',
         help='minimum period of each star '
              '(default = 0.2)')
     period_group.add_argument('--max-period', type=float,
-        default=32.0, metavar='P',
+        default=SUPPRESS, metavar='P',
         help='maximum period of each star '
              '(default = 32.0)')
     period_group.add_argument('--coarse-precision', type=float,
-        default=0.001,
+        default=SUPPRESS,
         help='level of granularity on first pass '
              '(default = 0.001)')
     period_group.add_argument('--fine-precision', type=float,
-        default=0.0000001,
+        default=SUPPRESS,
         help='level of granularity on second pass '
              '(default = 0.0000001)')
     fourier_group.add_argument('--fourier-degree', type=int, nargs=2,
@@ -92,20 +92,20 @@ def get_args():
         help='type of model predictor to use '
              '(default = GridSearch)')
     outlier_group.add_argument('--sigma', dest='sigma', type=float,
-        default=10.0,
+        default=SUPPRESS,
         help='rejection criterion for outliers '
              '(default = 10)')
     outlier_group.add_argument('--sigma-clipping', type=str,
-        choices=['standard', 'robust'], default='robust',
+        choices=['standard', 'robust'], default=SUPPRESS,
         help='sigma clipping metric to use '
              '(default = robust)')
     lasso_group.add_argument('--lasso-cv', type=int,
-        default=10, metavar='N',
+        default=SUPPRESS, metavar='N',
         help='number of folds in the L1-regularization search '
              '(default = 10)')
     lasso_group.add_argument('--max-iter', type=int,
         default=1000, metavar='N',
-        help='maximum number of iterations in the LassoCV '
+        help='maximum number of iterations in the Lasso '
              '(default = 1000)')
     
     args = parser.parse_args()
@@ -117,10 +117,12 @@ def get_args():
     predictor_choices = {'Baart': None,
                          'GridSearch': GridSearchCV}
 
-    scoring_choices = {'R2': 'r2',
-                       'MSE': 'mean_squared_error'}
+    if hasattr(args, 'scoring'):
+        scoring_choices = {'R2': 'r2',
+                           'MSE': 'mean_squared_error'}
 
-    args.scoring = scoring_choices[args.scoring]
+        args.scoring = scoring_choices[args.scoring]
+
     args.regressor = regressor_choices[args.regressor]
     Predictor = predictor_choices[args.predictor] or GridSearchCV
     args.predictor = make_predictor(Predictor=Predictor,
