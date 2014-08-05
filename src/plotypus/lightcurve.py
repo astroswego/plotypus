@@ -13,18 +13,7 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.utils import ConvergenceWarning
 import warnings
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
-#import matplotlib
-# matplotlib.use('Agg')
-# from matplotlib import rcParams
-# rcParams['axes.labelsize'] = 10
-# rcParams['xtick.labelsize'] = 10
-# rcParams['ytick.labelsize'] = 10
-# rcParams['legend.fontsize'] = 10
-# rcParams['font.family'] = 'serif'
-# rcParams['font.serif'] = ['Latin Modern']
-# rcParams['text.usetex'] = True
-# rcParams['figure.dpi'] = 300
-# rcParams['savefig.dpi'] = 300
+import matplotlib
 import matplotlib.pyplot as plt
 
 __all__ = [

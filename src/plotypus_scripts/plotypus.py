@@ -4,10 +4,17 @@ from os import path, listdir
 from argparse import ArgumentError, ArgumentParser, FileType, SUPPRESS
 from sklearn.linear_model import LassoCV, LassoLarsIC, LinearRegression
 from sklearn.grid_search import GridSearchCV
+from matplotlib import rc_params_from_file
+import plotypus.lightcurve
 from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
                                  plot_lightcurve)
+import plotypus
 from plotypus.preprocessing import Fourier
 from plotypus.utils import pmap
+
+default_matplotlibrc = plotypus.__file__.split(path.sep)[:-3]
+default_matplotlibrc.append('matplotlibrc')
+default_matplotlibrc = path.sep.join(default_matplotlibrc)
 
 def get_args():
     parser = ArgumentParser()
@@ -57,6 +64,10 @@ def get_args():
         default=SUPPRESS, metavar='COVER',
         help='minimum fraction of phases that must have points '
              '(default = 0)')
+    general_group.add_argument('--matplotlibrc', type=str,
+        default=default_matplotlibrc, metavar='RC',
+        help='matplotlibrc file to use for formatting plots '
+             '(default = $PLOTYPUS_INSTALL/matplotlibrc)')
     period_group.add_argument('--periods', type=FileType('r'),
         default=None,
         help='file of star names and associated periods '
@@ -109,6 +120,10 @@ def get_args():
              '(default = 1000)')
     
     args = parser.parse_args()
+
+    rcParams = rc_params_from_file(fname=args.matplotlibrc,
+                                   fail_on_error=True)
+    plotypus.lightcurve.matplotlib.rcParams = rcParams
 
     regressor_choices = {'Lasso': LassoLarsIC(max_iter=args.max_iter,
                                               fit_intercept=False),
