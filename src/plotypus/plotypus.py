@@ -139,8 +139,8 @@ def get_args():
         args.scoring = scoring_choices[args.scoring]
 
     args.regressor = regressor_choices[args.regressor]
-    Selector = predictor_choices[args.selector] or GridSearchCV
-    args.predictor = make_predictor(selector=Predictor,
+    Selector = selector_choices[args.selector] or GridSearchCV
+    args.predictor = make_predictor(Selector=Selector,
                                     use_baart=(args.selector == 'Baart'),
                                     **vars(args))
     args.phases = numpy.arange(0, 1, 1/args.phase_points)

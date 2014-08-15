@@ -42,7 +42,7 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
                   list(range(min_degree, 1+max_degree))}
         pipeline = Pipeline([('Fourier',  Fourier()),
                             ('Regressor', regressor)])
-        predictor = Predictor(pipeline, params, scoring=scoring, cv=scoring_cv)
+        predictor = Selector(pipeline, params, scoring=scoring, cv=scoring_cv)
 
     return predictor
 
