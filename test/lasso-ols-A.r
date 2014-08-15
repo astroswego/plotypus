@@ -1,5 +1,5 @@
-lasso <- read.table('OGLE-LMC-FU-CEP-I-lasso.dat', header=TRUE, stringsAsFactors=FALSE)
-baart <- read.table('OGLE-LMC-FU-CEP-I-ols.dat', header=TRUE, stringsAsFactors=FALSE)
+lasso <- read.table('../results/OGLE-LMC-FU-CEP-I-lasso.dat', header=TRUE, stringsAsFactors=FALSE)
+baart <- read.table('../results/OGLE-LMC-FU-CEP-I-ols.dat', header=TRUE, stringsAsFactors=FALSE)
 
 ylim <- c(-0.001, 0.001)
 

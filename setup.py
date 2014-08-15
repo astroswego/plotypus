@@ -22,7 +22,7 @@ Topic :: Software Development :: Libraries :: Python Modules
 
 MAJOR      = 0
 MINOR      = 2
-MICRO      = 3
+MICRO      = 4
 ISRELEASED = False
 PRERELEASE = 1
 VERSION    = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
@@ -43,19 +43,10 @@ def setup_package():
         long_description = "\n".join(DOCLINES[2:]),
         version = get_version_info(),
         package_dir = {'': 'src'},
-        packages = [
-            'plotypus',
-            'plotypus_scripts'
-        ],
+        packages = ['plotypus'],
         entry_points = {
             'console_scripts': [
-                'plotypus_comparison = plotypus_scripts.comparison:main',
-                'plotypus_demo = plotypus_scripts.demo:main',
-                'plotypus_eclipse = plotypus_scripts.eclipse:main',
-                'plotypus_kepler = plotypus_scripts.kepler:main',
-                'plotypus_gaps = plotypus_scripts.gaps:main',
-                'plotypus_sample = plotypus_scripts.sample:main',
-                'plotypus = plotypus_scripts.plotypus:main'
+                'plotypus = plotypus.plotypus:main'
             ]
         },
         keywords = [

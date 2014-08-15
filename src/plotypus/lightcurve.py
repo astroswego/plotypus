@@ -24,9 +24,9 @@ __all__ = [
     'plot_lightcurve'
 ]
 
-def make_predictor(regressor=LassoLarsIC(fit_intercept=False),#LassoCV(cv=10),
-                   Predictor=GridSearchCV,
-                   fourier_degree=(3,15),
+def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
+                   Selector=GridSearchCV,
+                   fourier_degree=(2,20),
                    use_baart=False, scoring=None,
                    scoring_cv=3,
                    **kwargs):
@@ -54,6 +54,9 @@ def get_lightcurve(data, period=None,
                    scoring=None, scoring_cv=3,
                    min_phase_cover=0.,
                    phases=numpy.arange(0, 1, 0.01), **ops):
+    if predictor is None:
+        predictor = make_predictor(scoring=scoring, scoring_cv=scoring_cv)
+    
     while True:
         signal = get_signal(data)
         if len(signal) <= scoring_cv:
@@ -139,7 +142,6 @@ def get_lightcurve(data, period=None,
     dA_0 = sem(lc)
     
     return _period, lc, data, coefficients, R2, MSE, t_max, dA_0
-
 
 def get_lightcurve_from_file(filename, *args, use_cols=range(3), **kwargs):
     data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),

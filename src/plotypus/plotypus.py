@@ -97,10 +97,10 @@ def get_args():
         default='Lasso',
         help='type of regressor to use '
              '(default = Lasso)')
-    fourier_group.add_argument('--predictor',
+    fourier_group.add_argument('--selector',
         choices=['Baart', 'GridSearch'],
         default='GridSearch',
-        help='type of model predictor to use '
+        help='type of model selector to use '
              '(default = GridSearch)')
     outlier_group.add_argument('--sigma', dest='sigma', type=float,
         default=SUPPRESS,
@@ -129,8 +129,8 @@ def get_args():
                                               fit_intercept=False),
                          'OLS': LinearRegression(fit_intercept=False)}
 
-    predictor_choices = {'Baart': None,
-                         'GridSearch': GridSearchCV}
+    selector_choices = {'Baart': None,
+                        'GridSearch': GridSearchCV}
 
     if hasattr(args, 'scoring'):
         scoring_choices = {'R2': 'r2',
@@ -139,9 +139,9 @@ def get_args():
         args.scoring = scoring_choices[args.scoring]
 
     args.regressor = regressor_choices[args.regressor]
-    Predictor = predictor_choices[args.predictor] or GridSearchCV
-    args.predictor = make_predictor(Predictor=Predictor,
-                                    use_baart=(args.predictor == 'Baart'),
+    Selector = predictor_choices[args.selector] or GridSearchCV
+    args.predictor = make_predictor(selector=Predictor,
+                                    use_baart=(args.selector == 'Baart'),
                                     **vars(args))
     args.phases = numpy.arange(0, 1, 1/args.phase_points)
 

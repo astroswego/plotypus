@@ -1,4 +1,4 @@
-lasso_ols <- read.table('lasso-ols-v.dat', header=TRUE)
+lasso_ols <- read.table('../results/lasso-ols-v.dat', header=TRUE)
 attach(lasso_ols)
 
 setEPS()

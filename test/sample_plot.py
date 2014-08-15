@@ -26,7 +26,7 @@ import matplotlib.pyplot as plt
 color = True
 
 def main():
-    directory = path.join('..', 'stellar', 'data', 'lmc', 'i', 'cep', 'f')
+    directory = path.join('..', 'data', 'I')
     filename = 'OGLE-LMC-CEP-0209.dat'
     p = 3.1227238
     X_true = numpy.arange(0, 1, 0.001)
