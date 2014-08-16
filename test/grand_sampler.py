@@ -14,7 +14,7 @@ from scipy.stats import sem
 def run_trial(predictor, stars, train_size, n_iter=1000):
     return numpy.fromiter(
         (numpy.median(cross_val_score(predictor, colvec(data.T[0]), data.T[1],
-          n_jobs=-1, cv=ShuffleSplit(len(data), n_iter, train_size=train_size)))
+          n_jobs=8, cv=ShuffleSplit(len(data), n_iter, train_size=train_size)))
          for data in stars), dtype=float)
 
 def main():
@@ -36,7 +36,7 @@ def main():
         lassoR2s = run_trial(lasso, stars, train_size)
         baartR2s = run_trial(baart, stars, train_size)
         avg_Lasso = numpy.mean(lassoR2s)
-        avg_Baart = numpy.mean(lassoR2s)
+        avg_Baart = numpy.mean(baartR2s)
         spread_Lasso = sem(lassoR2s)
         spread_Baart = sem(baartR2s)
         output = (train_size, avg_Lasso, spread_Lasso, avg_Baart, spread_Baart)
