@@ -1,4 +1,5 @@
 import numpy
+numpy.random.seed(0)
 from scipy.stats import sem
 from sys import stderr
 from math import floor
@@ -25,33 +26,27 @@ __all__ = [
 ]
 
 def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
-                   Selector=GridSearchCV,
-                   fourier_degree=(2,20),
-                   use_baart=False, scoring=None,
-                   scoring_cv=3,
+                   Selector=GridSearchCV, fourier_degree=(2,20),
+                   use_baart=False, scoring='r2', scoring_cv=3,
                    **kwargs):
     """Makes a predictor object for use in get_lightcurve.
     """
+    fourier = Fourier(degree_range=fourier_degree, regressor=regressor) \
+              if use_baart else Fourier()
+    pipeline = Pipeline([('Fourier', fourier), ('Regressor', regressor)])
     if use_baart:
-        predictor = Pipeline([('Fourier', Fourier(degree_range=fourier_degree,
-                                                  regressor=regressor)),
-                              ('Regressor', regressor)])
+        return pipeline
     else:
-        min_degree, max_degree = fourier_degree
-        params = {'Fourier__degree':
-                  list(range(min_degree, 1+max_degree))}
-        pipeline = Pipeline([('Fourier',  Fourier()),
-                            ('Regressor', regressor)])
-        predictor = Selector(pipeline, params, scoring=scoring, cv=scoring_cv)
-
-    return predictor
+        params = {'Fourier__degree': list(range(fourier_degree[0],
+                                                fourier_degree[1]+1))}
+        return Selector(pipeline, params, scoring=scoring, cv=scoring_cv)
 
 def get_lightcurve(data, name=None, period=None,
                    predictor=make_predictor(),
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
                    sigma=10, sigma_clipping='robust',
-                   scoring=None, scoring_cv=3,
+                   scoring='r2', scoring_cv=3,
                    min_phase_cover=0.,
                    phases=numpy.arange(0, 1, 0.01), **ops):
     if predictor is None:
@@ -68,6 +63,7 @@ def get_lightcurve(data, name=None, period=None,
                               min_period, max_period,
                               coarse_precision, fine_precision)
         phase, mag, err = rephase(signal, _period).T
+        print(name, 1 in phase)
 
         # Determine whether there is sufficient phase coverage
         coverage = numpy.zeros((100))
@@ -97,21 +93,18 @@ def get_lightcurve(data, name=None, period=None,
                 data.mask = outliers
                 break
             if num_outliers > 0:
-                print(name, "Flagging", sum(outliers)[0], "outliers", file=stderr)
+                print(name, sum(outliers)[0], "outliers", file=stderr)
             data.mask = numpy.ma.mask_or(data.mask, outliers)
     
-    # Build light curve
-    lc = predictor.predict([[i] for i in phases])
-    
-    # Shift to max light
-    arg_max_light = lc.argmin()
-    lc = numpy.concatenate((lc[arg_max_light:], lc[:arg_max_light]))
+    # Build light curve and shift to max light
+    lightcurve = predictor.predict([[i] for i in phases])
+    arg_max_light = lightcurve.argmin()
+    lightcurve = numpy.concatenate((lightcurve[arg_max_light:],
+                                    lightcurve[:arg_max_light]))
     shift = arg_max_light/len(phases)
-    """numpy.fromiter((get_phase(p, _period,
-                                          arg_max_light / phases.size)
-                                for p in data.data.T[0]),
-                               numpy.float, len(data.data.T[0]))"""
+    data.T[0] = rephase(data.data, _period, shift).T[0]
     
+    # Grab the coefficients from the model 
     coefficients = predictor.named_steps['Regressor'].coef_ \
         if isinstance(predictor, Pipeline) \
         else predictor.best_estimator_.named_steps['Regressor'].coef_,
@@ -130,11 +123,11 @@ def get_lightcurve(data, name=None, period=None,
     
     return {'name': name,
             'period': _period,
-            'lightcurve': lc,
+            'lightcurve': lightcurve,
             'coefficients': coefficients[0],
-            'phased_data': rephase(data, _period, shift),
+            'phased_data': data,
             'model': predictor,
-            'SEM': sem(lc),
+            'SEM': sem(lightcurve),
             'R2': get_score('r2'),
             'MSE': get_score('mean_squared_error'),
             'shift': shift}
@@ -181,8 +174,8 @@ def find_outliers(data, period, predictor, sigma,
                                  residuals > sigma * sigma_clipper(residuals))
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
-def plot_lightcurve(filename, lc, period, data, output='.',
-                    legend=False, color=True, phases=numpy.arange(0, 1, 0.01), 
+def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
+                    color=True, phases=numpy.arange(0, 1, 0.01), 
                     **ops):
     ax = plt.gca()
     ax.grid(True)
@@ -191,7 +184,7 @@ def plot_lightcurve(filename, lc, period, data, output='.',
 
     # Plot the fitted light curve
     signal, = plt.plot(numpy.hstack((phases,1+phases)),
-                       numpy.hstack((lc, lc)),
+                       numpy.hstack((lightcurve, lightcurve)),
                        linewidth=1.5)
 
     # Plot points used
@@ -220,7 +213,7 @@ def plot_lightcurve(filename, lc, period, data, output='.',
     plt.xlabel('Phase ({0:0.7} day period)'.format(period))
     plt.ylabel('Magnitude')
     
-    name = filename.split('.')[0]
+    #name = filename.split('.')[0]
     plt.title(name)
     plt.tight_layout(pad=0.1)
     make_sure_path_exists(output)

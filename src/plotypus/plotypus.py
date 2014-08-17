@@ -89,9 +89,9 @@ def get_args():
         help='level of granularity on second pass '
              '(default = 0.0000001)')
     fourier_group.add_argument('--fourier-degree', type=int, nargs=2,
-        default=(3,15), metavar=('MIN', 'MAX'),
+        default=(2,20), metavar=('MIN', 'MAX'),
         help='range of degrees of fourier fits to use '
-             '(default = 3 15)')
+             '(default = 2 20)')
     fourier_group.add_argument('-r', '--regressor',
         choices=['Lasso', 'OLS'],
         default='Lasso',
