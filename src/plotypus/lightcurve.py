@@ -63,7 +63,6 @@ def get_lightcurve(data, name=None, period=None,
                               min_period, max_period,
                               coarse_precision, fine_precision)
         phase, mag, err = rephase(signal, _period).T
-        print(name, 1 in phase)
 
         # Determine whether there is sufficient phase coverage
         coverage = numpy.zeros((100))
