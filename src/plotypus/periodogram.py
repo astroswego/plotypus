@@ -42,10 +42,10 @@ def LombScargle(time, scaled_mags, precision, min_period, max_period):
 #                   for i in numpy.arange(0, xbins)
 #                   for j in numpy.arange(0, ybins)) if size > 0 else numpy.PINF
 
-def rephase(data, period=1, col=0):
+def rephase(data, period=1, shift=0, col=0):
     rephased = numpy.ma.copy(data)
-    rephased[:, col] = get_phase(rephased[:, col], period)
+    rephased[:, col] = get_phase(rephased[:, col], period, shift)
     return rephased
 
-def get_phase(time, period=1, offset=0):
-    return (time / period - offset)%1
+def get_phase(time, period=1, shift=0):
+    return (time / period - shift)%1

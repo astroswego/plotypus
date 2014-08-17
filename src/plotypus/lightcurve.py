@@ -46,7 +46,7 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
 
     return predictor
 
-def get_lightcurve(data, period=None,
+def get_lightcurve(data, name=None, period=None,
                    predictor=make_predictor(),
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
@@ -74,10 +74,8 @@ def get_lightcurve(data, period=None,
         for p in phase:
             coverage[int(floor(p*100))] = 1
         if sum(coverage)/100 < min_phase_cover:
-            print(sum(coverage)/100, min_phase_cover,
-                  file=stderr)
-            print("Insufficient phase coverage",
-                  file=stderr)
+            print(name, sum(coverage)/100, min_phase_cover, file=stderr)
+            print(name, "Insufficient phase coverage", file=stderr)
             return
 
         # Predict light curve
@@ -85,7 +83,7 @@ def get_lightcurve(data, period=None,
             try:
                 predictor = predictor.fit(colvec(phase), mag)
             except Warning:
-                print(w, file=stderr)
+                print(name, w, file=stderr)
                 return
 
         # Reject outliers and repeat the process if there are any
@@ -97,13 +95,9 @@ def get_lightcurve(data, period=None,
                set.issubset(set(numpy.nonzero(outliers.T[0])[0]),
                             set(numpy.nonzero(data.mask.T[0])[0])):
                 data.mask = outliers
-                if num_outliers > 0:
-                    print("Rejecting", num_outliers, "outliers",
-                          file=stderr)
                 break
             if num_outliers > 0:
-                print("Flagging", sum(outliers)[0], "outliers",
-                      file=stderr)
+                print(name, "Flagging", sum(outliers)[0], "outliers", file=stderr)
             data.mask = numpy.ma.mask_or(data.mask, outliers)
     
     # Build light curve
@@ -112,36 +106,38 @@ def get_lightcurve(data, period=None,
     # Shift to max light
     arg_max_light = lc.argmin()
     lc = numpy.concatenate((lc[arg_max_light:], lc[:arg_max_light]))
-
-    data.T[0] = numpy.fromiter((get_phase(p, _period,
+    shift = arg_max_light/len(phases)
+    """numpy.fromiter((get_phase(p, _period,
                                           arg_max_light / phases.size)
                                 for p in data.data.T[0]),
-                               numpy.float, len(data.data.T[0]))
-    best_model = predictor.named_steps['Regressor'] \
-                 if isinstance(predictor, Pipeline) \
-                 else predictor.best_estimator_.named_steps['Regressor']
-    coefficients = best_model.coef_
-
+                               numpy.float, len(data.data.T[0]))"""
+    
+    coefficients = predictor.named_steps['Regressor'].coef_ \
+        if isinstance(predictor, Pipeline) \
+        else predictor.best_estimator_.named_steps['Regressor'].coef_,
+    
     # compute R^2 and MSE if they haven't already been
     # (one or zero have been computed, depending on the predictor)
     estimator = predictor.get_params()['estimator'] \
-                if 'estimator' in predictor.get_params() else predictor
-    phase_col = colvec(phase)
-    R2 = predictor.best_score_ \
-         if hasattr(predictor, 'best_score_') \
-         and predictor.scoring == 'r2' \
-         else cross_val_score(estimator, phase_col, mag, cv=scoring_cv,
-                              scoring='r2').mean()
-    MSE = predictor.best_score_ \
-          if hasattr(predictor, 'best_score_') \
-          and predictor.scoring == 'mean_squared_error' \
-          else cross_val_score(estimator, phase_col, mag, cv=scoring_cv,
-                               scoring='mean_squared_error').mean()
+        if 'estimator' in predictor.get_params() \
+        else predictor
     
-    t_max = arg_max_light/len(phases)
-    dA_0 = sem(lc)
+    get_score = lambda scoring: predictor.best_score_ \
+        if hasattr(predictor, 'best_score_') \
+        and predictor.scoring == scoring \
+        else cross_val_score(estimator, colvec(phase), mag,
+                             cv=scoring_cv, scoring=scoring).mean()
     
-    return _period, lc, data, coefficients, R2, MSE, t_max, dA_0
+    return {'name': name,
+            'period': _period,
+            'lightcurve': lc,
+            'coefficients': coefficients,
+            'phased_data': rephase(data, _period, shift),
+            'model': predictor,
+            'SEM': sem(lc),
+            'R2': get_score('r2'),
+            'MSE': get_score('mean_squared_error'),
+            'shift': shift}
 
 def get_lightcurve_from_file(filename, *args, use_cols=range(3), **kwargs):
     data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),

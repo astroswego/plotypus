@@ -187,12 +187,15 @@ def main():
         '\t'.join(map('Phase{}'.format, range(ops.phase_points)))
         ])
     )
-    printer = _star_printer(max_degree, vars(ops)['format'])
+    #printer = _star_printer(max_degree, vars(ops)['format'])
+    fmt = vars(ops)['format']
+    printer = lambda result: _print_star(result, max_degree, fmt) \
+                              if result is not None else None
     pmap(process_star, filepaths, callback=printer, **picklable_ops)
 
 def process_star(filename, output, periods={}, **ops):
     """Processes a star's lightcurve, prints its coefficients, and saves
-    its plotted lightcurve to a file. Returns the results of get_lightcurve.
+    its plotted lightcurve to a file. Returns the result of get_lightcurve.
     """
     _name = path.basename(filename)
     extension = ops['data_extension']
@@ -203,51 +206,43 @@ def process_star(filename, output, periods={}, **ops):
         return
     _period = periods.get(name) if periods is not None and \
                                    name in periods else None
-    result = get_lightcurve_from_file(filename, period=_period, **ops)
+    result = get_lightcurve_from_file(filename, name=name, period=_period, **ops)
+    if result is None:
+        return
+    if output is not None:
+        plot_lightcurve(name, result['lightcurve'], result['period'],
+                        result['phased_data'], output=output, **ops)
+    return result
 
-    if result is not None:
-        period, lc, data, coefficients, R_squared, MSE, shift, dA_0 = result
-        if output is not None:
-            plot_lightcurve(name, lc, period, data, output=output, **ops)
-        return name, period, shift, lc, data, coefficients, R_squared, MSE, dA_0
+"""def _star_printer(max_degree, fmt):
+    return lambda result: _print_star(result, max_degree, fmt) \
+                           if result is not None else None"""
 
-def _star_printer(max_degree, fmt):
-    return lambda results: _print_star(results, max_degree, fmt) \
-                           if results is not None else None
-
-def _print_star(results, max_degree, fmt):
-    if results is None: return
+def _print_star(result, max_degree, fmt):
+    if result is None: return
     formatter = lambda x: fmt % x
 
-    name, period, shift, lc, data, coefficients, R2, MSE, dA_0 = results
+    N = result['phased_data'][:,0].size # number of data points
+    outliers = numpy.ma.count_masked(result['phased_data'][:,0])
+    inliers  = N - outliers
 
-    N = data[:,0].size # number of data points
-    outliers = numpy.ma.count_masked(data[:,0]) # number of outliers
-    inliers  = N - outliers # number of inliers
+    coefs = Fourier.phase_shifted_coefficients(result['coefficients'])
+    coefficients_ = numpy.concatenate(([coefs[0]],[result['SEM']],coefs[1:]))
+    fourier_ratios = Fourier.fourier_ratios(coefs, 1)
 
-    phase_shifted_coeffs = Fourier.phase_shifted_coefficients(coefficients)
-    coefficients_ = numpy.concatenate(([phase_shifted_coeffs[0]], [dA_0],
-                                       phase_shifted_coeffs[1:]))
-    fourier_ratios = Fourier.fourier_ratios(phase_shifted_coeffs, 1)
-
-    print('\t'.join([name, str(period), str(shift), str(inliers), str(outliers),
-                     str(R2), str(MSE)]),
+    print('\t'.join([result['name'], str(result['period']),
+                     str(result['shift']), str(inliers), str(outliers),
+                     str(result['R2']), str(result['MSE'])]),
           end='\t')
-    print('\t'.join(map(formatter, coefficients_)),
-          end='\t')
-    trailing_zeros = 2*max_degree + 1 - len(phase_shifted_coeffs)
+    print('\t'.join(map(formatter, coefficients_)), end='\t')
+    trailing_zeros = 2*max_degree + 1 - len(coefs)
     if trailing_zeros > 0:
-        print('\t'.join(map(formatter,
-                            numpy.zeros(trailing_zeros))),
-              end='\t')
-    print('\t'.join(map(formatter, fourier_ratios)),
-          end='\t')
+        print('\t'.join(map(formatter, numpy.zeros(trailing_zeros))), end='\t')
+    print('\t'.join(map(formatter, fourier_ratios)), end='\t')
     trailing_zeros = 2*(max_degree-1) - len(fourier_ratios)
     if trailing_zeros > 0:
-        print('\t'.join(map(formatter,
-                            numpy.zeros(trailing_zeros))),
-              end='\t')
-    print('\t'.join(map(formatter, lc)))
+        print('\t'.join(map(formatter, numpy.zeros(trailing_zeros))), end='\t')
+    print('\t'.join(map(formatter, result['lightcurve'])))
 
 def _get_files(input):
     if input is stdin:
