@@ -11,14 +11,14 @@ from sklearn.cross_validation import cross_val_score, ShuffleSplit
 from sklearn.pipeline import Pipeline
 from scipy.stats import sem
 
-def run_trial(predictor, stars, train_size, n_iter=1000):
+def run_trial(predictor, stars, train_size, n_iter=100):
     return numpy.fromiter(
-        (numpy.median(cross_val_score(predictor, colvec(data.T[0]), data.T[1],
-          n_jobs=8, cv=ShuffleSplit(len(data), n_iter, train_size=train_size)))
+        (numpy.mean(cross_val_score(predictor, colvec(data.T[0]), data.T[1],
+         n_jobs=8, cv=ShuffleSplit(len(data), n_iter, train_size=train_size)))
          for data in stars), dtype=float)
 
 def main():
-    periods_file = 'OGLE-periods.dat'
+    periods_file = path.join('data', 'OGLE-periods.dat')
     periods = {name: float(period) for (name, period)
                in (line.strip().split()
                    for line in open(periods_file, 'r') if ' ' in line)}
@@ -30,7 +30,7 @@ def main():
              for filename in filenames]
     
     baart = make_predictor(regressor=LinearRegression(), use_baart=True)
-    min_samples, max_samples = 5, 50
+    min_samples, max_samples = 5, 51
     for train_size in range(min_samples, max_samples):
         lasso = make_predictor(scoring_cv=train_size if train_size < 15 else 3)
         lassoR2s = run_trial(lasso, stars, train_size)

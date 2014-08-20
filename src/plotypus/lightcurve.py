@@ -8,7 +8,7 @@ from .utils import make_sure_path_exists, get_signal, get_noise, colvec, mad
 from .periodogram import find_period, rephase, get_phase
 from .preprocessing import Fourier
 from sklearn.cross_validation import cross_val_score
-from sklearn.linear_model import LassoCV, LassoLarsIC
+from sklearn.linear_model import LassoLarsIC
 from sklearn.pipeline import Pipeline
 from sklearn.grid_search import GridSearchCV
 from sklearn.utils import ConvergenceWarning
