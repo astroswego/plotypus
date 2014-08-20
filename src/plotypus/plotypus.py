@@ -266,6 +266,6 @@ def _get_files(input):
     else:
         with open(input, 'r') as f:
             return map(lambda x: x.strip(), f.readlines())
-                         
+
 if __name__ == "__main__":
     exit(main())
