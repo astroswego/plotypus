@@ -43,10 +43,10 @@ def get_args():
         default='.*',
         help='regular expression to filter star names on '
              '(default = ".*")')
-    general_group.add_argument('--data-extension', type=str,
+    general_group.add_argument('--extension', type=str,
         default='.dat', metavar='EXT',
         help='extension which follows a star\'s name in data filenames '
-             '(default = .dat)')
+             '(default = ".dat")')
     general_group.add_argument('--use-cols', type=int, nargs=3,
         default=SUPPRESS, metavar=('TIME', 'MAG', 'MAG_ERR'),
         help='columns to use from data file '
@@ -58,7 +58,7 @@ def get_args():
     general_group.add_argument('-s', '--scoring', type=str,
         choices=['MSE', 'R2'], default=SUPPRESS,
         help='scoring metric to use '
-             '(default = R2)')
+             '(default = "R2")')
     general_group.add_argument('--scoring-cv', type=int,
         default=SUPPRESS, metavar='N',
         help='number of folds in the scoring cross validation '
@@ -103,12 +103,12 @@ def get_args():
         choices=['Lasso', 'OLS'],
         default='Lasso',
         help='type of regressor to use '
-             '(default = Lasso)')
+             '(default = "Lasso")')
     fourier_group.add_argument('--selector',
         choices=['Baart', 'GridSearch'],
         default='GridSearch',
         help='type of model selector to use '
-             '(default = GridSearch)')
+             '(default = "GridSearch")')
     outlier_group.add_argument('--sigma', dest='sigma', type=float,
         default=SUPPRESS,
         help='rejection criterion for outliers '
@@ -116,7 +116,7 @@ def get_args():
     outlier_group.add_argument('--sigma-clipping', type=str,
         choices=['standard', 'robust'], default=SUPPRESS,
         help='sigma clipping metric to use '
-             '(default = robust)')
+             '(default = "robust")')
     lasso_group.add_argument('--lasso-cv', type=int,
         default=SUPPRESS, metavar='N',
         help='number of folds in the L1-regularization search '
@@ -207,7 +207,7 @@ def process_star(filename, output, periods={}, **ops):
     its plotted lightcurve to a file. Returns the result of get_lightcurve.
     """
     _name = path.basename(filename)
-    extension = ops['data_extension']
+    extension = ops['extension']
     _filter = ops['filter']
     if _name.endswith(extension):
         name = _name[:-len(extension)]
