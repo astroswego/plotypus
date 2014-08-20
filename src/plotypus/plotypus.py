@@ -1,4 +1,5 @@
 import numpy
+import re
 from sys import exit, stdin, stderr
 from os import path, listdir
 from argparse import ArgumentError, ArgumentParser, FileType, SUPPRESS
@@ -12,9 +13,11 @@ import plotypus
 from plotypus.preprocessing import Fourier
 from plotypus.utils import pmap
 
-default_matplotlibrc = plotypus.__file__.split(path.sep)[:-3]
-default_matplotlibrc.append('matplotlibrc')
-default_matplotlibrc = path.sep.join(default_matplotlibrc)
+# Points to the default matplotlibrc using its relative location to the
+# plotypus module (there's probably a better way to do this)
+_foo = plotypus.__file__.split(path.sep)[:-3]
+_foo.append('matplotlibrc')
+default_matplotlibrc = path.sep.join(_foo)
 
 def get_args():
     parser = ArgumentParser()
@@ -36,6 +39,10 @@ def get_args():
     general_group.add_argument('-f', '--format', type=str,
         default='%.5f',
         help='format specifier for output table')
+    general_group.add_argument('--filter', type=str,
+        default='.*',
+        help='regular expression to filter star names on '
+             '(default = ".*")')
     general_group.add_argument('--data-extension', type=str,
         default='.dat', metavar='EXT',
         help='extension which follows a star\'s name in data filenames '
@@ -145,6 +152,8 @@ def get_args():
                                     **vars(args))
     args.phases = numpy.arange(0, 1, 1/args.phase_points)
 
+    args.filter = re.compile(args.filter)
+
     if args.periods is not None:
         periods = {name: float(period) for (name, period)
                    in (line.strip().split() for line
@@ -199,14 +208,19 @@ def process_star(filename, output, periods={}, **ops):
     """
     _name = path.basename(filename)
     extension = ops['data_extension']
+    _filter = ops['filter']
     if _name.endswith(extension):
         name = _name[:-len(extension)]
+        if _filter.match(name) is None:
+            # file does not match regular expression
+            return
     else:
         # file has wrong extension
         return
     _period = periods.get(name) if periods is not None and \
                                    name in periods else None
-    result = get_lightcurve_from_file(filename, name=name, period=_period, **ops)
+    result = get_lightcurve_from_file(filename, name=name, period=_period,
+                                      **ops)
     if result is None:
         return
     if output is not None:
