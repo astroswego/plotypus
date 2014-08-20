@@ -75,9 +75,10 @@ def get_args():
         default=default_matplotlibrc, metavar='RC',
         help='matplotlibrc file to use for formatting plots '
              '(default = $PLOTYPUS_INSTALL/matplotlibrc)')
-    period_group.add_argument('--periods', type=FileType('r'),
+    period_group.add_argument('--periods', type=str,
         default=None,
-        help='file of star names and associated periods '
+        help='file of star names and associated periods, or a single period '
+             'to use for all stars '
              '(default = None)')
     period_group.add_argument('--min-period', type=float,
         default=SUPPRESS, metavar='P',
@@ -155,12 +156,13 @@ def get_args():
     args.filter = re.compile(args.filter)
 
     if args.periods is not None:
-        periods = {name: float(period) for (name, period)
-                   in (line.strip().split() for line
-                       # generalize to all whitespace instead of just spaces
-                       in args.periods if ' ' in line)}
-        args.periods.close()
-        args.periods = periods
+        try:
+            float(args.periods)
+        except ValueError:
+            with open(args.periods, 'r') as f:
+                args.periods = {name: float(period)
+                                for (name, period) in (line.strip().split()
+                                for line in args.periods if ' ' in line)}
     return args
 
 def main():
@@ -217,8 +219,12 @@ def process_star(filename, output, periods={}, **ops):
     else:
         # file has wrong extension
         return
-    _period = periods.get(name) if periods is not None and \
-                                   name in periods else None
+    try:
+        _period = float(periods)
+    except TypeError:
+        _period = periods.get(name) if periods is not None and \
+                                       name in periods else None
+    
     result = get_lightcurve_from_file(filename, name=name, period=_period,
                                       **ops)
     if result is None:
@@ -260,6 +266,7 @@ def _print_star(result, max_degree, fmt):
 
 def _get_files(input):
     if input is stdin:
+        return input
         return map(lambda x: x.strip(), input)
     elif path.isdir(input):
         return sorted(listdir(input))
