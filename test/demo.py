@@ -17,11 +17,13 @@ rcParams['font.serif'] = ['Latin Modern']
 rcParams['text.usetex'] = True
 import matplotlib.pyplot as plt
 
+color = True
+
 def lc(X):
     return 10 + np.cos(2*np.pi*X) + 0.1*np.cos(18*np.pi*X)
 
 def main():
-    X_true = np.linspace(0, 1, 101)
+    X_true = np.linspace(0, 1, 1001)
     y_true = lc(X_true)
     
     n_samples = 50
@@ -41,24 +43,24 @@ def main():
     ax = plt.gca()
     signal, = plt.plot(np.hstack((X_true,1+X_true)),
                        np.hstack((y_true, y_true)), 
-                       linewidth=0.66,
-                       color='black')
+                       linewidth=0.66, color='black')
     
-    fd, = plt.plot(np.hstack((X_true,1+X_true)), np.hstack((y_pred, y_pred)), 
-                   linewidth=2.5, color='black', ls='dotted')
+    fd, = plt.plot(np.hstack((X_true,1+X_true)),
+                   np.hstack((y_pred, y_pred)), 
+                   linewidth=2.5, ls='dashed',
+                   color='darkred' if color else 'black')
     
     lasso, = plt.plot(np.hstack((X_true,1+X_true)),
                       np.hstack((y_lasso, y_lasso)), 
-                      linewidth=3,
-                      color='black',
-                      ls='dashed')
+                      linewidth=3, color='black', ls='dotted')
     
     sc = plt.scatter(np.hstack((X_sample,1+X_sample)),
                      np.hstack((y_sample, y_sample)),
-                     color='black', marker='+', s=20)
+                     marker='+', s=20,
+                     color='darkblue' if color else 'black')
     
     plt.legend([signal, sc, fd, lasso],
-               ["Signal", "Noisy Data", "FD", "Lasso FD"],
+               ["True Signal", "Noisy Data", "OLS", "Lasso"],
                loc='best')
     
     plt.xlim(0,2)
