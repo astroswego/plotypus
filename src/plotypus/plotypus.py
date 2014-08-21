@@ -62,7 +62,7 @@ def get_args():
     general_group.add_argument('--scoring-cv', type=int,
         default=SUPPRESS, metavar='N',
         help='number of folds in the scoring cross validation '
-             '(default = 3)')
+             '(default = 10)')
     general_group.add_argument('--phase-points', type=int,
         default=100, metavar='N',
         help='number of phase points to output '
@@ -187,10 +187,13 @@ def main():
         'Name',
         'Period',
         'Shift',
+        'Coverage',
         'Inliers',
         'Outliers',
         'R^2',
+        'dR^2',
         'MSE',
+        'dMSE',
         'A_0',
         'dA_0',
         '\t'.join(map('A_{0}\tPhi_{0}'.format, range(1, max_degree+1))),
@@ -247,12 +250,14 @@ def _print_star(result, max_degree, fmt):
     inliers  = N - outliers
 
     coefs = Fourier.phase_shifted_coefficients(result['coefficients'])
-    coefficients_ = numpy.concatenate(([coefs[0]],[result['SEM']],coefs[1:]))
+    coefficients_ = numpy.concatenate(([coefs[0]],[result['dA_0']],coefs[1:]))
     fourier_ratios = Fourier.fourier_ratios(coefs, 1)
 
     print('\t'.join([result['name'], str(result['period']),
-                     str(result['shift']), str(inliers), str(outliers),
-                     str(result['R2']), str(result['MSE'])]),
+                     str(result['shift']), str(result['coverage']),
+                     str(inliers), str(outliers),
+                     str(result['R2']), str(result['dR2']),
+                     str(result['MSE']), str(result['dMSE'])]),
           end='\t')
     print('\t'.join(map(formatter, coefficients_)), end='\t')
     trailing_zeros = 2*max_degree + 1 - len(coefs)
