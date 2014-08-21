@@ -120,6 +120,19 @@ title("Differences in Amplitude Coefficients Between Lasso and Baart",
       outer=TRUE, line=-0.85, font.main=1)
 dev.off()
 
+amplitudes <- lasso[lasso$R.2 > 0.9 & baart$R.2 < 0.9,][grepl("(^A|Name|Period|Inliers|Outliers)", names(lasso))]
+absents <- amplitudes[apply(amplitudes[,5:13] != 0, 1, function(x) {1 %in% diff(x)}),]
+absents <- absents[apply(absents[c(20:25)] == 0, 1, all),]
+for (i in 1:nrow(absents)) {
+  degree <- max(which(absents[i,5:25] != 0) - 1)
+  missing <- which(absents[i,5:(5+degree)] == 0) - 1
+  cat(paste(absents[i,]$Name, '&', absents[i,]$Period, '&',
+            absents[i,]$Inliers + absents[i,]$Outliers, '&',
+            format(absents[i,]$A_0, digits=4, nsmall=4), '&',
+            degree, '&', paste(missing, collapse=", "), '\\\\'))
+  writeLines("")
+}
+
 # setEPS()
 # postscript('ogle-v-r2.eps', fonts=c("serif"), height=5, width=6.6875)
 # #postscript('ogle-v-r2.eps', fonts=c("serif"), height=2, width=2.675)
