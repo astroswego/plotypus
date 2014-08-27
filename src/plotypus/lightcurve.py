@@ -27,7 +27,7 @@ __all__ = [
 
 def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
                    Selector=GridSearchCV, fourier_degree=(2,20),
-                   use_baart=False, scoring='r2', scoring_cv=10,
+                   use_baart=False, scoring='r2', scoring_cv=3,
                    **kwargs):
     """Makes a predictor object for use in get_lightcurve.
     """
@@ -46,7 +46,7 @@ def get_lightcurve(data, name=None, period=None,
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
                    sigma=10, sigma_clipping='robust',
-                   scoring='r2', scoring_cv=10,
+                   scoring='r2', scoring_cv=3,
                    min_phase_cover=0.,
                    phases=numpy.arange(0, 1, 0.01), **ops):
     if predictor is None:
@@ -115,15 +115,11 @@ def get_lightcurve(data, name=None, period=None,
         if 'estimator' in predictor.get_params() \
         else predictor
     
-    #get_score = lambda scoring: predictor.best_score_ \
-    #    if hasattr(predictor, 'best_score_') \
-    #    and predictor.scoring == scoring \
-    #    else cross_val_score(estimator, colvec(phase), mag,
-    #                         cv=scoring_cv, scoring=scoring).mean()
-    R2_scores = cross_val_score(estimator, colvec(phase), mag,
-                                cv=scoring_cv, scoring='r2')
-    MSE_scores = cross_val_score(estimator, colvec(phase), mag,
-                                 cv=scoring_cv, scoring='mean_squared_error')
+    get_score = lambda scoring: predictor.best_score_ \
+        if hasattr(predictor, 'best_score_') \
+        and predictor.scoring == scoring \
+        else cross_val_score(estimator, colvec(phase), mag,
+                             cv=scoring_cv, scoring=scoring).mean()
     
     return {'name': name,
             'period': _period,
@@ -132,12 +128,8 @@ def get_lightcurve(data, name=None, period=None,
             'dA_0': sem(lightcurve),
             'phased_data': data,
             'model': predictor,
-            'R2': R2_scores.mean(),
-            'dR2': sem(R2_scores),
-            'MSE': MSE_scores.mean(),
-            'dMSE': sem(MSE_scores),
-            #'R2': get_score('r2'),
-            #'MSE': get_score('mean_squared_error'),
+            'R2': get_score('r2'),
+            'MSE': get_score('mean_squared_error'),
             'shift': shift,
             'coverage': coverage}
 

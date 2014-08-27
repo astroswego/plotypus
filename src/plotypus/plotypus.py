@@ -121,7 +121,7 @@ def get_args():
     lasso_group.add_argument('--lasso-cv', type=int,
         default=SUPPRESS, metavar='N',
         help='number of folds in the L1-regularization search '
-             '(default = 10)')
+             '(default = 3)')
     lasso_group.add_argument('--max-iter', type=int,
         default=1000, metavar='N',
         help='maximum number of iterations in the Lasso '
@@ -191,9 +191,7 @@ def main():
         'Inliers',
         'Outliers',
         'R^2',
-        'dR^2',
         'MSE',
-        'dMSE',
         'A_0',
         'dA_0',
         '\t'.join(map('A_{0}\tPhi_{0}'.format, range(1, max_degree+1))),
@@ -256,8 +254,7 @@ def _print_star(result, max_degree, fmt):
     print('\t'.join([result['name'], str(result['period']),
                      str(result['shift']), str(result['coverage']),
                      str(inliers), str(outliers),
-                     str(result['R2']), str(result['dR2']),
-                     str(result['MSE']), str(result['dMSE'])]),
+                     str(result['R2']), str(result['MSE'])]),
           end='\t')
     print('\t'.join(map(formatter, coefficients_)), end='\t')
     trailing_zeros = 2*max_degree + 1 - len(coefs)
