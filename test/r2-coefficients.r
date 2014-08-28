@@ -1,11 +1,17 @@
 library(plotrix)
 
-#lasso_ols <- read.table('../results/lasso-ols-v.dat', header=TRUE)
-lasso <- read.table('../results/lasso-I-all.dat', header=TRUE, stringsAsFactors=FALSE)
-baart <- read.table('../results/baart-I-all.dat', header=TRUE, stringsAsFactors=FALSE)
+# Parse the data
+lasso <- read.table('../results/lasso-I-cep.dat', header=TRUE, stringsAsFactors=FALSE)
+baart <- read.table('../results/baart-I-cep.dat', header=TRUE, stringsAsFactors=FALSE)
 
+# Sort the data
 lasso <- lasso[with(lasso, order(Name)),]
 baart <- baart[with(baart, order(Name)),]
+
+# Make a table of results 
+names <- lasso$Name
+galaxies <- c("-LMC-", "-SMC-", "-BLG-")
+types <- c("-CEP-", "-T2CEP-", "-ACEP-")#"-RRLYR-", 
 
 table_row <- function(galaxy, type, las, baa) {
   N <- las$Inliers+las$Outliers
@@ -32,35 +38,29 @@ table_row <- function(galaxy, type, las, baa) {
         format(round(baaSEM, 4), digits=4, nsmall=4, scientific=ifelse(abs(baaSEM)>10, TRUE, FALSE)),
         ifelse(baart_wins, "}", ""), "\\\\")
 }
-
-cat(table_row('(all)', '(all)', lasso, baart))
-names <- lasso$Name
-galaxies <- c("-LMC-", "-SMC-", "-BLG-")
-types <- c("-CEP-", "-RRLYR-", "-T2CEP-", "-ACEP-")
+out <- table_row('(all)', '(all)', lasso, baart)
 for (type in types) {
   stars_of_type <- grepl(type, lasso$Name)
   las <- lasso[stars_of_type,]
   baa <- baart[stars_of_type,]
-  cat(table_row('(all)', type, las, baa))
-  writeLines("")
+  out <- paste(out, table_row('(all)', type, las, baa), sep='\n')
 }
 for (galaxy in galaxies) {
   stars_in_galaxy <- grepl(galaxy, lasso$Name)
   las <- lasso[stars_in_galaxy,]
   baa <- baart[stars_in_galaxy,]
-  cat(table_row(galaxy, '(all)', las, baa))
-  writeLines("")
-  
+  out <- paste(out, table_row(galaxy, '(all)', las, baa), sep='\n')
   for (type in types) {
     stars_of_type <- grepl(type, lasso$Name)
     type_and_galaxy <- stars_in_galaxy & stars_of_type
     las <- lasso[type_and_galaxy,]
     baa <- baart[type_and_galaxy,]
-    cat(table_row(galaxy, type, las, baa))
-    writeLines("")
+    out <- paste(out, table_row(galaxy, type, las, baa), sep='\n')
   }
 }
+cat(out)#of(the)bag
 
+# Plot the differences in amplitude components
 good_models <- lasso$R.2 > 0.99 & baart$R.2 > 0.99
 las <- lasso[good_models,]
 baa <- baart[good_models,]
@@ -120,35 +120,35 @@ title("Differences in Amplitude Coefficients Between Lasso and Baart",
       outer=TRUE, line=-0.85, font.main=1)
 dev.off()
 
-max_degree <- function(star) {
-  amplitudes <- star[grepl("(^A_)", names(star))]
-  (which(amplitudes == 0) - 1)[1]
-}
-
+# Find stars with missing amplitude components
+#max_degree <- function(star) (which(star[grepl("(^A_)", names(star))] == 0) - 1)[1]
 amplitudes <- function(stars) stars[grepl("^A_\\d+$", names(stars))]
 n_components <- function(amps) sum(ifelse(amps, 1, 0))
-max_degree <- function(amps) ifelse(all(as.logical(amps)), length(amps) - 2,
+max_degree <- function(amps) ifelse(amps[length(amps)], length(amps) - 2,
                                     max(which(diff(ifelse(amps, 1, 0)) == -1)) - 1)
 lasso_degrees <- apply(amplitudes(lasso), 1, max_degree)
 baart_degrees <- apply(amplitudes(baart), 1, max_degree)
 has_absents <- apply(amplitudes(lasso) != 0, 1, function(x) {1 %in% diff(x)})
-absents <- lasso[lasso$R.2 > baart$R.2
-                 & lasso$R.2 > 0.95
-                 & has_absents
+absents <- lasso[has_absents
+                 & lasso$R.2 > baart$R.2
+                 & lasso$R.2 > 0.99
                  & lasso$Coverage > 0.95
                  & lasso_degrees <= baart_degrees
-                 & lasso_degrees <= 10,]
+                 & lasso_degrees <= 15,]
 for (i in 1:nrow(absents)) {
   amps <- amplitudes(absents[i,])
   degree <- max_degree(amps)
   missing <- which(amps[1:(1+degree)] == 0) - 1
-  cat(paste(absents[i,]$Name, '&', absents[i,]$Period, '&',
+  cat(paste(absents[i,]$Name, '&',
+            absents[i,]$Period, '&',
             absents[i,]$Inliers + absents[i,]$Outliers, '&',
             format(absents[i,]$A_0, digits=4, nsmall=4), '&',
+            max_degree(amplitudes(baart[baart$Name %in% absents[i,]$Name,])), '&',
             degree, '&', paste(missing, collapse=", "), '\\\\'))
   writeLines("")
 }
 
+# Make box plots of MSE and R^2
 # setEPS()
 # postscript('ogle-v-r2.eps', fonts=c("serif"), height=5, width=6.6875)
 # #postscript('ogle-v-r2.eps', fonts=c("serif"), height=2, width=2.675)

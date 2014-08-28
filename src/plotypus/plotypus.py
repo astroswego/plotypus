@@ -62,7 +62,7 @@ def get_args():
     general_group.add_argument('--scoring-cv', type=int,
         default=SUPPRESS, metavar='N',
         help='number of folds in the scoring cross validation '
-             '(default = 10)')
+             '(default = 3)')
     general_group.add_argument('--phase-points', type=int,
         default=100, metavar='N',
         help='number of phase points to output '
@@ -99,7 +99,7 @@ def get_args():
     fourier_group.add_argument('--fourier-degree', type=int, nargs=2,
         default=(2,20), metavar=('MIN', 'MAX'),
         help='range of degrees of fourier fits to use '
-             '(default = 2 20)')
+             '(default = 2 25)')
     fourier_group.add_argument('-r', '--regressor',
         choices=['Lasso', 'OLS'],
         default='Lasso',
@@ -113,7 +113,7 @@ def get_args():
     outlier_group.add_argument('--sigma', dest='sigma', type=float,
         default=SUPPRESS,
         help='rejection criterion for outliers '
-             '(default = 10)')
+             '(default = 20)')
     outlier_group.add_argument('--sigma-clipping', type=str,
         choices=['standard', 'robust'], default=SUPPRESS,
         help='sigma clipping metric to use '

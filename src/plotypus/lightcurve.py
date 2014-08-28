@@ -26,7 +26,7 @@ __all__ = [
 ]
 
 def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
-                   Selector=GridSearchCV, fourier_degree=(2,20),
+                   Selector=GridSearchCV, fourier_degree=(2,25),
                    use_baart=False, scoring='r2', scoring_cv=3,
                    **kwargs):
     """Makes a predictor object for use in get_lightcurve.
@@ -45,7 +45,7 @@ def get_lightcurve(data, name=None, period=None,
                    predictor=make_predictor(),
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
-                   sigma=10, sigma_clipping='robust',
+                   sigma=20, sigma_clipping='robust',
                    scoring='r2', scoring_cv=3,
                    min_phase_cover=0.,
                    phases=numpy.arange(0, 1, 0.01), **ops):
@@ -111,8 +111,8 @@ def get_lightcurve(data, name=None, period=None,
     
     # compute R^2 and MSE if they haven't already been
     # (one or zero have been computed, depending on the predictor)
-    estimator = predictor.get_params()['estimator'] \
-        if 'estimator' in predictor.get_params() \
+    estimator = predictor.best_estimator_ \
+        if hasattr(predictor, 'best_estimator_') \
         else predictor
     
     get_score = lambda scoring: predictor.best_score_ \
@@ -129,7 +129,7 @@ def get_lightcurve(data, name=None, period=None,
             'phased_data': data,
             'model': predictor,
             'R2': get_score('r2'),
-            'MSE': get_score('mean_squared_error'),
+            'MSE': abs(get_score('mean_squared_error')),
             'shift': shift,
             'coverage': coverage}
 
