@@ -27,19 +27,21 @@ table_row <- function(galaxy, type, las, baa) {
         gsub("-", "", type), '&',
         nrow(las), '&',
         format(mean(N), digits=4, nsmall=1),
-        "$\\pm$",
-        format(sd(N), digits=4, nsmall=1), '&',
+        "$\\pm$", format(sd(N), digits=4, nsmall=1), '&',
         ifelse(lasso_wins, "\\textbf{", ""),
-        format(lasAVG, digits=4, scientific=ifelse(abs(lasAVG)>10, TRUE, FALSE)),
-        "$\\pm$",
-        format(round(lasSEM, 4), digits=4, nsmall=4, scientific=ifelse(abs(lasSEM)>10, TRUE, FALSE)),
+        format(lasAVG, digits=4,
+               scientific=ifelse(abs(lasAVG)>10, TRUE, FALSE)),
+        "$\\pm$", format(round(lasSEM, 4), digits=4, nsmall=4,
+                         scientific=ifelse(abs(lasSEM)>10, TRUE, FALSE)),
         ifelse(lasso_wins, "}", ""), '&',
         ifelse(baart_wins, "\\textbf{", ""),
-        format(baaAVG, digits=4, scientific=ifelse(abs(baaAVG)>10, TRUE, FALSE)),
-        "$\\pm$",
-        format(round(baaSEM, 4), digits=4, nsmall=4, scientific=ifelse(abs(baaSEM)>10, TRUE, FALSE)),
+        format(baaAVG, digits=4,
+               scientific=ifelse(abs(baaAVG)>10, TRUE, FALSE)),
+        "$\\pm$", format(round(baaSEM, 4), digits=4, nsmall=4,
+                         scientific=ifelse(abs(baaSEM)>10, TRUE, FALSE)),
         ifelse(baart_wins, "}", ""), "\\\\")
 }
+
 out <- table_row('(all)', '(all)', lasso, baart)
 for (type in types) {
   stars_of_type <- grepl(type, lasso$Name)
