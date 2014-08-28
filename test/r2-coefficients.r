@@ -13,6 +13,8 @@ names <- lasso$Name
 galaxies <- c("-LMC-", "-SMC-", "-BLG-")
 types <- c("-CEP-", "-T2CEP-", "-ACEP-")#"-RRLYR-", 
 
+#boot.ci(boot(lasso$R.2, function(data, indices) { mean(data[indices]) }, R<-10000), type="bca")
+
 table_row <- function(galaxy, type, las, baa) {
   N <- las$Inliers+las$Outliers
   lasAVG <- mean(las$R.2)
