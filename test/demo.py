@@ -5,16 +5,11 @@ from sklearn.linear_model import LinearRegression, LassoCV
 from sklearn.pipeline import Pipeline
 from plotypus.preprocessing import Fourier
 from plotypus.utils import colvec
+
 import matplotlib
 matplotlib.use('Agg')
-from matplotlib import rcParams
-rcParams['axes.labelsize'] = 10
-rcParams['xtick.labelsize'] = 10
-rcParams['ytick.labelsize'] = 10
-rcParams['legend.fontsize'] = 10
-rcParams['font.family'] = 'serif'
-rcParams['font.serif'] = ['Latin Modern']
-rcParams['text.usetex'] = True
+from matplotlib import rc_file
+rc_file('matplotlibrc')
 import matplotlib.pyplot as plt
 
 color = True

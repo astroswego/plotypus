@@ -1,19 +1,26 @@
-library(plotrix)
+lasso_data <- '../results/lasso-i.dat'
+baart_data <- '../results/baart-i.dat'
+
+width <- 6.97
+height <- 4.31
 
 # Parse the data
-lasso <- read.table('../results/lasso-i.dat', header=TRUE, stringsAsFactors=FALSE)
-baart <- read.table('../results/baart-i.dat', header=TRUE, stringsAsFactors=FALSE)
+lasso <- read.table(lasso_data, header=TRUE, stringsAsFactors=FALSE)
+baart <- read.table(lasso_data, header=TRUE, stringsAsFactors=FALSE)
 
 # Sort the data
 lasso <- lasso[with(lasso, order(Name)),]
 baart <- baart[with(baart, order(Name)),]
 
+# Remove (likely) bad data
+good <- lasso$R.2 > 0 | baart$R.2 > 0
+lasso <- lasso[good,]
+baart <- baart[good,]
+
 # Make a table of results 
 names <- lasso$Name
 galaxies <- c("-LMC-", "-SMC-", "-BLG-")
 types <- c("-CEP-", "-T2CEP-", "-ACEP-", "-RRLYR-")
-
-#boot.ci(boot(lasso$R.2, function(data, indices) { mean(data[indices]) }, R<-10000), type="bca")
 
 table_row <- function(galaxy, type, las, baa) {
   N <- las$Inliers+las$Outliers
@@ -95,12 +102,12 @@ make_legend <- function() {
 }
 
 setEPS()
-postscript('../results/ogle-i-A.eps', fonts=c("serif"), height=5, width=6.6875)
+postscript('../results/ogle-i-A.eps', fonts=c("serif"), width=width, height=height)
 par(mfrow=c(2,2), ps=10, family=c("serif"))
 
 par(mar=c(1.5, 3, 1.75, 0.5))
-plot(log10(las$Period), las$A_0 - baa$A_0, pch=pch(las), col=color(las),
-     xlab="", ylab="", xaxt="n", yaxt="n", ylim=ylim)
+plot(log10(las$Period), las$A_0 - baa$A_0,
+     pch=pch(las), col=color(las), xlab="", ylab="", xaxt="n", yaxt="n", ylim=ylim)
 abline(h=0)
 axis(2)
 mtext(side=2, text=expression('Lasso A'[0]*' - Baart A'[0]), line=2, cex=1)
@@ -135,7 +142,6 @@ title("Differences in Amplitude Coefficients Between Lasso and Baart",
 dev.off()
 
 # Find stars with missing amplitude components
-#max_degree <- function(star) (which(star[grepl("(^A_)", names(star))] == 0) - 1)[1]
 amplitudes <- function(stars) stars[grepl("^A_\\d+$", names(stars))]
 n_components <- function(amps) sum(ifelse(amps, 1, 0))
 max_degree <- function(amps) ifelse(amps[length(amps)], length(amps) - 1,
@@ -164,7 +170,7 @@ for (i in 1:nrow(absents)) {
 
 # Plot R^2 difference as a function of coverage and sample size
 setEPS()
-postscript('../results/ogle-i-difference.eps', fonts=c("serif"), height=5, width=6.6875)
+postscript('../results/ogle-i-difference.eps', fonts=c("serif"), height=height, width=width)
 
 par(mfrow=c(1,2), ps=10, family=c("serif"))
 nonzero <- lasso$R.2 > 0 & baart$R.2 > 0

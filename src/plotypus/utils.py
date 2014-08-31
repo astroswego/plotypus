@@ -1,5 +1,5 @@
 from os import makedirs
-from os.path import isdir
+from os.path import join, isdir
 from multiprocessing import Pool
 from numpy import absolute, concatenate, median, resize
 
@@ -41,6 +41,13 @@ def make_sure_path_exists(path):
     except OSError:
       if not isdir(path):
         raise
+
+def get_periods(periods_file=join('data', 'OGLE-periods.dat')):
+    """Parses a periods file whose lines contain Name Period.
+    """
+    return {name: float(period) for (name, period)
+            in (line.strip().split()
+                for line in open(periods_file, 'r') if ' ' in line)}
 
 def get_signal(data):
     """Returns all of the values that are not outliers.

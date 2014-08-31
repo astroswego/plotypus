@@ -179,14 +179,9 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
                     color=True, phases=numpy.arange(0, 1, 0.01), 
                     **ops):
     ax = plt.gca()
-    ax.grid(True)
+    #ax.grid(False
     ax.invert_yaxis()
     plt.xlim(0,2)
-
-    # Plot the fitted light curve
-    signal, = plt.plot(numpy.hstack((phases,1+phases)),
-                       numpy.hstack((lightcurve, lightcurve)),
-                       linewidth=1.5)
 
     # Plot points used
     phase, mag, err = get_signal(data).T
@@ -205,6 +200,11 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
                             ms=.01 if color else 4,
                             mew=.01 if color else 1,
                             capsize=0 if color else 1)
+
+    # Plot the fitted light curve
+    signal, = plt.plot(numpy.hstack((phases,1+phases)),
+                       numpy.hstack((lightcurve, lightcurve)),
+                       linewidth=1.5)
     
     if legend:
         plt.legend([signal, inliers, outliers],

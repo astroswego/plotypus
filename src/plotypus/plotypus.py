@@ -43,6 +43,9 @@ def get_args():
         default='.*',
         help='regular expression to filter star names on '
              '(default = ".*")')
+    general_group.add_argument('--legend', action='store_true',
+        help='whether legends should be put on the output plots '
+             '(default = False)')
     general_group.add_argument('--extension', type=str,
         default='.dat', metavar='EXT',
         help='extension which follows a star\'s name in data filenames '
