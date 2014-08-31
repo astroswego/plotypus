@@ -16,7 +16,7 @@ import matplotlib
 matplotlib.use('Agg')
 from matplotlib import rc_file, rcParams
 rc_file('matplotlibrc')
-rcParams['figure.figsize'] = [6.97, 9.37]
+rcParams['figure.figsize'] = [6.97, 9.23]
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
 

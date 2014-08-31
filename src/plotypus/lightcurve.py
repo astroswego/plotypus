@@ -214,7 +214,6 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
     plt.xlabel('Phase ({0:0.7} day period)'.format(period))
     plt.ylabel('Magnitude')
     
-    #name = filename.split('.')[0]
     plt.title(name)
     plt.tight_layout(pad=0.1)
     make_sure_path_exists(output)

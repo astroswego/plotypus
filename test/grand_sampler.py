@@ -26,8 +26,8 @@ def main():
              for filename in filenames]
     print("""\\begin{table}
   \\begin{center}
-    \\begin{tabular}{ c c }
-N & Median $R^2$ & Mean $R^2$ & SD \\\\ \\hline""")
+    \\begin{tabular}{ c c c c c }
+N & Median $R^2$ & MAD & Mean $R^2$ & SD \\\\ \\hline""")
     min_samples, max_samples = 5, 50
     for train_size in range(min_samples, max_samples+1):
         lasso = make_predictor(scoring_cv=train_size)

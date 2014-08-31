@@ -19,9 +19,9 @@ color = True
 
 def main():
     directory = path.join('data', 'I')
-    name = 'OGLE-BLG-RRLYR-13317'#'OGLE-LMC-CEP-0209'
+    name = 'OGLE-LMC-CEP-0209'
     filename = name+'.dat'
-    p = 0.4986531#3.1227238
+    p = 3.1227238
     X_true = numpy.arange(0, 1, 0.001)
     output = get_lightcurve_from_file(path.join(directory, filename),
                                       period=p, phases=X_true)
@@ -29,7 +29,8 @@ def main():
     data = output['phased_data']
     ols = get_lightcurve_from_file(path.join(directory, filename),
                                    period=p, phases=X_true,
-            predictor=make_predictor(LinearRegression(), use_baart=True)
+            predictor=make_predictor(LinearRegression(), use_baart=True,
+                                     fourier_degree=(2,15))
         )['lightcurve']
     
     ax = plt.gca()
@@ -57,9 +58,9 @@ def main():
     ax.invert_yaxis()
     plt.xlabel('Phase ({0:0.7} day period)'.format(p))
     plt.ylabel('Magnitude')
-    plt.title(name)
+    plt.title('Lasso and Baart Reconstructions of ' + name)
     plt.tight_layout(pad=0.1)
-    plt.savefig('gaps.eps')
+    plt.savefig('eclipse.eps')
     plt.clf()
 
 if __name__ == '__main__':

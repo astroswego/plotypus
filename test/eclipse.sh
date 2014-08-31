@@ -1,0 +1,1 @@
+echo data/I/OGLE-LMC-CEP-0227.dat | ~/.local/bin/plotypus -o . --periods data/OGLE-periods.dat --sigma 10 --legend
