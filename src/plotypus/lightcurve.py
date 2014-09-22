@@ -25,6 +25,8 @@ __all__ = [
     'plot_lightcurve'
 ]
 
+err_const = 0.0001
+
 def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
                    Selector=GridSearchCV, fourier_degree=(2,25),
                    use_baart=False, scoring='r2', scoring_cv=3,
@@ -62,7 +64,7 @@ def get_lightcurve(data, name=None, period=None,
                   find_period(signal.T[0], signal.T[1],
                               min_period, max_period,
                               coarse_precision, fine_precision)
-        phase, mag, err = rephase(signal, _period).T
+        phase, mag, *err = rephase(signal, _period).T
 
         # Determine whether there is sufficient phase coverage
         coverage = numpy.zeros((100))
@@ -133,19 +135,18 @@ def get_lightcurve(data, name=None, period=None,
             'shift': shift,
             'coverage': coverage}
 
-def get_lightcurve_from_file(filename, *args, use_cols=range(3), **kwargs):
+def get_lightcurve_from_file(filename, *args, use_cols=None, **kwargs):
     data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),
                           mask=None, dtype=float)
     return get_lightcurve(data, *args, **kwargs)
 
 def get_lightcurves_from_file(filename, directories, *args, **kwargs):
-    return [
-        get_lightcurve_from_file(path.join(d, filename), *args **kwargs)
-        for d in directories
-    ]
+    return [get_lightcurve_from_file(path.join(d, filename), *args **kwargs)
+            for d in directories]
 
 def single_periods(data, period, min_points=10, *args, **kwargs):
-    time, mag, err = data.T
+    time, mag, *err = data.T
+    
     tstart, tfinal = numpy.min(time), numpy.max(time)
     periods = numpy.arange(tstart, tfinal+period, period)
     data_range = (
@@ -169,9 +170,9 @@ def find_outliers(data, period, predictor, sigma,
     # determine sigma clipping function
     sigma_clipper = mad if sigma_clipping == 'robust' else numpy.std
     
-    phase, mag, err = rephase(data, period).T
+    phase, mag, *err = rephase(data, period).T
     residuals = numpy.absolute(predictor.predict(colvec(phase)) - mag)
-    outliers = numpy.logical_and(residuals > err,
+    outliers = numpy.logical_and((residuals > err[0]) if err else True,
                                  residuals > sigma * sigma_clipper(residuals))
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
@@ -184,19 +185,23 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
     plt.xlim(0,2)
 
     # Plot points used
-    phase, mag, err = get_signal(data).T
+    phase, mag, *err = get_signal(data).T
+    
     inliers = plt.errorbar(numpy.hstack((phase,1+phase)),
                            numpy.hstack((mag, mag)),
-                           yerr=numpy.hstack((err,err)),
+                           yerr=numpy.hstack((err[0] if err else mag*err_const,
+                                              err[0] if err else mag*err_const)),
                            ls='None',
                            ms=.01, mew=.01, capsize=0)
 
     # Plot outliers rejected
-    phase, mag, err = get_noise(data).T
+    phase, mag, *err = get_noise(data).T
+    
     outliers = plt.errorbar(numpy.hstack((phase,1+phase)),
                             numpy.hstack((mag, mag)),
-                            yerr=numpy.hstack((err,err)), ls='None',
-                            marker='o' if color else 'x',
+                            yerr=numpy.hstack((err[0] if err else mag*err_const,
+                                               err[0] if err else mag*err_const)), 
+                            ls='None', marker='o' if color else 'x',
                             ms=.01 if color else 4,
                             mew=.01 if color else 1,
                             capsize=0 if color else 1)

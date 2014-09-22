@@ -50,8 +50,8 @@ def get_args():
         default='.dat', metavar='EXT',
         help='extension which follows a star\'s name in data filenames '
              '(default = ".dat")')
-    general_group.add_argument('--use-cols', type=int, nargs=3,
-        default=SUPPRESS, metavar=('TIME', 'MAG', 'MAG_ERR'),
+    general_group.add_argument('--use-cols', type=int, nargs='+',
+        default=SUPPRESS,
         help='columns to use from data file '
              '(default = 0 1 2)')
     general_group.add_argument('-p', '--processes', type=int,
