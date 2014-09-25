@@ -191,6 +191,7 @@ def main():
         'Outliers',
         'R^2',
         'MSE',
+        'Degree',
         'A_0',
         'dA_0',
         '\t'.join(map('A_{0}\tPhi_{0}'.format, range(1, max_degree+1))),
@@ -253,7 +254,8 @@ def _print_star(result, max_degree, fmt):
     print('\t'.join([result['name'], str(result['period']),
                      str(result['shift']), str(result['coverage']),
                      str(inliers), str(outliers),
-                     str(result['R2']), str(result['MSE'])]),
+                     str(result['R2']), str(result['MSE']),
+                     str(result['degree'])]),
           end='\t')
     print('\t'.join(map(formatter, coefficients_)), end='\t')
     trailing_zeros = 2*max_degree + 1 - len(coefs)

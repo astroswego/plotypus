@@ -122,6 +122,8 @@ def get_lightcurve(data, name=None, period=None,
         and predictor.scoring == scoring \
         else cross_val_score(estimator, colvec(phase), mag,
                              cv=scoring_cv, scoring=scoring).mean()
+
+
     
     return {'name': name,
             'period': _period,
@@ -132,6 +134,7 @@ def get_lightcurve(data, name=None, period=None,
             'model': predictor,
             'R2': get_score('r2'),
             'MSE': abs(get_score('mean_squared_error')),
+            'degree': estimator.get_params()['Fourier__degree'],
             'shift': shift,
             'coverage': coverage}
 
