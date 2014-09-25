@@ -121,10 +121,6 @@ def get_args():
         choices=['standard', 'robust'], default=SUPPRESS,
         help='sigma clipping metric to use '
              '(default = "robust")')
-    lasso_group.add_argument('--lasso-cv', type=int,
-        default=SUPPRESS, metavar='N',
-        help='number of folds in the L1-regularization search '
-             '(default = 3)')
     lasso_group.add_argument('--max-iter', type=int,
         default=1000, metavar='N',
         help='maximum number of iterations in the Lasso '
