@@ -22,11 +22,12 @@ default_matplotlibrc = path.sep.join(_foo)
 def get_args():
     parser = ArgumentParser()
     general_group = parser.add_argument_group('General')
+    parallel_group = parser.add_argument_group('Parallel')
     period_group = parser.add_argument_group('Periodogram')
     fourier_group = parser.add_argument_group('Fourier')
     outlier_group = parser.add_argument_group('Outlier Detection')
     lasso_group = parser.add_argument_group('Lasso')
-    gridsearch_group = parser.add_argument_group('GridSearch')
+
 
     general_group.add_argument('-i', '--input', type=str,
         default=stdin,
@@ -54,10 +55,6 @@ def get_args():
         default=SUPPRESS,
         help='columns to use from data file '
              '(default = 0 1 2)')
-    general_group.add_argument('-p', '--processes', type=int,
-        default=SUPPRESS, metavar='N',
-        help='number of stars to process in parallel '
-             '(default = 1)')
     general_group.add_argument('-s', '--scoring', type=str,
         choices=['MSE', 'R2'], default=SUPPRESS,
         help='scoring metric to use '
@@ -78,6 +75,18 @@ def get_args():
         default=default_matplotlibrc, metavar='RC',
         help='matplotlibrc file to use for formatting plots '
              '(default = $PLOTYPUS_INSTALL/matplotlibrc)')
+    parallel_group.add_argument('--star-processes', type=int,
+        default=1, metavar='N',
+        help='number of stars to process in parallel '
+             '(default = 1)')
+    parallel_group.add_argument('--selector-processes', type=int,
+        default=SUPPRESS, metavar='N',
+        help='number of processes to use for each selector '
+             '(default depends on selector used)')
+    parallel_group.add_argument('--scoring-processes', type=int,
+        default=SUPPRESS, metavar='N',
+        help='number of processes to use for scoring, if not done by selector '
+             '(default = 1)')
     period_group.add_argument('--periods', type=str,
         default=None,
         help='file of star names and associated periods, or a single period '
@@ -203,7 +212,8 @@ def main():
     fmt = vars(ops)['format']
     printer = lambda result: _print_star(result, max_degree, fmt) \
                               if result is not None else None
-    pmap(process_star, filepaths, callback=printer, **picklable_ops)
+    pmap(process_star, filepaths, callback=printer,
+         processes=ops.star_processes, **picklable_ops)
 
 def process_star(filename, output, periods={}, **ops):
     """Processes a star's lightcurve, prints its coefficients, and saves

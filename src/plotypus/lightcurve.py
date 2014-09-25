@@ -27,6 +27,7 @@ __all__ = [
 
 def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
                    Selector=GridSearchCV, fourier_degree=(2,25),
+                   selector_processes=1,
                    use_baart=False, scoring='r2', scoring_cv=3,
                    **kwargs):
     """Makes a predictor object for use in get_lightcurve.
@@ -39,14 +40,15 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
     else:
         params = {'Fourier__degree': list(range(fourier_degree[0],
                                                 fourier_degree[1]+1))}
-        return Selector(pipeline, params, scoring=scoring, cv=scoring_cv)
+        return Selector(pipeline, params, scoring=scoring, cv=scoring_cv,
+                        n_jobs=selector_processes)
 
 def get_lightcurve(data, name=None, period=None,
                    predictor=make_predictor(),
                    min_period=0.2, max_period=32,
                    coarse_precision=0.001, fine_precision=0.0000001,
                    sigma=20, sigma_clipping='robust',
-                   scoring='r2', scoring_cv=3,
+                   scoring='r2', scoring_cv=3, scoring_processes=1,
                    min_phase_cover=0.,
                    phases=numpy.arange(0, 1, 0.01), **ops):
     if predictor is None:
@@ -119,7 +121,8 @@ def get_lightcurve(data, name=None, period=None,
         if hasattr(predictor, 'best_score_') \
         and predictor.scoring == scoring \
         else cross_val_score(estimator, colvec(phase), mag,
-                             cv=scoring_cv, scoring=scoring).mean()
+                             cv=scoring_cv, scoring=scoring,
+                             n_jobs=scoring_processes).mean()
 
 
 
