@@ -25,7 +25,7 @@ __all__ = [
     'plot_lightcurve'
 ]
 
-err_const = 0.0001
+err_const = 0.0004
 
 def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
                    Selector=GridSearchCV, fourier_degree=(2,25),
@@ -192,7 +192,7 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
                            yerr=numpy.hstack((err[0] if err else mag*err_const,
                                               err[0] if err else mag*err_const)),
                            ls='None',
-                           ms=.01, mew=.01, capsize=0)
+                           ms=.01, mew=.01, capsize=0, elinewidth=0.01)
 
     # Plot outliers rejected
     phase, mag, *err = get_noise(data).T
@@ -204,12 +204,13 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
                             ls='None', marker='o' if color else 'x',
                             ms=.01 if color else 4,
                             mew=.01 if color else 1,
-                            capsize=0 if color else 1)
+                            capsize=0 if color else 1,
+                            elinewidth=0.01)
 
     # Plot the fitted light curve
     signal, = plt.plot(numpy.hstack((phases,1+phases)),
                        numpy.hstack((lightcurve, lightcurve)),
-                       linewidth=1.5)
+                       linewidth=1)
     
     if legend:
         plt.legend([signal, inliers, outliers],
