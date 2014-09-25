@@ -137,9 +137,10 @@ def get_args():
     
     args = parser.parse_args()
 
-    rcParams = rc_params_from_file(fname=args.matplotlibrc,
-                                   fail_on_error=True)
-    plotypus.lightcurve.matplotlib.rcParams = rcParams
+    if args.output is not None:
+        rcParams = rc_params_from_file(fname=args.matplotlibrc,
+                                       fail_on_error=args.output)
+        plotypus.lightcurve.matplotlib.rcParams = rcParams
 
     regressor_choices = {'Lasso': LassoLarsIC(max_iter=args.max_iter,
                                               fit_intercept=False),
