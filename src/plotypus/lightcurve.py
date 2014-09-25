@@ -25,8 +25,6 @@ __all__ = [
     'plot_lightcurve'
 ]
 
-err_const = 0.0004
-
 def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
                    Selector=GridSearchCV, fourier_degree=(2,25),
                    use_baart=False, scoring='r2', scoring_cv=3,
@@ -53,12 +51,12 @@ def get_lightcurve(data, name=None, period=None,
                    phases=numpy.arange(0, 1, 0.01), **ops):
     if predictor is None:
         predictor = make_predictor(scoring=scoring, scoring_cv=scoring_cv)
-    
+
     while True:
         signal = get_signal(data)
         if len(signal) <= scoring_cv:
             return
-        
+
         # Find the period of the inliers
         _period = period if period is not None else \
                   find_period(signal.T[0], signal.T[1],
@@ -97,7 +95,7 @@ def get_lightcurve(data, name=None, period=None,
             if num_outliers > 0:
                 print(name, sum(outliers)[0], "outliers", file=stderr)
             data.mask = numpy.ma.mask_or(data.mask, outliers)
-    
+
     # Build light curve and shift to max light
     lightcurve = predictor.predict([[i] for i in phases])
     arg_max_light = lightcurve.argmin()
@@ -105,18 +103,18 @@ def get_lightcurve(data, name=None, period=None,
                                     lightcurve[:arg_max_light]))
     shift = arg_max_light/len(phases)
     data.T[0] = rephase(data.data, _period, shift).T[0]
-    
-    # Grab the coefficients from the model 
+
+    # Grab the coefficients from the model
     coefficients = predictor.named_steps['Regressor'].coef_ \
         if isinstance(predictor, Pipeline) \
         else predictor.best_estimator_.named_steps['Regressor'].coef_,
-    
+
     # compute R^2 and MSE if they haven't already been
     # (one or zero have been computed, depending on the predictor)
     estimator = predictor.best_estimator_ \
         if hasattr(predictor, 'best_estimator_') \
         else predictor
-    
+
     get_score = lambda scoring: predictor.best_score_ \
         if hasattr(predictor, 'best_score_') \
         and predictor.scoring == scoring \
@@ -124,7 +122,7 @@ def get_lightcurve(data, name=None, period=None,
                              cv=scoring_cv, scoring=scoring).mean()
 
 
-    
+
     return {'name': name,
             'period': _period,
             'lightcurve': lightcurve,
@@ -149,7 +147,7 @@ def get_lightcurves_from_file(filename, directories, *args, **kwargs):
 
 def single_periods(data, period, min_points=10, *args, **kwargs):
     time, mag, *err = data.T
-    
+
     tstart, tfinal = numpy.min(time), numpy.max(time)
     periods = numpy.arange(tstart, tfinal+period, period)
     data_range = (
@@ -172,7 +170,7 @@ def find_outliers(data, period, predictor, sigma,
                   sigma_clipping='robust'):
     # determine sigma clipping function
     sigma_clipper = mad if sigma_clipping == 'robust' else numpy.std
-    
+
     phase, mag, *err = rephase(data, period).T
     residuals = numpy.absolute(predictor.predict(colvec(phase)) - mag)
     outliers = numpy.logical_and((residuals > err[0]) if err else True,
@@ -180,7 +178,8 @@ def find_outliers(data, period, predictor, sigma,
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
 def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
-                    color=True, phases=numpy.arange(0, 1, 0.01), 
+                    color=True, phases=numpy.arange(0, 1, 0.01),
+                    err_const=0.0004,
                     **ops):
     ax = plt.gca()
     #ax.grid(False
@@ -189,40 +188,42 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
 
     # Plot points used
     phase, mag, *err = get_signal(data).T
-    
+
+    error = err[0] if err else mag*err_const
+
     inliers = plt.errorbar(numpy.hstack((phase,1+phase)),
                            numpy.hstack((mag, mag)),
-                           yerr=numpy.hstack((err[0] if err else mag*err_const,
-                                              err[0] if err else mag*err_const)),
+                           yerr=numpy.hstack((error, error)),
                            ls='None',
-                           ms=.01, mew=.01, capsize=0, elinewidth=0.01)
+                           ms=.01, mew=.01, capsize=0, elinewidth=0.1)
 
     # Plot outliers rejected
     phase, mag, *err = get_noise(data).T
-    
+
+    error = err[0] if err else mag*err_const
+
     outliers = plt.errorbar(numpy.hstack((phase,1+phase)),
                             numpy.hstack((mag, mag)),
-                            yerr=numpy.hstack((err[0] if err else mag*err_const,
-                                               err[0] if err else mag*err_const)), 
+                            yerr=numpy.hstack((error, error)),
                             ls='None', marker='o' if color else 'x',
                             ms=.01 if color else 4,
                             mew=.01 if color else 1,
                             capsize=0 if color else 1,
-                            elinewidth=0.01)
+                            elinewidth=0.1)
 
     # Plot the fitted light curve
     signal, = plt.plot(numpy.hstack((phases,1+phases)),
                        numpy.hstack((lightcurve, lightcurve)),
                        linewidth=1)
-    
+
     if legend:
         plt.legend([signal, inliers, outliers],
                    ["Light Curve", "Inliers", "Outliers"],
                    loc='best')
-    
+
     plt.xlabel('Phase ({0:0.7} day period)'.format(period))
     plt.ylabel('Magnitude')
-    
+
     plt.title(name)
     plt.tight_layout(pad=0.1)
     make_sure_path_exists(output)
