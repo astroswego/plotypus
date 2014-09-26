@@ -30,7 +30,7 @@ def get_args():
 
 
     general_group.add_argument('-i', '--input', type=str,
-        default=stdin,
+        default=None,
         help='location of stellar observations '
              '(default = stdin)')
     general_group.add_argument('-o', '--output', type=str,
@@ -279,14 +279,17 @@ def _print_star(result, max_degree, fmt):
     print('\t'.join(map(formatter, result['lightcurve'])))
 
 def _get_files(input):
-    if input is stdin:
-        return input
-        return map(lambda x: x.strip(), input)
+    if input is None:
+        return stdin
+    elif input[0] == "@":
+        with open(input[1:], 'r') as f:
+            return map(lambda x: x.strip(), f.readlines())
+    elif path.isfile(input):
+        return [input]
     elif path.isdir(input):
         return sorted(listdir(input))
     else:
-        with open(input, 'r') as f:
-            return map(lambda x: x.strip(), f.readlines())
+        raise FileNotFoundError('file {} not found'.format(input))
 
 if __name__ == "__main__":
     exit(main())
