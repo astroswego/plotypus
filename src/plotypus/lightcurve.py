@@ -62,10 +62,16 @@ def get_lightcurve(data, name=None, period=None,
             return
 
         # Find the period of the inliers
-        _period = period if period is not None else \
-                  find_period(signal.T[0], signal.T[1],
-                              min_period, max_period,
-                              coarse_precision, fine_precision)
+        if period is not None:
+            _period = period
+        else:
+            verbose_print("{}: finding period".format(name),
+                          operation="period",
+                          verbosity=verbosity)
+            _period = find_period(signal.T[0], signal.T[1],
+                                  min_period, max_period,
+                                  coarse_precision, fine_precision)
+
         phase, mag, *err = rephase(signal, _period).T
 
         # Determine whether there is sufficient phase coverage
@@ -74,8 +80,8 @@ def get_lightcurve(data, name=None, period=None,
             coverage[int(floor(p*100))] = 1
         coverage = sum(coverage)/100
         if coverage < min_phase_cover:
-            verbose_print("{} {} {}".format(name, coverage, min_phase_cover),
-                          operation="outlier",
+            verbose_print("{}: {} {}".format(name, coverage, min_phase_cover),
+                          operation="coverage",
                           verbosity=verbosity)
             verbose_print("Insufficient phase coverage",
                           operation="outlier",
@@ -102,7 +108,7 @@ def get_lightcurve(data, name=None, period=None,
                 data.mask = outliers
                 break
             if num_outliers > 0:
-                verbose_print("{} {} outliers".format(name, sum(outliers)[0]),
+                verbose_print("{}: {} outliers".format(name, sum(outliers)[0]),
                               operation="outlier",
                               verbosity=verbosity)
             data.mask = numpy.ma.mask_or(data.mask, outliers)

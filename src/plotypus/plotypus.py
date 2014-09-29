@@ -76,7 +76,7 @@ def get_args():
         help='matplotlibrc file to use for formatting plots '
              '(default = $PLOTYPUS_INSTALL/matplotlibrc)')
     general_group.add_argument('-v', '--verbosity', type=str, action='append',
-        default=[], choices=['all', 'period', 'outlier'],
+        default=[], choices=['all', 'coverage', 'outlier', 'period'],
         metavar='OPERATION',
         help='specifies an operation to print verbose output for, or '
              '"all" to print all verbose output '
