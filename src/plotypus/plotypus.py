@@ -12,12 +12,7 @@ from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
 import plotypus
 from plotypus.preprocessing import Fourier
 from plotypus.utils import pmap
-
-# Points to the default matplotlibrc using its relative location to the
-# plotypus module (there's probably a better way to do this)
-_foo = plotypus.__file__.split(path.sep)[:-3]
-_foo.append('matplotlibrc')
-default_matplotlibrc = path.sep.join(_foo)
+from plotypus.resources import matplotlibrc
 
 def get_args():
     parser = ArgumentParser()
@@ -72,7 +67,8 @@ def get_args():
         help='minimum fraction of phases that must have points '
              '(default = 0)')
     general_group.add_argument('--matplotlibrc', type=str,
-        default=default_matplotlibrc, metavar='RC',
+        default=matplotlibrc,
+        metavar='RC',
         help='matplotlibrc file to use for formatting plots '
              '(default = $PLOTYPUS_INSTALL/matplotlibrc)')
     general_group.add_argument('-v', '--verbosity', type=str, action='append',

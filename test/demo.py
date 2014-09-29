@@ -5,11 +5,12 @@ from sklearn.linear_model import LinearRegression, LassoCV
 from sklearn.pipeline import Pipeline
 from plotypus.preprocessing import Fourier
 from plotypus.utils import colvec
+from plotypus.resources import matplotlibrc
 
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import rc_file
-rc_file('matplotlibrc')
+rc_file(matplotlibrc)
 import matplotlib.pyplot as plt
 
 color = True

@@ -44,6 +44,7 @@ def setup_package():
         version = get_version_info(),
         package_dir = {'': 'src'},
         packages = ['plotypus'],
+        package_data = {'plotypus.resources': ['*']},
         entry_points = {
             'console_scripts': [
                 'plotypus = plotypus.plotypus:main'

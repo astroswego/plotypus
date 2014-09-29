@@ -7,6 +7,7 @@ from plotypus.lightcurve import get_lightcurve_from_file, make_predictor
 from plotypus.preprocessing import Fourier
 from plotypus.periodogram import rephase
 from plotypus.utils import colvec, get_signal, get_noise
+from plotypus.resources import matplotlibrc
 from sklearn.linear_model import LinearRegression, LassoCV, LassoLarsIC
 from sklearn.pipeline import Pipeline
 import matplotlib
@@ -15,7 +16,7 @@ matplotlib.use('Agg')
 import matplotlib
 matplotlib.use('Agg')
 from matplotlib import rc_file, rcParams
-rc_file('matplotlibrc')
+rc_file(matplotlibrc)
 rcParams['figure.figsize'] = [6.97, 9.23]
 import matplotlib.pyplot as plt
 from matplotlib.ticker import MaxNLocator
