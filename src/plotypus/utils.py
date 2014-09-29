@@ -1,9 +1,11 @@
 from os import makedirs
 from os.path import join, isdir
+from sys import stderr
 from multiprocessing import Pool
 from numpy import absolute, concatenate, median, resize
 
 __all__ = [
+    'verbose_print',
     'pmap',
     'make_sure_path_exists',
     'get_signal',
@@ -12,6 +14,13 @@ __all__ = [
     'mad',
     'autocorrelation'
 ]
+
+def verbose_print(message, *, operation, verbosity):
+    """Prints message to stdout only if the given operation is in the list of
+    verbose operations. If "all" is in the list, all operations are printed.
+    """
+    if (operation in verbosity) or ("all" in verbosity):
+        print(message, file=stderr)
 
 def pmap(func, args, processes=None, callback=lambda *_, **__: None, **kwargs):
     """Parallel equivalent of map(func, args), with the additional ability of

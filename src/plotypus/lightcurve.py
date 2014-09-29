@@ -4,7 +4,8 @@ from scipy.stats import sem
 from sys import stderr
 from math import floor
 from os import path
-from .utils import make_sure_path_exists, get_signal, get_noise, colvec, mad
+from .utils import (verbose_print, make_sure_path_exists,
+                    get_signal, get_noise, colvec, mad)
 from .periodogram import find_period, rephase, get_phase
 from .preprocessing import Fourier
 from sklearn.cross_validation import cross_val_score
@@ -50,7 +51,8 @@ def get_lightcurve(data, name=None, period=None,
                    sigma=20, sigma_clipping='robust',
                    scoring='r2', scoring_cv=3, scoring_processes=1,
                    min_phase_cover=0.,
-                   phases=numpy.arange(0, 1, 0.01), **ops):
+                   phases=numpy.arange(0, 1, 0.01),
+                   verbosity=[], **ops):
     if predictor is None:
         predictor = make_predictor(scoring=scoring, scoring_cv=scoring_cv)
 
@@ -72,8 +74,12 @@ def get_lightcurve(data, name=None, period=None,
             coverage[int(floor(p*100))] = 1
         coverage = sum(coverage)/100
         if coverage < min_phase_cover:
-            print(name, coverage, min_phase_cover, file=stderr)
-            print(name, "Insufficient phase coverage", file=stderr)
+            verbose_print("{} {} {}".format(name, coverage, min_phase_cover),
+                          operation="outlier",
+                          verbosity=verbosity)
+            verbose_print("Insufficient phase coverage",
+                          operation="outlier",
+                          verbosity=verbosity)
             return
 
         # Predict light curve
@@ -81,6 +87,7 @@ def get_lightcurve(data, name=None, period=None,
             try:
                 predictor = predictor.fit(colvec(phase), mag)
             except Warning:
+                # not sure if this should be only in verbose mode
                 print(name, w, file=stderr)
                 return
 
@@ -95,7 +102,9 @@ def get_lightcurve(data, name=None, period=None,
                 data.mask = outliers
                 break
             if num_outliers > 0:
-                print(name, sum(outliers)[0], "outliers", file=stderr)
+                verbose_print("{} {} outliers".format(name, sum(outliers)[0]),
+                              operation="outlier",
+                              verbosity=verbosity)
             data.mask = numpy.ma.mask_or(data.mask, outliers)
 
     # Build light curve and shift to max light

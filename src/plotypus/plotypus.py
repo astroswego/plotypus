@@ -75,6 +75,12 @@ def get_args():
         default=default_matplotlibrc, metavar='RC',
         help='matplotlibrc file to use for formatting plots '
              '(default = $PLOTYPUS_INSTALL/matplotlibrc)')
+    general_group.add_argument('-v', '--verbosity', type=str, action='append',
+        default=[], choices=['all', 'period', 'outlier'],
+        metavar='OPERATION',
+        help='specifies an operation to print verbose output for, or '
+             '"all" to print all verbose output '
+             '(default = None)')
     parallel_group.add_argument('--star-processes', type=int,
         default=1, metavar='N',
         help='number of stars to process in parallel '
