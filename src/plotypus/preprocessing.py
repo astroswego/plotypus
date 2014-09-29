@@ -3,7 +3,6 @@ import numpy
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from .utils import autocorrelation, rowvec
-from sys import stderr
 
 __all__ = [
     'Fourier'
