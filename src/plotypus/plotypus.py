@@ -6,6 +6,8 @@ from argparse import ArgumentError, ArgumentParser, FileType, SUPPRESS
 from sklearn.linear_model import LassoCV, LassoLarsIC, LinearRegression
 from sklearn.grid_search import GridSearchCV
 from matplotlib import rc_params_from_file
+from functools import partial
+from itertools import chain, repeat
 import plotypus.lightcurve
 from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
                                  plot_lightcurve)
@@ -16,12 +18,12 @@ from plotypus.resources import matplotlibrc
 
 def get_args():
     parser = ArgumentParser()
-    general_group = parser.add_argument_group('General')
+    general_group  = parser.add_argument_group('General')
     parallel_group = parser.add_argument_group('Parallel')
-    period_group = parser.add_argument_group('Periodogram')
-    fourier_group = parser.add_argument_group('Fourier')
-    outlier_group = parser.add_argument_group('Outlier Detection')
-    lasso_group = parser.add_argument_group('Lasso')
+    period_group   = parser.add_argument_group('Periodogram')
+    fourier_group  = parser.add_argument_group('Fourier')
+    outlier_group  = parser.add_argument_group('Outlier Detection')
+    lasso_group    = parser.add_argument_group('Lasso')
 
 
     general_group.add_argument('-i', '--input', type=str,
@@ -70,7 +72,7 @@ def get_args():
         default=matplotlibrc,
         metavar='RC',
         help='matplotlibrc file to use for formatting plots '
-             '(default = $PLOTYPUS_INSTALL/matplotlibrc)')
+             '(default file is in plotypus.resources.matplotlibrc)')
     general_group.add_argument('-v', '--verbosity', type=str, action='append',
         default=[], choices=['all', 'coverage', 'outlier', 'period'],
         metavar='OPERATION',
@@ -110,10 +112,10 @@ def get_args():
         default=SUPPRESS,
         help='level of granularity on second pass '
              '(default = 0.0000001)')
-    fourier_group.add_argument('--fourier-degree', type=int, nargs=2,
+    fourier_group.add_argument('-d', '--fourier-degree', type=int, nargs=2,
         default=(2,20), metavar=('MIN', 'MAX'),
         help='range of degrees of fourier fits to use '
-             '(default = 2 25)')
+             '(default = 2 20)')
     fourier_group.add_argument('-r', '--regressor',
         choices=['Lasso', 'OLS'],
         default='Lasso',
@@ -179,7 +181,7 @@ def get_args():
 def main():
     ops = get_args()
 
-    min_degree, max_degree = vars(ops)['fourier_degree']
+    min_degree, max_degree = ops.fourier_degree
     filenames = list(map(lambda x: x.strip(), _get_files(ops.input)))
     filepaths = map(lambda filename:
                     filename if path.isfile(filename)
@@ -194,27 +196,24 @@ def main():
                      for k in vars(ops)
                      if k not in {'input'}}
     # print file header
-    print('\t'.join([
-        'Name',
-        'Period',
-        'Shift',
-        'Coverage',
-        'Inliers',
-        'Outliers',
-        'R^2',
-        'MSE',
-        'Degree',
-        'A_0',
-        'dA_0',
-        '\t'.join(map('A_{0}\tPhi_{0}'.format, range(1, max_degree+1))),
-        '\t'.join(map('R_{0}1\tphi_{0}1'.format, range(2,max_degree+1))),
-        '\t'.join(map('Phase{}'.format, range(ops.phase_points)))
-        ])
-    )
-    #printer = _star_printer(max_degree, vars(ops)['format'])
-    fmt = vars(ops)['format']
-    printer = lambda result: _print_star(result, max_degree, fmt) \
-                              if result is not None else None
+    print(*['Name',
+            'Period',
+            'Shift',
+            'Coverage',
+            'Inliers',
+            'Outliers',
+            'R^2',
+            'MSE',
+            'Degree',
+            'A_0',
+            'dA_0',
+            '\t'.join(map('A_{0}\tPhi_{0}'.format, range(1, max_degree+1))),
+            '\t'.join(map('R_{0}1\tphi_{0}1'.format, range(2, max_degree+1))),
+            '\t'.join(map('Phase{}'.format, range(ops.phase_points)))],
+        sep='\t')
+
+    printer = lambda result: _print_star(result, max_degree, ops.format) \
+                             if result is not None else None
     pmap(process_star, filepaths, callback=printer,
          processes=ops.star_processes, **picklable_ops)
 
@@ -248,37 +247,43 @@ def process_star(filename, output, periods={}, **ops):
                         result['phased_data'], output=output, **ops)
     return result
 
-"""def _star_printer(max_degree, fmt):
-    return lambda result: _print_star(result, max_degree, fmt) \
-                           if result is not None else None"""
 
 def _print_star(result, max_degree, fmt):
     if result is None: return
-    formatter = lambda x: fmt % x
 
-    N = result['phased_data'][:,0].size # number of data points
-    outliers = numpy.ma.count_masked(result['phased_data'][:,0])
-    inliers  = N - outliers
+    # function which formats every number in a sequence according to fmt
+    format_all = partial(map, lambda x: fmt % x)
 
-    coefs = Fourier.phase_shifted_coefficients(result['coefficients'])
-    coefficients_ = numpy.concatenate(([coefs[0]],[result['dA_0']],coefs[1:]))
+    # count inliers and outliers
+    points   = result['phased_data'][:,0].size
+    outliers = numpy.ma.count_masked(result['phased_data'][:, 0])
+    inliers  = points - outliers
+
+    # get fourier coefficients and compute ratios
+    coefs  = Fourier.phase_shifted_coefficients(result['coefficients'])
+    _coefs = numpy.concatenate(([coefs[0]],
+                               [result['dA_0']],
+                               coefs[1:]))
     fourier_ratios = Fourier.fourier_ratios(coefs, 1)
 
-    print('\t'.join([result['name'], str(result['period']),
-                     str(result['shift']), str(result['coverage']),
-                     str(inliers), str(outliers),
-                     str(result['R2']), str(result['MSE']),
-                     str(result['degree'])]),
-          end='\t')
-    print('\t'.join(map(formatter, coefficients_)), end='\t')
-    trailing_zeros = 2*max_degree + 1 - len(coefs)
-    if trailing_zeros > 0:
-        print('\t'.join(map(formatter, numpy.zeros(trailing_zeros))), end='\t')
-    print('\t'.join(map(formatter, fourier_ratios)), end='\t')
-    trailing_zeros = 2*(max_degree-1) - len(fourier_ratios)
-    if trailing_zeros > 0:
-        print('\t'.join(map(formatter, numpy.zeros(trailing_zeros))), end='\t')
-    print('\t'.join(map(formatter, result['lightcurve'])))
+    # create the vectors of zeroes
+    coef_zeros  = repeat('0', times=(2*max_degree + 1 - len(coefs)))
+    ratio_zeros = repeat('0', times=(2*(max_degree - 1) - len(fourier_ratios)))
+
+    # print the entry for the star with tabs as separators
+    # and itertools.chain to separate the different results into a
+    # continuous list which is then unpacked
+    print(*chain(*[[result['name']],
+                   map(str,
+                       [result['period'], result['shift'], result['coverage'],
+                        inliers, outliers,
+                        result['R2'],     result['MSE'],   result['degree']]),
+                   # coefficients and fourier ratios with trailing zeros
+                   # formatted defined by the user-provided fmt string
+                   format_all(_coefs),         coef_zeros,
+                   format_all(fourier_ratios), ratio_zeros,
+                   format_all(result['lightcurve'])]),
+        sep='\t')
 
 def _get_files(input):
     if input is None:
