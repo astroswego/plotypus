@@ -37,10 +37,6 @@ def get_args():
     general_group.add_argument('-f', '--format', type=str,
         default='%.5f',
         help='format specifier for output table')
-    general_group.add_argument('--filter', type=str,
-        default='.*',
-        help='regular expression to filter star names on '
-             '(default = ".*")')
     general_group.add_argument('--legend', action='store_true',
         help='whether legends should be put on the output plots '
              '(default = False)')
@@ -166,8 +162,6 @@ def get_args():
                                     **vars(args))
     args.phases = numpy.arange(0, 1, 1/args.phase_points)
 
-    args.filter = re.compile(args.filter)
-
     if args.periods is not None:
         try:
             float(args.periods)
@@ -223,12 +217,8 @@ def process_star(filename, output, periods={}, **ops):
     """
     _name = path.basename(filename)
     extension = ops['extension']
-    _filter = ops['filter']
     if _name.endswith(extension):
         name = _name[:-len(extension)]
-        if _filter.match(name) is None:
-            # file does not match regular expression
-            return
     else:
         # file has wrong extension
         return
