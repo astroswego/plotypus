@@ -13,7 +13,7 @@ from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
                                  plot_lightcurve)
 import plotypus
 from plotypus.preprocessing import Fourier
-from plotypus.utils import pmap
+from plotypus.utils import pmap, verbose_print
 from plotypus.resources import matplotlibrc
 
 def get_args():
@@ -175,10 +175,16 @@ def get_args():
         try:
             float(args.periods)
         except ValueError:
+            verbose_print("Parsing periods file {}".format(args.periods),
+                          operation="period", verbosity=args.verbosity)
             with open(args.periods, 'r') as f:
-                args.periods = {name: float(period)
-                                for (name, period) in (line.strip().split()
-                                for line in args.periods if ' ' in line)}
+                args.periods = {name: float(period) for (name, period)
+                                in (line.strip().split() for line
+                                    in f if ' ' in line)}
+                if args.periods == {}:
+                    verbose_print("No periods found",
+                                  operation="period",
+                                  verbosity=args.verbosity)
     return args
 
 def main():
