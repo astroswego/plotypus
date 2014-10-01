@@ -72,7 +72,10 @@ def get_lightcurve(data, name=None, period=None,
             _period = find_period(signal, min_period, max_period,
                                   coarse_precision, fine_precision,
                                   periodogram)
-
+            
+        verbose_print("{}: using period {}".format(name, _period),
+                          operation="period",
+                          verbosity=verbosity)
         phase, mag, *err = rephase(signal, _period).T
 
         # Determine whether there is sufficient phase coverage
