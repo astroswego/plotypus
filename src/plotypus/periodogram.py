@@ -38,9 +38,10 @@ def Lomb_Scargle(data, precision, min_period, max_period):
 def conditional_entropy(data, precision, min_period, max_period,
                         xbins=10, ybins=5):
     periods = np.arange(min_period, max_period, precision)
-    data.T[1] = (data.T[1] - np.min(data.T[1])) \
-      / (np.max(data.T[1]) - np.min(data.T[1]))
-    entropies = list(map(partial(CE, data=data, xbins=xbins, ybins=ybins),
+    copy = np.ma.copy(data)
+    copy.T[1] = (copy.T[1] - np.min(copy.T[1])) \
+      / (np.max(copy.T[1]) - np.min(copy.T[1]))
+    entropies = list(map(partial(CE, data=copy, xbins=xbins, ybins=ybins),
                          periods))
     """np.savetxt(os.path.join(out, name_period),
                 np.dstack((periods, entropies))[0],
