@@ -46,8 +46,9 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
 
 def get_lightcurve(data, name=None, period=None,
                    predictor=make_predictor(),
-                   min_period=0.2, max_period=32,
-                   coarse_precision=0.001, fine_precision=0.0000001,
+                   min_period=0, max_period=32,
+                   coarse_precision=0.00001, fine_precision=0.000000001,
+                   periodogram='Lomb_Scargle',
                    sigma=20, sigma_clipping='robust',
                    scoring='r2', scoring_cv=3, scoring_processes=1,
                    min_phase_cover=0.,
@@ -68,9 +69,9 @@ def get_lightcurve(data, name=None, period=None,
             verbose_print("{}: finding period".format(name),
                           operation="period",
                           verbosity=verbosity)
-            _period = find_period(signal.T[0], signal.T[1],
-                                  min_period, max_period,
-                                  coarse_precision, fine_precision)
+            _period = find_period(signal, min_period, max_period,
+                                  coarse_precision, fine_precision,
+                                  periodogram)
 
         phase, mag, *err = rephase(signal, _period).T
 
@@ -213,7 +214,7 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
                            numpy.hstack((mag, mag)),
                            yerr=numpy.hstack((error, error)),
                            ls='None',
-                           ms=.01, mew=.01, capsize=0, elinewidth=0.1)
+                           ms=.01, mew=.01, capsize=0)
 
     # Plot outliers rejected
     phase, mag, *err = get_noise(data).T
@@ -226,8 +227,7 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
                             ls='None', marker='o' if color else 'x',
                             ms=.01 if color else 4,
                             mew=.01 if color else 1,
-                            capsize=0 if color else 1,
-                            elinewidth=0.1)
+                            capsize=0 if color else 1)
 
     # Plot the fitted light curve
     signal, = plt.plot(numpy.hstack((phases,1+phases)),

@@ -103,11 +103,16 @@ def get_args():
     period_group.add_argument('--coarse-precision', type=float,
         default=SUPPRESS,
         help='level of granularity on first pass '
-             '(default = 0.001)')
+             '(default = 0.00001)')
     period_group.add_argument('--fine-precision', type=float,
         default=SUPPRESS,
         help='level of granularity on second pass '
-             '(default = 0.0000001)')
+             '(default = 0.000000001)')
+    period_group.add_argument('--periodogram', type=str,
+        choices=['Lomb_Scargle', 'conditional_entropy'],
+        default=SUPPRESS,
+        help='method for determining period '
+             '(default = Lomb-Scargle)')
     fourier_group.add_argument('-d', '--fourier-degree', type=int, nargs=2,
         default=(2,20), metavar=('MIN', 'MAX'),
         help='range of degrees of fourier fits to use '
