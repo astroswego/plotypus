@@ -224,7 +224,7 @@ def process_star(filename, output, periods={}, **ops):
     """Processes a star's lightcurve, prints its coefficients, and saves
     its plotted lightcurve to a file. Returns the result of get_lightcurve.
     """
-    if ops['star_name'] is None:
+    if 'star_name' not in ops:
         _name = path.basename(filename)
         extension = ops['extension']
         if _name.endswith(extension):
