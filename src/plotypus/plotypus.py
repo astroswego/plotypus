@@ -34,6 +34,10 @@ def get_args():
         default=None,
         help='location of plots, or nothing if no plots are to be generated '
              '(default = None)')
+    general_group.add_argument('-n', '--star-name', type=str,
+        default=SUPPRESS,
+        help='name of star '
+             '(default = name of input file)')
     general_group.add_argument('-f', '--format', type=str,
         default='%.5f',
         help='format specifier for output table')
@@ -220,13 +224,16 @@ def process_star(filename, output, periods={}, **ops):
     """Processes a star's lightcurve, prints its coefficients, and saves
     its plotted lightcurve to a file. Returns the result of get_lightcurve.
     """
-    _name = path.basename(filename)
-    extension = ops['extension']
-    if _name.endswith(extension):
-        name = _name[:-len(extension)]
+    if ops['star_name'] is None:
+        _name = path.basename(filename)
+        extension = ops['extension']
+        if _name.endswith(extension):
+            name = _name[:-len(extension)]
+        else:
+            # file has wrong extension
+            return
     else:
-        # file has wrong extension
-        return
+        name = ops['star_name']
     try:
         _period = float(periods)
     except TypeError:
