@@ -2,11 +2,11 @@ import numpy
 from plotypus.lightcurve import *
 filename = 'data/I/OGLE-LMC-CEP-0008.dat'
 ops = {'periodogram': 'conditional_entropy',
-       'min_period':0.01, 'max_period':2}
+       'min_period':0.01, 'max_period':100}
 
 data = numpy.loadtxt(filename)
 lc = get_lightcurve_from_file(filename, **ops)
-for i in range(0,15):
+for i in range(0,30):
   plot_lightcurve(str(i), lc['lightcurve'], lc['period'], lc['phased_data'])
   if lc['degree'] < 1:
     break

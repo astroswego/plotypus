@@ -49,6 +49,7 @@ def get_lightcurve(data, name=None, period=None,
                    min_period=0, max_period=32,
                    coarse_precision=0.00001, fine_precision=0.000000001,
                    periodogram='Lomb_Scargle',
+                   period_processes=1,
                    sigma=20, sigma_clipping='robust',
                    scoring='r2', scoring_cv=3, scoring_processes=1,
                    min_phase_cover=0.,
@@ -70,7 +71,7 @@ def get_lightcurve(data, name=None, period=None,
                           operation="period", verbosity=verbosity)
             _period = find_period(signal, min_period, max_period,
                                   coarse_precision, fine_precision,
-                                  periodogram)
+                                  periodogram, period_processes)
             
         verbose_print("{}: using period {}".format(name, _period),
                       operation="period", verbosity=verbosity)
@@ -154,8 +155,11 @@ def get_lightcurve(data, name=None, period=None,
             'shift': shift,
             'coverage': coverage}
 
+def get_data_from_file(filename, use_cols=None):
+    return numpy.loadtxt(filename, usecols=use_cols)
+
 def get_lightcurve_from_file(filename, *args, use_cols=None, **kwargs):
-    data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),
+    data = numpy.ma.array(data=get_data_from_file(filename, use_cols=use_cols),
                           mask=None, dtype=float)
     return get_lightcurve(data, *args, **kwargs)
 

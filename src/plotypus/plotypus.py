@@ -91,6 +91,10 @@ def get_args():
         default=SUPPRESS, metavar='N',
         help='number of processes to use for scoring, if not done by selector '
              '(default = 1)')
+    parallel_group.add_argument('--period-processes', type=int,
+        default=1, metavar='N',
+        help='number of periods to process in parallel '
+             '(default = 1)')
     period_group.add_argument('--periods', type=str,
         default=None,
         help='file of star names and associated periods, or a single period '

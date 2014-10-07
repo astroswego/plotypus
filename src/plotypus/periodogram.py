@@ -13,7 +13,8 @@ __all__ = [
 
 def find_period(data, min_period, max_period,
                 coarse_precision, fine_precision,
-                periodogram='Lomb_Scargle'):
+                periodogram='Lomb_Scargle',
+                period_jobs=1):
     if min_period >= max_period: return min_period
     
     if periodogram == 'Lomb_Scargle':
@@ -21,13 +22,15 @@ def find_period(data, min_period, max_period,
     else:
       method = conditional_entropy
     
-    coarse_period = method(data, coarse_precision, min_period, max_period)
-    if coarse_precision <= fine_precision: return coarse_period
-    return method(data, fine_precision,
-                  coarse_period - coarse_precision,
-                  coarse_period + coarse_precision)
+    coarse_period = method(data, coarse_precision, min_period, max_period,
+                           period_jobs=period_jobs)
+    return coarse_period if coarse_precision <= fine_precision else \
+        method(data, fine_precision,
+               coarse_period - coarse_precision,
+               coarse_period + coarse_precision,
+               period_jobs=period_jobs)
 
-def Lomb_Scargle(data, precision, min_period, max_period):
+def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
     time, mags, *e = data
     scaled_mags = (mags-mags.mean())/mags.std()
     minf, maxf = 2*np.pi/max_period, 2*np.pi/min_period
@@ -36,16 +39,14 @@ def Lomb_Scargle(data, precision, min_period, max_period):
     return 2*np.pi/freqs[np.argmax(pgram)]
 
 def conditional_entropy(data, precision, min_period, max_period,
-                        xbins=10, ybins=5):
+                        xbins=10, ybins=5, period_jobs=1):
     periods = np.arange(min_period, max_period, precision)
     copy = np.ma.copy(data)
     copy.T[1] = (copy.T[1] - np.min(copy.T[1])) \
       / (np.max(copy.T[1]) - np.min(copy.T[1]))
-    entropies = list(map(partial(CE, data=copy, xbins=xbins, ybins=ybins),
-                         periods))
-    """np.savetxt(os.path.join(out, name_period),
-                np.dstack((periods, entropies))[0],
-                fmt='%s')"""
+    partial_job = partial(CE, data=copy, xbins=xbins, ybins=ybins)
+    m = map if period_jobs <= 1 else Pool(period_jobs).map
+    entropies = list(m(partial_job, periods))
     return periods[np.argmin(entropies)]
 
 def CE(period, data, xbins=10, ybins=5):
