@@ -160,11 +160,15 @@ def get_data_from_file(filename, use_cols=None, skiprows=0):
 
 def get_lightcurve_from_file(filename, *args, use_cols=None, skiprows=0,
                              **kwargs):
-    data = numpy.ma.array(data=get_data_from_file(filename,
-                                                  skiprows=skiprows,
-                                                  use_cols=use_cols),
-                          mask=None, dtype=float)
-    return get_lightcurve(data, *args, **kwargs)
+    with warnings.catch_warnings(record=True) as w:
+        try:
+            data = numpy.ma.array(data=get_data_from_file(filename,
+                                                          skiprows=skiprows,
+                                                          use_cols=use_cols),
+                                  mask=None, dtype=float)
+            return get_lightcurve(data, *args, **kwargs)
+        except Warning:
+            return None
 
 def get_lightcurves_from_file(filename, directories, *args, **kwargs):
     return [get_lightcurve_from_file(path.join(d, filename), *args **kwargs)
