@@ -46,7 +46,7 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
 
 def get_lightcurve(data, name=None, period=None,
                    predictor=make_predictor(),
-                   min_period=0, max_period=32,
+                   min_period=0.2, max_period=32,
                    coarse_precision=0.00001, fine_precision=0.000000001,
                    periodogram='Lomb_Scargle',
                    period_processes=1,
@@ -155,11 +155,14 @@ def get_lightcurve(data, name=None, period=None,
             'shift': shift,
             'coverage': coverage}
 
-def get_data_from_file(filename, use_cols=None):
-    return numpy.loadtxt(filename, usecols=use_cols)
+def get_data_from_file(filename, use_cols=None, skiprows=0):
+    return numpy.loadtxt(filename, usecols=use_cols, skiprows=skiprows)
 
-def get_lightcurve_from_file(filename, *args, use_cols=None, **kwargs):
-    data = numpy.ma.array(data=get_data_from_file(filename, use_cols=use_cols),
+def get_lightcurve_from_file(filename, *args, use_cols=None, skiprows=0,
+                             **kwargs):
+    data = numpy.ma.array(data=get_data_from_file(filename,
+                                                  skiprows=skiprows,
+                                                  use_cols=use_cols),
                           mask=None, dtype=float)
     return get_lightcurve(data, *args, **kwargs)
 
@@ -184,7 +187,8 @@ def single_periods(data, period, min_points=10, *args, **kwargs):
     )
 
 def single_periods_from_file(filename, *args, use_cols=range(3), **kwargs):
-    data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols),
+    data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_col,
+                                             skiprows=skiprows),
                           mask=None, dtype=float)
     return single_periods(data, *args, **kwargs)
 

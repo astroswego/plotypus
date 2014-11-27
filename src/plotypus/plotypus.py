@@ -48,6 +48,9 @@ def get_args():
         default='.dat', metavar='EXT',
         help='extension which follows a star\'s name in data filenames '
              '(default = ".dat")')
+    general_group.add_argument('--skiprows', type=int,
+        default=0,
+        help='number of rows at the head of each file to skip')
     general_group.add_argument('--use-cols', type=int, nargs='+',
         default=SUPPRESS,
         help='columns to use from data file '
