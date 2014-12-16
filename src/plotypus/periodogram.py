@@ -76,10 +76,16 @@ def new_CE(period, data, xbins=10, ybins=5):
     r = rephase(data, period)
     bins, *_ = np.histogram2d(r[:,0], r[:,1], [xbins, ybins], [[0,1], [0,1]])
     size = r.shape[0]
-    return np.sum((lambda p: p * np.log(np.sum(bins[i,:]) / size / p) \
-                             if p > 0 else 0)(bins[i][j] / size)
-                  for i in np.arange(0, xbins)
-                  for j in np.arange(0, ybins)) if size > 0 else np.PINF
+    if size > 0:
+        divided_bins = bins / size
+        column_summed_bins = np.sum(divided_bins, axis=0)
+        with np.errstate(divide='ignore', invalid='ignore'):
+            A = divided_bins * np.log(column_summed_bins / divided_bins)
+        A[bins <= 0] = 0
+        return np.sum(A)
+    else:
+        return np.PINF
+
 
 def rephase(data, period=1, shift=0, col=0):
     rephased = np.ma.copy(data)
