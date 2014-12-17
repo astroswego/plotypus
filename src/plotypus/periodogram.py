@@ -45,7 +45,7 @@ def conditional_entropy(data, precision, min_period, max_period,
     copy = np.ma.copy(data)
     copy[:,1] = (copy[:,1]  - np.min(copy[:,1])) \
        / (np.max(copy[:,1]) - np.min(copy[:,1]))
-    partial_job = partial(new_CE, data=copy, xbins=xbins, ybins=ybins)
+    partial_job = partial(CE, data=copy, xbins=xbins, ybins=ybins)
     m = map if period_jobs <= 1 else Pool(period_jobs).map
     entropies = list(m(partial_job, periods))
     return periods[np.argmin(entropies)]
