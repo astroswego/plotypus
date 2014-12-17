@@ -43,8 +43,8 @@ def setup_package():
         long_description = "\n".join(DOCLINES[2:]),
         version = get_version_info(),
         package_dir = {'': 'src'},
-        packages = ['plotypus'],
-        package_data = {'plotypus.resources': ['*']},
+        packages = ['plotypus', 'plotypus.resources'],
+        package_data = {'plotypus': ['resources/matplotlibrc']},
         entry_points = {
             'console_scripts': [
                 'plotypus = plotypus.plotypus:main'
@@ -59,6 +59,7 @@ def setup_package():
         classifiers = [f for f in CLASSIFIERS.split('\n') if f],
         requires = [
             'numpy (>= 1.8.0)',
+            'matplotlib (>= 1.4.0)',
             'scikit (>= 0.14.0)'
         ]
     )
