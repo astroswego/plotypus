@@ -43,8 +43,8 @@ def setup_package():
         long_description = "\n".join(DOCLINES[2:]),
         version = get_version_info(),
         package_dir = {'': 'src'},
-        packages = ['plotypus'],
-        package_data = {'plotypus.resources': ['*']},
+        packages = ['plotypus', 'plotypus.resources'],
+        package_data = {'plotypus': ['resources/matplotlibrc']},
         entry_points = {
             'console_scripts': [
                 'plotypus = plotypus.plotypus:main'
