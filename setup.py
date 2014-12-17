@@ -59,6 +59,7 @@ def setup_package():
         classifiers = [f for f in CLASSIFIERS.split('\n') if f],
         requires = [
             'numpy (>= 1.8.0)',
+            'matplotlib (>= 1.4.0)',
             'scikit (>= 0.14.0)'
         ]
     )
