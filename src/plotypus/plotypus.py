@@ -1,9 +1,8 @@
 import numpy
-import re
-from sys import exit, stdin, stderr
+from sys import exit, stdin
 from os import path, listdir
-from argparse import ArgumentError, ArgumentParser, FileType, SUPPRESS
-from sklearn.linear_model import LassoCV, LassoLarsIC, LinearRegression
+from argparse import ArgumentParser, SUPPRESS
+from sklearn.linear_model import LassoLarsIC, LinearRegression
 from sklearn.grid_search import GridSearchCV
 from matplotlib import rc_params_from_file
 from functools import partial
@@ -16,6 +15,7 @@ from plotypus.preprocessing import Fourier
 from plotypus.utils import pmap, verbose_print
 from plotypus.resources import matplotlibrc
 
+
 def get_args():
     parser = ArgumentParser()
     general_group  = parser.add_argument_group('General')
@@ -24,7 +24,6 @@ def get_args():
     fourier_group  = parser.add_argument_group('Fourier')
     outlier_group  = parser.add_argument_group('Outlier Detection')
     lasso_group    = parser.add_argument_group('Lasso')
-
 
     general_group.add_argument('-i', '--input', type=str,
         default=None,
@@ -125,7 +124,7 @@ def get_args():
         help='method for determining period '
              '(default = Lomb-Scargle)')
     fourier_group.add_argument('-d', '--fourier-degree', type=int, nargs=2,
-        default=(2,20), metavar=('MIN', 'MAX'),
+        default=(2, 20), metavar=('MIN', 'MAX'),
         help='range of degrees of fourier fits to use '
              '(default = 2 20)')
     fourier_group.add_argument('-r', '--regressor',
@@ -150,7 +149,7 @@ def get_args():
         default=1000, metavar='N',
         help='maximum number of iterations in the Lasso '
              '(default = 1000)')
-    
+
     args = parser.parse_args()
 
     if args.output is not None:
@@ -194,6 +193,7 @@ def get_args():
                                   verbosity=args.verbosity)
     return args
 
+
 def main():
     ops = get_args()
 
@@ -203,9 +203,7 @@ def main():
                     filename if path.isfile(filename)
                              else path.join(ops.input, filename),
                     filenames)
-    star_names = list(map(lambda filename:
-                          path.basename(filename).split('.')[0],
-                          filenames))
+
     # a dict containing all options which can be pickled, because
     # all parameters to pmap must be picklable
     picklable_ops = {k: vars(ops)[k]
@@ -233,6 +231,7 @@ def main():
     pmap(process_star, filepaths, callback=printer,
          processes=ops.star_processes, **picklable_ops)
 
+
 def process_star(filename, output, periods={}, **ops):
     """Processes a star's lightcurve, prints its coefficients, and saves
     its plotted lightcurve to a file. Returns the result of get_lightcurve.
@@ -252,7 +251,7 @@ def process_star(filename, output, periods={}, **ops):
     except TypeError:
         _period = periods.get(name) if periods is not None and \
                                        name in periods else None
-    
+
     result = get_lightcurve_from_file(filename, name=name, period=_period,
                                       **ops)
     if result is None:
@@ -264,7 +263,8 @@ def process_star(filename, output, periods={}, **ops):
 
 
 def _print_star(result, max_degree, fmt):
-    if result is None: return
+    if result is None:
+        return
 
     # function which formats every number in a sequence according to fmt
     format_all = partial(map, lambda x: fmt % x)
@@ -300,6 +300,7 @@ def _print_star(result, max_degree, fmt):
                    format_all(result['lightcurve'])]),
         sep='\t')
 
+
 def _get_files(input):
     if input is None:
         return stdin
@@ -312,6 +313,7 @@ def _get_files(input):
         return sorted(listdir(input))
     else:
         raise FileNotFoundError('file {} not found'.format(input))
+
 
 if __name__ == "__main__":
     exit(main())

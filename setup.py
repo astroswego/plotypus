@@ -27,6 +27,7 @@ ISRELEASED = False
 PRERELEASE = 1
 VERSION    = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
+
 def get_version_info():
     FULLVERSION = VERSION
 
@@ -35,29 +36,30 @@ def get_version_info():
 
     return FULLVERSION
 
+
 def setup_package():
     metadata = dict(
-        name = 'plotypus',
-        url = 'https://github.com/astroswego/plotypus',
-        description = DOCLINES[0],
-        long_description = "\n".join(DOCLINES[2:]),
-        version = get_version_info(),
-        package_dir = {'': 'src'},
-        packages = ['plotypus', 'plotypus.resources'],
-        package_data = {'plotypus': ['resources/matplotlibrc']},
-        entry_points = {
+        name='plotypus',
+        url='https://github.com/astroswego/plotypus',
+        description=DOCLINES[0],
+        long_description="\n".join(DOCLINES[2:]),
+        version=get_version_info(),
+        package_dir={'': 'src'},
+        packages=['plotypus', 'plotypus.resources'],
+        package_data={'plotypus': ['resources/matplotlibrc']},
+        entry_points={
             'console_scripts': [
                 'plotypus = plotypus.plotypus:main'
             ]
         },
-        keywords = [
+        keywords=[
             'astronomy',
             'light curve',
             'stellar pulsation',
             'variable star'
         ],
-        classifiers = [f for f in CLASSIFIERS.split('\n') if f],
-        requires = [
+        classifiers=[f for f in CLASSIFIERS.split('\n') if f],
+        requires=[
             'numpy (>= 1.8.0)',
             'matplotlib (>= 1.4.0)',
             'scikit (>= 0.14.0)'

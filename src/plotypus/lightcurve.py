@@ -6,7 +6,7 @@ from math import floor
 from os import path
 from .utils import (verbose_print, make_sure_path_exists,
                     get_signal, get_noise, colvec, mad)
-from .periodogram import find_period, rephase, get_phase
+from .periodogram import find_period, rephase
 from .preprocessing import Fourier
 from sklearn.cross_validation import cross_val_score
 from sklearn.linear_model import LassoLarsIC
@@ -15,7 +15,6 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.utils import ConvergenceWarning
 import warnings
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
-import matplotlib
 import matplotlib.pyplot as plt
 
 __all__ = [
@@ -25,6 +24,7 @@ __all__ = [
     'find_outliers',
     'plot_lightcurve'
 ]
+
 
 def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
                    Selector=GridSearchCV, fourier_degree=(2,25),
@@ -43,6 +43,7 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
                                                 fourier_degree[1]+1))}
         return Selector(pipeline, params, scoring=scoring, cv=scoring_cv,
                         n_jobs=selector_processes)
+
 
 def get_lightcurve(data, name=None, period=None,
                    predictor=make_predictor(),
@@ -72,7 +73,7 @@ def get_lightcurve(data, name=None, period=None,
             _period = find_period(signal, min_period, max_period,
                                   coarse_precision, fine_precision,
                                   periodogram, period_processes)
-            
+
         verbose_print("{}: using period {}".format(name, _period),
                       operation="period", verbosity=verbosity)
         phase, mag, *err = rephase(signal, _period).T
@@ -155,8 +156,10 @@ def get_lightcurve(data, name=None, period=None,
             'shift': shift,
             'coverage': coverage}
 
+
 def get_data_from_file(filename, use_cols=None, skiprows=0):
     return numpy.loadtxt(filename, usecols=use_cols, skiprows=skiprows)
+
 
 def get_lightcurve_from_file(filename, *args, use_cols=None, skiprows=0,
                              **kwargs):
@@ -167,9 +170,11 @@ def get_lightcurve_from_file(filename, *args, use_cols=None, skiprows=0,
     else:
         return
 
+
 def get_lightcurves_from_file(filename, directories, *args, **kwargs):
-    return [get_lightcurve_from_file(path.join(d, filename), *args **kwargs)
+    return [get_lightcurve_from_file(path.join(d, filename), *args, **kwargs)
             for d in directories]
+
 
 def single_periods(data, period, min_points=10, *args, **kwargs):
     time, mag, *err = data.T
@@ -187,11 +192,14 @@ def single_periods(data, period, min_points=10, *args, **kwargs):
         if d.shape[0] > min_points
     )
 
-def single_periods_from_file(filename, *args, use_cols=range(3), **kwargs):
-    data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_col,
+
+def single_periods_from_file(filename, *args, use_cols=(0, 1, 2), skiprows=0,
+                             **kwargs):
+    data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols,
                                              skiprows=skiprows),
                           mask=None, dtype=float)
     return single_periods(data, *args, **kwargs)
+
 
 def find_outliers(data, period, predictor, sigma,
                   sigma_clipping='robust'):
@@ -202,14 +210,15 @@ def find_outliers(data, period, predictor, sigma,
     residuals = numpy.absolute(predictor.predict(colvec(phase)) - mag)
     outliers = numpy.logical_and((residuals > err[0]) if err else True,
                                  residuals > sigma * sigma_clipper(residuals))
+
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
+
 
 def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
                     color=True, phases=numpy.arange(0, 1, 0.01),
                     err_const=0.0004,
                     **ops):
     ax = plt.gca()
-    #ax.grid(False
     ax.invert_yaxis()
     plt.xlim(0,2)
 

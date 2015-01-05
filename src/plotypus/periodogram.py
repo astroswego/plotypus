@@ -1,9 +1,8 @@
 import numpy as np
 from scipy.signal import lombscargle
-from math import modf
 from multiprocessing import Pool
 from functools import partial
-from plotypus import utils
+
 
 __all__ = [
     'find_period',
@@ -12,24 +11,28 @@ __all__ = [
     'get_phase'
 ]
 
+
 def find_period(data, min_period, max_period,
                 coarse_precision, fine_precision,
                 periodogram='Lomb_Scargle',
                 period_jobs=1):
-    if min_period >= max_period: return min_period
-    
+    if min_period >= max_period:
+        return min_period
+
     if periodogram == 'Lomb_Scargle':
-      method = Lomb_Scargle
+        method = Lomb_Scargle
     else:
-      method = conditional_entropy
-    
+        method = conditional_entropy
+
     coarse_period = method(data, coarse_precision, min_period, max_period,
                            period_jobs=period_jobs)
+
     return coarse_period if coarse_precision <= fine_precision else \
         method(data, fine_precision,
                coarse_period - coarse_precision,
                coarse_period + coarse_precision,
                period_jobs=period_jobs)
+
 
 def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
     time, mags, *e = data
@@ -37,7 +40,9 @@ def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
     minf, maxf = 2*np.pi/max_period, 2*np.pi/min_period
     freqs = np.arange(minf, maxf, precision)
     pgram = lombscargle(time, scaled_mags, freqs)
+
     return 2*np.pi/freqs[np.argmax(pgram)]
+
 
 def conditional_entropy(data, precision, min_period, max_period,
                         xbins=10, ybins=5, period_jobs=1):
@@ -48,23 +53,27 @@ def conditional_entropy(data, precision, min_period, max_period,
     partial_job = partial(CE, data=copy, xbins=xbins, ybins=ybins)
     m = map if period_jobs <= 1 else Pool(period_jobs).map
     entropies = list(m(partial_job, periods))
+
     return periods[np.argmin(entropies)]
 
+
 def CE(period, data, xbins=10, ybins=5):
-    if period <= 0: return np.PINF
+    if period <= 0:
+        return np.PINF
+
     r = rephase(data, period)
     bins, *_ = np.histogram2d(r[:,0], r[:,1], [xbins, ybins], [[0,1], [0,1]])
     size = r.shape[0]
 
-    ## The following code was once more readable, but much slower.
-    ## Here is what it used to be:
-    ## -----------------------------------------------------------------------
-    ##    return np.sum((lambda p: p * np.log(np.sum(bins[i,:]) / size / p) \
-    ##                             if p > 0 else 0)(bins[i][j] / size)
-    ##                  for i in np.arange(0, xbins)
-    ##                  for j in np.arange(0, ybins)) if size > 0 else np.PINF
-    ## -----------------------------------------------------------------------
-    ## TODO: replace this comment with something that's not old code
+# The following code was once more readable, but much slower.
+# Here is what it used to be:
+# -----------------------------------------------------------------------
+#    return np.sum((lambda p: p * np.log(np.sum(bins[i,:]) / size / p) \
+#                             if p > 0 else 0)(bins[i][j] / size)
+#                  for i in np.arange(0, xbins)
+#                  for j in np.arange(0, ybins)) if size > 0 else np.PINF
+# -----------------------------------------------------------------------
+# TODO: replace this comment with something that's not old code
     if size > 0:
         # bins[i,j] / size
         divided_bins = bins / size
@@ -86,20 +95,23 @@ def CE(period, data, xbins=10, ybins=5):
         A = np.empty((xbins, ybins), dtype=float)
         # store at every index [i,j] in A which corresponds to a positive bin:
         # bins[i,j]/size * log(bins[i,:] / size / (bins[i,j]/size))
-        A[ arg_positive] = \
-            select_divided_bins * np.log(select_column_sums
-                                       / select_divided_bins)
+        A[ arg_positive] =  select_divided_bins \
+                          * np.log(select_column_sums / select_divided_bins)
         # store 0 at every index in A which corresponds to a non-positive bin
         A[~arg_positive] = 0
+
         # return the summation
         return np.sum(A)
     else:
         return np.PINF
 
+
 def rephase(data, period=1, shift=0, col=0):
     rephased = np.ma.copy(data)
     rephased[:, col] = get_phase(rephased[:, col], period, shift)
+
     return rephased
 
+
 def get_phase(time, period=1, shift=0):
-    return (time / period - shift)%1
+    return (time / period - shift) % 1

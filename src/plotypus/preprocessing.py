@@ -1,4 +1,3 @@
-import collections
 import numpy
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
@@ -7,6 +6,7 @@ from .utils import autocorrelation, rowvec
 __all__ = [
     'Fourier'
 ]
+
 
 class Fourier():
     def __init__(self, degree=3, degree_range=None,
@@ -23,12 +23,13 @@ class Fourier():
     def transform(self, X, y=None, **params):
         data = numpy.dstack((numpy.array(X).T[0], range(len(X))))[0]
         phase, order = data[data[:,0].argsort()].T
-        coefficients = self.trigonometric_coefficient_matrix(phase, self.degree)
+        coefficients = self.trigonometric_coefficient_matrix(phase,
+                                                             self.degree)
         return coefficients[order.argsort()]
-    
+
     def get_params(self, deep):
         return {'degree': self.degree}
-    
+
     def set_params(self, **params):
         if 'degree' in params:
             self.degree = params['degree']
@@ -62,12 +63,12 @@ class Fourier():
     @staticmethod
     def trigonometric_coefficient_matrix(phases, degree):
         """Constructs an Nx2n+1 matrix of the form:
-        / 1 sin(1*2*pi*phase[0]) cos(1*2*pi*phase[0]) ... cos(n*2*pi*phase[0]) \
-        | 1 sin(1*2*pi*phase[1]) cos(1*2*pi*phase[1]) ... cos(n*2*pi*phase[1]) |
-        | .         .                    .            .             .          |
-        | .         .                    .             .            .          |
-        | .         .                    .              .           .          |
-        \ 1 sin(1*2*pi*phase[N]) cos(1*2*pi*phase[N]) ... cos(n*2*pi*phase[N]) /
+/ 1 sin(1*2*pi*phase[0]) cos(1*2*pi*phase[0]) ... cos(n*2*pi*phase[0]) \
+| 1 sin(1*2*pi*phase[1]) cos(1*2*pi*phase[1]) ... cos(n*2*pi*phase[1]) |
+| .         .                    .            .             .          |
+| .         .                    .             .            .          |
+| .         .                    .              .           .          |
+\ 1 sin(1*2*pi*phase[N]) cos(1*2*pi*phase[N]) ... cos(n*2*pi*phase[N]) /
         """
         # initialize coefficient matrix
         M = numpy.empty((phases.size, 2*degree+1))
@@ -88,7 +89,7 @@ class Fourier():
         # the even indices of the coefficient matrix have cosine terms
         M[:,2::2] = numpy.cos(x)
         return M
-    
+
     @staticmethod
     def phase_shifted_coefficients(amplitude_coefficients, form='cos'):
         """Converts Fourier coefficients from the form
@@ -98,12 +99,12 @@ class Fourier():
         m(t) = A_0 + \Sum_{k=1}^n A_k \sin(k \omega t + \Phi_k)
         """
         if 'cos' in form:
-            pass # this will do something once sine series are supported
+            pass  # this will do something once sine series are supported
         elif 'sin' in form:
             raise Exception('Fourier sine series not yet supported')
         else:
             raise Exception('Fourier series must have form sine or cosine')
-        
+
         # separate array of coefficients into respective parts
         A_0 = amplitude_coefficients[0]
         a_k = amplitude_coefficients[1::2]
@@ -147,11 +148,13 @@ class Fourier():
 
         # the number of ratios is 3 less than the number of coefficients
         # because the 0th coefficient is not used, and there are ratios of
-        # two 
+        # two
+        # TODO: finish writing this comment I apparently forgot about back when
+        #       I understood its purpose
         ratios = numpy.empty(phase_shifted_coeffs.size-3, dtype=float)
         amplitude_ratios = ratios[::2]
         phase_deltas = ratios[1::2]
-        
+
         amplitude_ratios[:] = amplitudes[1:]
         amplitude_ratios   /= amplitudes[0]
 
@@ -160,19 +163,19 @@ class Fourier():
         phase_deltas   -= phases[0]
 
         return ratios
-    
-    # @staticmethod
-    # def amplitude_ratios(amplitudes, N):
-    #     """Returns an array containing
-    #     [ R_{i N} for N < i < n ],
-    #     where n is the degree of the fit.
-    #     """
-    #     return amplitudes[N+1:] / amplitudes[N]
 
-    # @staticmethod
-    # def phase_deltas(phase_shifts, N):
-    #     """Returns an array containing
-    #     [ Phi_{i N} for N < i < n ],
-    #     where n is the degree of the fit.
-    #     """
-    #     return phase_shifts[N+1:] - phase_shifts[N]
+# @staticmethod
+# def amplitude_ratios(amplitudes, N):
+#     """Returns an array containing
+#     [ R_{i N} for N < i < n ],
+#     where n is the degree of the fit.
+#     """
+#     return amplitudes[N+1:] / amplitudes[N]
+
+# @staticmethod
+# def phase_deltas(phase_shifts, N):
+#     """Returns an array containing
+#     [ Phi_{i N} for N < i < n ],
+#     where n is the degree of the fit.
+#     """
+#     return phase_shifts[N+1:] - phase_shifts[N]
