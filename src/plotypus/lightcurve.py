@@ -6,7 +6,7 @@ from math import floor
 from os import path
 from .utils import (verbose_print, make_sure_path_exists,
                     get_signal, get_noise, colvec, mad)
-from .periodogram import find_period, rephase
+from .periodogram import find_period, Lomb_Scargle, rephase
 from .preprocessing import Fourier
 from sklearn.cross_validation import cross_val_score
 from sklearn.linear_model import LassoLarsIC
@@ -27,11 +27,48 @@ __all__ = [
 
 
 def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
-                   Selector=GridSearchCV, fourier_degree=(2,25),
+                   Selector=GridSearchCV, fourier_degree=(2, 25),
                    selector_processes=1,
                    use_baart=False, scoring='r2', scoring_cv=3,
                    **kwargs):
-    """Makes a predictor object for use in get_lightcurve.
+    """
+    Makes a predictor object for use in get_lightcurve.
+
+    Parameters
+    ----------
+    regressor : object with "fit" and "transform" methods, optional
+        Regression object used for solving Fourier matrix
+        (default LassoLarsIC(fit_intercept=False)).
+
+    Selector : class with "fit" and "predict" methods, optional
+        Model selection class used for finding the best fit
+        (default GridSearchCV).
+
+    selector_processes : positive integer, optional
+        Number of processes to use for ``Selector`` (default 1).
+
+    use_baart : boolean, optional
+        If True, ignores ``Selector`` and uses Baart's Criteria to find
+        the Fourier degree, within the boundaries (default False).
+
+    fourier_degree : 2-tuple, optional
+        Tuple containing lower and upper bounds on Fourier degree, in that
+        order (default (2, 25)).
+
+    scoring : str, optional
+        Scoring method to use for ``Selector``. This parameter can be:
+
+            - "r2", in which case use R^2 (the default)
+
+            - "mse", in which case use mean square error
+
+    scoring_cv : positive integer, optional
+        Number of cross validation folds used in scoring (default 3).
+
+    Returns
+    -------
+    out : object with "fit" and "predict" methods
+        The created predictor object.
     """
     fourier = Fourier(degree_range=fourier_degree, regressor=regressor) \
               if use_baart else Fourier()
@@ -45,17 +82,143 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
                         n_jobs=selector_processes)
 
 
-def get_lightcurve(data, name=None, period=None,
-                   predictor=make_predictor(),
-                   min_period=0.2, max_period=32,
-                   coarse_precision=0.00001, fine_precision=0.000000001,
-                   periodogram='Lomb_Scargle',
-                   period_processes=1,
-                   sigma=20, sigma_clipping='robust',
+def get_lightcurve(data, name=None,
+                   predictor=None, periodogram=Lomb_Scargle,
+                   sigma_clipping=mad,
                    scoring='r2', scoring_cv=3, scoring_processes=1,
-                   min_phase_cover=0.,
-                   phases=numpy.arange(0, 1, 0.01),
-                   verbosity=[], **ops):
+                   period=None, min_period=0.2, max_period=32,
+                   min_period_count=1, max_period_count=1,
+                   coarse_precision=1e-5, fine_precision=1e-9,
+                   period_processes=1,
+                   sigma=20,
+                   min_phase_cover=0.0, phases=numpy.arange(0, 1, 0.01),
+                   verbosity=[], **kwargs):
+    """
+    Fits a light curve to the given `data` using the specified methods,
+    with default behavior defined for all methods.
+
+    Parameters
+    ----------
+    data : array-like, shape = [n_samples, 2] or [n_samples, 3]
+        Input array of time, magnitude, and optional error, column-wise.
+        Time should be unphased.
+
+    name : string or None, optional
+        Name of star.
+
+    predictor : object that has "fit" and "predict" methods, optional
+        Object which fits the light curve obtained from ``data`` after rephasing
+        (default ``make_predictor(scoring=scoring, scoring_cv=scoring_cv)``).
+
+    periodogram : function, optional
+        Function which finds one or more `period`s. If ``period`` is already
+        provided, the function is not used. Defaults to
+        ``lightcurve.Lomb_Scargle``
+
+    sigma_clipping : function, optional
+        Function which takes an array and assigns sigma scores to each element.
+        Defaults to ``utils.mad``.
+
+    scoring : str, optional
+        Scoring method used by ``predictor``. This parameter can be
+
+            - "r2", in which case use R^2 (the default)
+
+            - "mse", in which case use mean square error
+
+    scoring_cv : positive integer, optional
+        Number of cross validation folds used in scoring (default 3).
+
+    scoring_processes : positive integer, optional
+        Number of processes to use for scoring cross validation (default 1).
+
+    period : array-like or None, shape = [] or [n_periods], optional
+        Period(s) of oscillation used in the fit. This parameter can be:
+
+            - None, in which case the period is obtained with the given
+              ``periodogram`` function (the default).
+
+            - Zero, in which case the data are unphased.
+
+            - A single positive number, giving the period to phase the data.
+
+            - An array of positive numbers, giving the periods to phase the
+              data.
+
+    min_period : non-negative number, optional
+        Lower bound on period(s) obtained by ``periodogram`` (default 0.2).
+
+    max_period : non-negative number, optional
+        Upper bound on period(s) obtained by ``periodogram`` (default 32.0).
+
+    min_period_count : non-negative number, optional
+        Lower bound on number of periods obtained by ``periodogram``
+        (default 1).
+
+    max_period_count : non-negative number, optional
+        Upper bound on number of periods obtained by ``periodogram``
+        (default 1).
+
+    course_precision : positive number, optional
+        Precision used in first period search sweep (default 1e-5).
+
+    fine_precision : positive number, optional
+        Precision used in second period search sweep (default 1e-9).
+
+    period_processes : positive integer, optional
+        Number of processes to use for period finding (default 1).
+
+    sigma : number, optional
+        Upper bound on score obtained by ``sigma_clipping`` to be considered
+        an inlier.
+
+    min_phase_cover : number between 0 and 1, optional
+        Fraction of binned light curve that must contain points in order to
+        proceed. If light curve has insufficient coverage, a warning is
+        printed if "outlier" verbosity is on, and None is returned
+
+    phases : array-like, shape = [n_phases]
+        Array of phases to predict magnitudes at (default [0, 0.01, ..., 1.0]).
+
+    verbosity : list, optional
+        See ``utils.verbose_print``.
+
+    Returns
+    -------
+    out - dict
+        Results of the fit in a dictionary. The keys are:
+
+            - name : str or None
+                The name of the star.
+            - period : array-like, shape = [] or [n_periods]
+                The star's period(s).
+            - lightcurve : array-like, shape = [n_phases]
+                Magnitudes of fitted light curve sampled at ``phases``.
+            - coefficients : array-like, shape = [n_coeffs, n_phases]
+                Fitted light curve coefficients.
+            - dA_0 : non-negative number
+                Error on mean magnitude.
+            - phased_data : array-like, shape = [n_samples]
+                ``data`` transformed from temporal to phase space.
+            - model : predictor object
+                The predictor used to fit the light curve.
+            - R2 : number
+                The R^2 score of the fit.
+            - MSE : number
+                The mean square error of the fit.
+            - degree : positive integer
+                The degree of the Fourier fit.
+            - shift : number
+                The phase shift used to move phase zero to maximum brightness.
+            - coverage : number between 0 and 1
+                The light curve coverage.
+
+    See also
+    --------
+    get_lightcurve_from_file, get_lightcurves_from_file
+    """
+# TODO ###
+# Replace dA_0 with error matrix dA
     if predictor is None:
         predictor = make_predictor(scoring=scoring, scoring_cv=scoring_cv)
 
@@ -70,7 +233,9 @@ def get_lightcurve(data, name=None, period=None,
         else:
             verbose_print("{}: finding period".format(name),
                           operation="period", verbosity=verbosity)
-            _period = find_period(signal, min_period, max_period,
+            _period = find_period(signal,
+                                  min_period, max_period,
+                                  min_period_count, max_period_count,
                                   coarse_precision, fine_precision,
                                   periodogram, period_processes)
 
@@ -78,6 +243,9 @@ def get_lightcurve(data, name=None, period=None,
                       operation="period", verbosity=verbosity)
         phase, mag, *err = rephase(signal, _period).T
 
+# TODO ###
+# Generalize number of bins to function parameter ``coverage_bins``, which
+# defaults to 100, the current hard-coded behavior
         # Determine whether there is sufficient phase coverage
         coverage = numpy.zeros((100))
         for p in phase:
@@ -143,18 +311,18 @@ def get_lightcurve(data, name=None, period=None,
                              cv=scoring_cv, scoring=scoring,
                              n_jobs=scoring_processes).mean()
 
-    return {'name': name,
-            'period': _period,
-            'lightcurve': lightcurve,
+    return {'name':         name,
+            'period':       _period,
+            'lightcurve':   lightcurve,
             'coefficients': coefficients[0],
-            'dA_0': sem(lightcurve),
-            'phased_data': data,
-            'model': predictor,
-            'R2': get_score('r2'),
-            'MSE': abs(get_score('mean_squared_error')),
-            'degree': estimator.get_params()['Fourier__degree'],
-            'shift': shift,
-            'coverage': coverage}
+            'dA_0':         sem(lightcurve),
+            'phased_data':  data,
+            'model':        predictor,
+            'R2':           get_score('r2'),
+            'MSE':          abs(get_score('mean_squared_error')),
+            'degree':       estimator.get_params()['Fourier__degree'],
+            'shift':        shift,
+            'coverage':     coverage}
 
 
 def get_data_from_file(filename, use_cols=None, skiprows=0):
@@ -202,14 +370,11 @@ def single_periods_from_file(filename, *args, use_cols=(0, 1, 2), skiprows=0,
 
 
 def find_outliers(data, period, predictor, sigma,
-                  sigma_clipping='robust'):
-    # determine sigma clipping function
-    sigma_clipper = mad if sigma_clipping == 'robust' else numpy.std
-
+                  method=mad):
     phase, mag, *err = rephase(data, period).T
     residuals = numpy.absolute(predictor.predict(colvec(phase)) - mag)
     outliers = numpy.logical_and((residuals > err[0]) if err else True,
-                                 residuals > sigma * sigma_clipper(residuals))
+                                 residuals > sigma * method(residuals))
 
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
@@ -217,7 +382,7 @@ def find_outliers(data, period, predictor, sigma,
 def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
                     color=True, phases=numpy.arange(0, 1, 0.01),
                     err_const=0.0004,
-                    **ops):
+                    **kwargs):
     ax = plt.gca()
     ax.invert_yaxis()
     plt.xlim(0,2)

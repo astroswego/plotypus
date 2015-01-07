@@ -1,4 +1,5 @@
 import numpy
+from numpy import std
 from sys import exit, stdin
 from os import path, listdir
 from argparse import ArgumentParser, SUPPRESS
@@ -10,9 +11,10 @@ from itertools import chain, repeat
 import plotypus.lightcurve
 from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
                                  plot_lightcurve)
+from plotypus.periodogram import Lomb_Scargle, conditional_entropy
 import plotypus
 from plotypus.preprocessing import Fourier
-from plotypus.utils import pmap, verbose_print
+from plotypus.utils import mad, pmap, verbose_print
 from plotypus.resources import matplotlibrc
 
 
@@ -119,10 +121,10 @@ def get_args():
         help='level of granularity on second pass '
              '(default = 0.000000001)')
     period_group.add_argument('--periodogram', type=str,
-        choices=['Lomb_Scargle', 'conditional_entropy'],
-        default=SUPPRESS,
+        choices=["Lomb_Scargle", "conditional_entropy"],
+        default="Lomb_Scargle",
         help='method for determining period '
-             '(default = Lomb-Scargle)')
+             '(default = Lomb_Scargle)')
     fourier_group.add_argument('-d', '--fourier-degree', type=int, nargs=2,
         default=(2, 20), metavar=('MIN', 'MAX'),
         help='range of degrees of fourier fits to use '
@@ -137,14 +139,14 @@ def get_args():
         default='GridSearch',
         help='type of model selector to use '
              '(default = "GridSearch")')
-    outlier_group.add_argument('--sigma', dest='sigma', type=float,
+    outlier_group.add_argument('--sigma', type=float,
         default=SUPPRESS,
         help='rejection criterion for outliers '
              '(default = 20)')
     outlier_group.add_argument('--sigma-clipping', type=str,
-        choices=['standard', 'robust'], default=SUPPRESS,
+        choices=["std", "mad"], default=SUPPRESS,
         help='sigma clipping metric to use '
-             '(default = "robust")')
+             '(default = "mad")')
     lasso_group.add_argument('--max-iter', type=int,
         default=1000, metavar='N',
         help='maximum number of iterations in the Lasso '
@@ -157,21 +159,36 @@ def get_args():
                                        fail_on_error=args.output)
         plotypus.lightcurve.matplotlib.rcParams = rcParams
 
-    regressor_choices = {'Lasso': LassoLarsIC(max_iter=args.max_iter,
-                                              fit_intercept=False),
-                         'OLS': LinearRegression(fit_intercept=False)}
-
-    selector_choices = {'Baart': None,
-                        'GridSearch': GridSearchCV}
+    regressor_choices = {
+        "Lasso"               : LassoLarsIC(max_iter=args.max_iter,
+                                            fit_intercept=False),
+        "OLS"                 : LinearRegression(fit_intercept=False)
+    }
+    selector_choices = {
+        "Baart"               : None,
+        "GridSearch"          : GridSearchCV
+    }
+    periodogram_choices = {
+        "Lomb_Scargle"        : Lomb_Scargle,
+        "conditional_entropy" : conditional_entropy
+    }
+    sigma_clipping_choices = {
+        "std"                 : std,
+        "mad"                 : mad
+    }
 
     if hasattr(args, 'scoring'):
-        scoring_choices = {'R2': 'r2',
-                           'MSE': 'mean_squared_error'}
-
+        scoring_choices = {
+            'R2'              : 'r2',
+            'MSE'             : 'mean_squared_error'
+        }
         args.scoring = scoring_choices[args.scoring]
 
     args.regressor = regressor_choices[args.regressor]
     Selector = selector_choices[args.selector] or GridSearchCV
+    args.periodogram = periodogram_choices[args.periodogram]
+    args.sigma_clipping = sigma_clipping_choices[args.sigma_clipping]
+
     args.predictor = make_predictor(Selector=Selector,
                                     use_baart=(args.selector == 'Baart'),
                                     **vars(args))

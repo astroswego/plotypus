@@ -12,28 +12,6 @@ __all__ = [
 ]
 
 
-def find_period(data, min_period, max_period,
-                coarse_precision, fine_precision,
-                periodogram='Lomb_Scargle',
-                period_jobs=1):
-    if min_period >= max_period:
-        return min_period
-
-    if periodogram == 'Lomb_Scargle':
-        method = Lomb_Scargle
-    else:
-        method = conditional_entropy
-
-    coarse_period = method(data, coarse_precision, min_period, max_period,
-                           period_jobs=period_jobs)
-
-    return coarse_period if coarse_precision <= fine_precision else \
-        method(data, fine_precision,
-               coarse_period - coarse_precision,
-               coarse_period + coarse_precision,
-               period_jobs=period_jobs)
-
-
 def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
     time, mags, *e = data
     scaled_mags = (mags-mags.mean())/mags.std()
@@ -104,6 +82,25 @@ def CE(period, data, xbins=10, ybins=5):
         return np.sum(A)
     else:
         return np.PINF
+
+
+def find_period(data,
+                min_period=0.2, max_period=32.0,
+                min_period_count=1, max_period_count=1,
+                coarse_precision=1e-5, fine_precision=1e-9,
+                periodogram=Lomb_Scargle,
+                period_jobs=1):
+    if min_period >= max_period:
+        return min_period
+
+    coarse_period = periodogram(data, coarse_precision, min_period, max_period,
+                                period_jobs=period_jobs)
+
+    return coarse_period if coarse_precision <= fine_precision else \
+        periodogram(data, fine_precision,
+                    coarse_period - coarse_precision,
+                    coarse_period + coarse_precision,
+                    period_jobs=period_jobs)
 
 
 def rephase(data, period=1, shift=0, col=0):
