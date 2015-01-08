@@ -1,4 +1,5 @@
 import numpy
+from numpy import pi
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from .utils import autocorrelation, rowvec
@@ -21,11 +22,10 @@ class Fourier():
         return self
 
     def transform(self, X, y=None, **params):
-        data = numpy.dstack((numpy.array(X).T[0], range(len(X))))[0]
-        phase, order = data[data[:,0].argsort()].T
-        coefficients = self.trigonometric_coefficient_matrix(phase,
-                                                             self.degree)
-        return coefficients[order.argsort()]
+#        data = numpy.dstack((numpy.array(X).T[0], range(len(X))))[0]
+#        phase, order = data[data[:,0].argsort()].T
+        coefficients = self.design_matrix(X, self.degree)
+        return coefficients#[order.argsort()]
 
     def get_params(self, deep):
         return {'degree': self.degree}
@@ -61,7 +61,7 @@ class Fourier():
         return (2 * (len(X) - 1))**(-1/2)
 
     @staticmethod
-    def trigonometric_coefficient_matrix(phases, degree):
+    def design_matrix(phases, degree):
         """Constructs an Nx2n+1 matrix of the form:
 / 1 sin(1*2*pi*phase[0]) cos(1*2*pi*phase[0]) ... cos(n*2*pi*phase[0]) \
 | 1 sin(1*2*pi*phase[1]) cos(1*2*pi*phase[1]) ... cos(n*2*pi*phase[1]) |
@@ -70,18 +70,21 @@ class Fourier():
 | .         .                    .              .           .          |
 \ 1 sin(1*2*pi*phase[N]) cos(1*2*pi*phase[N]) ... cos(n*2*pi*phase[N]) /
         """
+        n_periods, n_samples = phases.shape
         # initialize coefficient matrix
-        M = numpy.empty((phases.size, 2*degree+1))
+        M = numpy.empty((n_samples, 2*degree*n_periods+1))
         # indices
-        i = numpy.arange(1, degree+1)
+        i = numpy.tile(numpy.arange(1, degree+1), (n_samples, n_periods))
         # initialize the Nxn matrix that is repeated within the
         # sine and cosine terms
-        x = numpy.empty((phases.size, degree))
+##        x = numpy.empty((phases.size, degree))
         # the Nxn matrix now has N copies of the same row, and each row is
         # integer multiples of pi counting from 1 to the degree
-        x[:,:] = i*2*numpy.pi
+##        x[:,:] = i*2*pi
+        x = i
+
         # multiply each row of x by the phases
-        x.T[:,:] *= phases
+        x *= numpy.repeat(phases.flat, 2)
         # place 1's in the first column of the coefficient matrix
         M[:,0]    = 1
         # the odd indices of the coefficient matrix have sine terms
@@ -126,8 +129,8 @@ class Fourier():
         # Phi_k needs to be shifted by pi in quadrants II and III,
         # and 2 pi in quadtrant IV
         Phi_k       = numpy.arctan(a_k/b_k)
-        Phi_k[Q23] += numpy.pi
-        Phi_k[Q4]  += 2.0*numpy.pi
+        Phi_k[Q23] += pi
+        Phi_k[Q4]  += 2.0*pi
 
         phase_shifted_coefficients_ = numpy.empty(amplitude_coefficients.shape)
         phase_shifted_coefficients_[0]    = A_0

@@ -271,6 +271,10 @@ def get_lightcurve(data, name=None,
         # Predict light curve
         with warnings.catch_warnings(record=True) as w:
             try:
+                # BUG ###
+                # Crashes here because of the dimensions of phases.T
+                # Might seriously have to reconsider the multiple period
+                # approach.
                 predictor = predictor.fit(phases.T, mag)
             except Warning:
                 # not sure if this should be only in verbose mode
@@ -379,7 +383,7 @@ def single_periods_from_file(filename, *args, use_cols=(0, 1, 2), skiprows=0,
 
 def find_outliers(data, period, predictor, sigma, method=mad):
     phase, mag, err = rephase(data, period)
-    residuals = numpy.absolute(predictor.predict(colvec(phase)) - mag)
+    residuals = numpy.absolute(predictor.predict(phase.T) - mag)
     outliers = numpy.logical_and((residuals > err[0]) if err else True,
                                  residuals > sigma * method(residuals))
 
