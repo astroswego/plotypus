@@ -3,6 +3,8 @@ from scipy.signal import lombscargle
 from multiprocessing import Pool
 from functools import partial
 
+from .utils import colvec
+
 
 __all__ = [
     'find_period',
@@ -39,9 +41,13 @@ def CE(period, data, xbins=10, ybins=5):
     if period <= 0:
         return np.PINF
 
-    r = rephase(data, period)
-    bins, *_ = np.histogram2d(r[:,0], r[:,1], [xbins, ybins], [[0,1], [0,1]])
-    size = r.shape[0]
+    phase, mag, err = rephase(data, period)
+    bins, *_ = np.histogram2d(phase, mag, [xbins, ybinx], [[0, 1], [0, 1]])
+    size = phase.size
+
+#    r = rephase(data, period)
+#    bins, *_ = np.histogram2d(r[:,0], r[:,1], [xbins, ybins], [[0,1], [0,1]])
+#    size = r.shape[0]
 
 # The following code was once more readable, but much slower.
 # Here is what it used to be:
@@ -103,12 +109,47 @@ def find_period(data,
                     period_jobs=period_jobs)
 
 
-def rephase(data, period=1, shift=0, col=0):
-    rephased = np.ma.copy(data)
-    rephased[:, col] = get_phase(rephased[:, col], period, shift)
+def rephase(data, periods=1.0, shifts=0.0, copy=True):
+    time, mag, *err = np.ma.array(data.T, copy=copy)
+    phases = get_phase(time, periods, shifts)
 
-    return rephased
+    return phases, mag, err
 
 
-def get_phase(time, period=1, shift=0):
-    return (time / period - shift) % 1
+#    rephased = np.ma.copy(data)
+#    rephased[:, col] = get_phase(rephased[:, col], period, shift)
+#
+#    return rephased
+
+
+def get_phase(time, periods=1.0, shifts=0.0):
+    """
+    Returns ``time`` after phasing with the given ``periods``, and subtracting
+    constant ``shifts`` for each period.
+
+    Parameters
+    ----------
+    time : array-like, shape = [n_samples]
+        Array of time values to be phased.
+
+    periods : scalar or array-like, shape = [n_periods], optional
+        Period(s) to phase ``time`` (default 1.0). This parameter can be:
+
+            - A scalar, in which case return ``time`` phased by that
+              single period.
+
+            - A 1D array-like, in which case return an array whose rows
+              consist of ``time`` phased by the corresponding period.
+
+    shifts : scalar or array-like, shape = [n_periods], optional
+        Constant shift(s) to subtract from the phases. This parameter should
+        have the same dimensions as ``periods`` (default 0.0).
+
+    Returns
+    -------
+    phases : array-like, shape = [n_periods, n_samples]
+        Phased ``time`` values.
+    """
+    n_periods = np.size(periods)
+    times = np.tile(time, (n_periods, 1))
+    return (times / colvec(periods) - colvec(shifts)) % 1.0

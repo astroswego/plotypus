@@ -91,7 +91,7 @@ def get_lightcurve(data, name=None,
                    coarse_precision=1e-5, fine_precision=1e-9,
                    period_processes=1,
                    sigma=20,
-                   min_phase_cover=0.0, phases=numpy.arange(0, 1, 0.01),
+                   min_phase_cover=0.0, sample_phase=numpy.arange(0, 1, 0.01),
                    verbosity=[], **kwargs):
     """
     Fits a light curve to the given `data` using the specified methods,
@@ -241,29 +241,37 @@ def get_lightcurve(data, name=None,
 
         verbose_print("{}: using period {}".format(name, _period),
                       operation="period", verbosity=verbosity)
-        phase, mag, *err = rephase(signal, _period).T
+        phases, mag, err = rephase(signal, _period)
 
 # TODO ###
 # Generalize number of bins to function parameter ``coverage_bins``, which
 # defaults to 100, the current hard-coded behavior
-        # Determine whether there is sufficient phase coverage
-        coverage = numpy.zeros((100))
-        for p in phase:
-            coverage[int(floor(p*100))] = 1
-        coverage = sum(coverage)/100
-        if coverage < min_phase_cover:
-            verbose_print("{}: {} {}".format(name, coverage, min_phase_cover),
-                          operation="coverage",
-                          verbosity=verbosity)
-            verbose_print("Insufficient phase coverage",
-                          operation="outlier",
-                          verbosity=verbosity)
-            return
+#
+        # TEMP FIX ###
+        # Coverage determination not yet implemented for multiple periods
+        # Unless phases is 1D, skip coverage detection
+        if numpy.ndim(phases) == 1:
+            # Determine whether there is sufficient phase coverage
+            coverage = numpy.zeros((100))
+            for p in phase:
+                coverage[int(floor(p*100))] = 1
+            coverage = sum(coverage)/100
+            if coverage < min_phase_cover:
+                verbose_print("{}: {} {}".format(name, coverage,
+                                                 min_phase_cover),
+                              operation="coverage",
+                              verbosity=verbosity)
+                verbose_print("Insufficient phase coverage",
+                              operation="outlier",
+                              verbosity=verbosity)
+                return
+        else:
+            coverage = numpy.nan
 
         # Predict light curve
         with warnings.catch_warnings(record=True) as w:
             try:
-                predictor = predictor.fit(colvec(phase), mag)
+                predictor = predictor.fit(phases.T, mag)
             except Warning:
                 # not sure if this should be only in verbose mode
                 print(name, w, file=stderr)
@@ -286,12 +294,12 @@ def get_lightcurve(data, name=None,
             data.mask = numpy.ma.mask_or(data.mask, outliers)
 
     # Build light curve and shift to max light
-    lightcurve = predictor.predict([[i] for i in phases])
+    lightcurve = predictor.predict(colvec(sample_phase))
     arg_max_light = lightcurve.argmin()
     lightcurve = numpy.concatenate((lightcurve[arg_max_light:],
                                     lightcurve[:arg_max_light]))
-    shift = arg_max_light/len(phases)
-    data.T[0] = rephase(data.data, _period, shift).T[0]
+    shift = arg_max_light / phases.shape[1]
+#    data.T[0] = rephase(data.data, _period, shift).T[0]
 
     # Grab the coefficients from the model
     coefficients = predictor.named_steps['Regressor'].coef_ \
@@ -307,7 +315,7 @@ def get_lightcurve(data, name=None,
     get_score = lambda scoring: predictor.best_score_ \
         if hasattr(predictor, 'best_score_') \
         and predictor.scoring == scoring \
-        else cross_val_score(estimator, colvec(phase), mag,
+        else cross_val_score(estimator, colvec(phases), mag,
                              cv=scoring_cv, scoring=scoring,
                              n_jobs=scoring_processes).mean()
 
@@ -369,9 +377,8 @@ def single_periods_from_file(filename, *args, use_cols=(0, 1, 2), skiprows=0,
     return single_periods(data, *args, **kwargs)
 
 
-def find_outliers(data, period, predictor, sigma,
-                  method=mad):
-    phase, mag, *err = rephase(data, period).T
+def find_outliers(data, period, predictor, sigma, method=mad):
+    phase, mag, err = rephase(data, period)
     residuals = numpy.absolute(predictor.predict(colvec(phase)) - mag)
     outliers = numpy.logical_and((residuals > err[0]) if err else True,
                                  residuals > sigma * method(residuals))

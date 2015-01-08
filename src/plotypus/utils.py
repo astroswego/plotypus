@@ -2,7 +2,7 @@ from os import makedirs
 from os.path import join, isdir
 from sys import stderr
 from multiprocessing import Pool
-from numpy import absolute, concatenate, median, resize
+from numpy import absolute, concatenate, median, reshape
 
 __all__ = [
     'verbose_print',
@@ -80,13 +80,13 @@ def get_noise(data):
 def colvec(X):
     """Converts a row-vector into a column-vector.
     """
-    return resize(X, (X.shape[0], 1))
+    return reshape(X, (-1, 1))
 
 
 def rowvec(X):
     """Converts a column-vector into a row-vector.
     """
-    return resize(X, (1, X.shape[0]))[0]
+    return reshape(X, (1, -1))[0]
 
 
 def mad(data, axis=None):
