@@ -2,7 +2,9 @@ import numpy
 from numpy import pi
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
-from .utils import autocorrelation, rowvec
+
+from .periodogram import get_phase
+from .utils import autocorrelation, colvec, rowvec
 
 __all__ = [
     'Fourier'
@@ -10,29 +12,45 @@ __all__ = [
 
 
 class Fourier():
-    def __init__(self, degree=3, degree_range=None,
+    def __init__(self, degree=3, degree_range=None, periods=None,
                  regressor=LinearRegression()):
         self.degree = degree
         self.degree_range = degree_range
+        self.periods = periods
         self.regressor = regressor
+
 
     def fit(self, X, y=None):
         if self.degree_range is not None:
             self.degree = self.baart_criteria(X, y)
         return self
 
+
     def transform(self, X, y=None, **params):
 #        data = numpy.dstack((numpy.array(X).T[0], range(len(X))))[0]
-#        phase, order = data[data[:,0].argsort()].T
-        coefficients = self.design_matrix(X, self.degree)
-        return coefficients#[order.argsort()]
+#        time, order = data[data[:,0].argsort()].T
+#        design_matrix = self.design_matrix(time, self.degree, self.periods)
+#        return design_matrix[order.argsort()]
+        return self.design_matrix(X, self.degree, self.periods)
+
 
     def get_params(self, deep):
-        return {'degree': self.degree}
+        return {
+            'degree'  : self.degree,
+            'periods' : self.periods
+        }
+
 
     def set_params(self, **params):
         if 'degree' in params:
             self.degree = params['degree']
+        if 'periods' in params:
+            periods = params['periods']
+            # if periods is a scalar, place it in a 1-element array
+            self.periods = numpy.array([periods]) \
+                if numpy.isscalar(periods)        \
+                else periods
+
 
     def baart_criteria(self, X, y):
         try:
@@ -41,7 +59,7 @@ class Fourier():
             raise Exception("Degree range must be a length two sequence")
 
         cutoff = self.baart_tolerance(X)
-        pipeline = Pipeline([('Fourier', Fourier()),
+        pipeline = Pipeline([('Fourier', Fourier(periods=self.periods)),
                              ('Regressor', self.regressor)])
         sorted_X = numpy.sort(X, axis=0)
         X_sorting = numpy.argsort(rowvec(X))
@@ -56,12 +74,14 @@ class Fourier():
         # reached max_degree without reaching cutoff
         return max_degree
 
+
     @staticmethod
     def baart_tolerance(X):
         return (2 * (len(X) - 1))**(-1/2)
 
+
     @staticmethod
-    def design_matrix(phases, degree):
+    def design_matrix(time, degree, periods):
         """Constructs an Nx2n+1 matrix of the form:
 / 1 sin(1*2*pi*phase[0]) cos(1*2*pi*phase[0]) ... cos(n*2*pi*phase[0]) \
 | 1 sin(1*2*pi*phase[1]) cos(1*2*pi*phase[1]) ... cos(n*2*pi*phase[1]) |
@@ -70,28 +90,29 @@ class Fourier():
 | .         .                    .              .           .          |
 \ 1 sin(1*2*pi*phase[N]) cos(1*2*pi*phase[N]) ... cos(n*2*pi*phase[N]) /
         """
-        n_periods, n_samples = phases.shape
-        # initialize coefficient matrix
-        M = numpy.empty((n_samples, 2*degree*n_periods+1))
-        # indices
-        i = numpy.tile(numpy.arange(1, degree+1), (n_samples, n_periods))
-        # initialize the Nxn matrix that is repeated within the
-        # sine and cosine terms
-##        x = numpy.empty((phases.size, degree))
-        # the Nxn matrix now has N copies of the same row, and each row is
-        # integer multiples of pi counting from 1 to the degree
-##        x[:,:] = i*2*pi
-        x = i
-
-        # multiply each row of x by the phases
-        x *= numpy.repeat(phases.flat, 2)
-        # place 1's in the first column of the coefficient matrix
+        # compute necessary constants
+        n_samples = numpy.size(time)
+        n_periods = numpy.size(periods)
+        n_amplitudes = 2*degree
+        # create indices for the increasing order sines and cosines
+        k = numpy.arange(1, degree+1)
+        # phase the times by each period
+        phases = numpy.array([get_phase(time, p) for p in periods])
+        # x is a matrix containing the elements whose sine and cosine are
+        # taken in the design matrix. Each element has value k*2*pi*phase.
+        x = numpy.tile(k, (n_samples, n_periods)) * 2*pi \
+          * numpy.repeat(phases, degree, axis=0).T
+        # initialize design matrix
+        M = numpy.empty((n_samples, n_amplitudes*n_periods+1))
+        # place 1's in the first column of the design matrix
         M[:,0]    = 1
-        # the odd indices of the coefficient matrix have sine terms
+        # the odd indices of the design matrix have sine terms
         M[:,1::2] = numpy.sin(x)
-        # the even indices of the coefficient matrix have cosine terms
+        # the even indices of the design matrix have cosine terms
         M[:,2::2] = numpy.cos(x)
+
         return M
+
 
     @staticmethod
     def phase_shifted_coefficients(amplitude_coefficients, form='cos'):
@@ -139,6 +160,7 @@ class Fourier():
 
         return phase_shifted_coefficients_
 
+
     @staticmethod
     def fourier_ratios(phase_shifted_coeffs, N):
         """Returns an array containing
@@ -166,6 +188,7 @@ class Fourier():
         phase_deltas   -= phases[0]
 
         return ratios
+
 
 # @staticmethod
 # def amplitude_ratios(amplitudes, N):

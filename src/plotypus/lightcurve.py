@@ -239,9 +239,10 @@ def get_lightcurve(data, name=None,
                                   coarse_precision, fine_precision,
                                   periodogram, period_processes)
 
+        predictor.estimator.set_params(Fourier__periods=_period)
         verbose_print("{}: using period {}".format(name, _period),
                       operation="period", verbosity=verbosity)
-        phases, mag, err = rephase(signal, _period)
+        time, mag, *err = signal
 
 # TODO ###
 # Generalize number of bins to function parameter ``coverage_bins``, which
@@ -250,7 +251,7 @@ def get_lightcurve(data, name=None,
         # TEMP FIX ###
         # Coverage determination not yet implemented for multiple periods
         # Unless phases is 1D, skip coverage detection
-        if numpy.ndim(phases) == 1:
+        if False:#numpy.ndim(phases) == 1:
             # Determine whether there is sufficient phase coverage
             coverage = numpy.zeros((100))
             for p in phase:
@@ -271,18 +272,14 @@ def get_lightcurve(data, name=None,
         # Predict light curve
         with warnings.catch_warnings(record=True) as w:
             try:
-                # BUG ###
-                # Crashes here because of the dimensions of phases.T
-                # Might seriously have to reconsider the multiple period
-                # approach.
-                predictor = predictor.fit(phases.T, mag)
+                predictor = predictor.fit(colvec(time), mag)
             except Warning:
                 # not sure if this should be only in verbose mode
                 print(name, w, file=stderr)
                 return
 
         # Reject outliers and repeat the process if there are any
-        if sigma:
+        if sigma > 0:
             outliers = find_outliers(data.data, _period, predictor, sigma,
                                      sigma_clipping)
             num_outliers = sum(outliers)[0]
@@ -296,13 +293,18 @@ def get_lightcurve(data, name=None,
                               operation="outlier",
                               verbosity=verbosity)
             data.mask = numpy.ma.mask_or(data.mask, outliers)
+            continue
+        else:
+            break
 
     # Build light curve and shift to max light
-    lightcurve = predictor.predict(colvec(sample_phase))
+    all_times = numpy.linspace(min(time), max(time), 100)
+    lightcurve = predictor.predict(colvec(all_times))
+#    print(lightcurve); exit()
     arg_max_light = lightcurve.argmin()
     lightcurve = numpy.concatenate((lightcurve[arg_max_light:],
                                     lightcurve[:arg_max_light]))
-    shift = arg_max_light / phases.shape[1]
+    shift = arg_max_light / time.size
 #    data.T[0] = rephase(data.data, _period, shift).T[0]
 
     # Grab the coefficients from the model
@@ -319,7 +321,7 @@ def get_lightcurve(data, name=None,
     get_score = lambda scoring: predictor.best_score_ \
         if hasattr(predictor, 'best_score_') \
         and predictor.scoring == scoring \
-        else cross_val_score(estimator, colvec(phases), mag,
+        else cross_val_score(estimator, colvec(time), mag,
                              cv=scoring_cv, scoring=scoring,
                              n_jobs=scoring_processes).mean()
 
@@ -382,8 +384,8 @@ def single_periods_from_file(filename, *args, use_cols=(0, 1, 2), skiprows=0,
 
 
 def find_outliers(data, period, predictor, sigma, method=mad):
-    phase, mag, err = rephase(data, period)
-    residuals = numpy.absolute(predictor.predict(phase.T) - mag)
+    time, mag, *err = data
+    residuals = numpy.absolute(predictor.predict(colvec(time)) - mag)
     outliers = numpy.logical_and((residuals > err[0]) if err else True,
                                  residuals > sigma * method(residuals))
 

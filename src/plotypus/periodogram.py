@@ -109,47 +109,32 @@ def find_period(data,
                     period_jobs=period_jobs)
 
 
-def rephase(data, periods=1.0, shifts=0.0, copy=True):
-    time, mag, *err = np.ma.array(data.T, copy=copy)
-    phases = get_phase(time, periods, shifts)
+def rephase(data, period=1.0, shift=0.0, copy=True, col=0):
+    rephased = np.ma.array(data, copy=copy)
+    rephased[:, col] = get_phase(rephased[:, col], period, shift)
 
-    return phases, mag, err
-
-
-#    rephased = np.ma.copy(data)
-#    rephased[:, col] = get_phase(rephased[:, col], period, shift)
-#
-#    return rephased
+    return rephased
 
 
-def get_phase(time, periods=1.0, shifts=0.0):
+def get_phase(time, period=1.0, shifts=0.0):
     """
-    Returns ``time`` after phasing with the given ``periods``, and subtracting
-    constant ``shifts`` for each period.
+    Returns ``time`` after phasing with the given ``period``, and subtracting
+    a constant ``shift``.
 
     Parameters
     ----------
     time : array-like, shape = [n_samples]
         Array of time values to be phased.
 
-    periods : scalar or array-like, shape = [n_periods], optional
-        Period(s) to phase ``time`` (default 1.0). This parameter can be:
+    periods : scalar, optional
+        Period to phase ``time`` (default 1.0).
 
-            - A scalar, in which case return ``time`` phased by that
-              single period.
-
-            - A 1D array-like, in which case return an array whose rows
-              consist of ``time`` phased by the corresponding period.
-
-    shifts : scalar or array-like, shape = [n_periods], optional
-        Constant shift(s) to subtract from the phases. This parameter should
-        have the same dimensions as ``periods`` (default 0.0).
+    shift : scalar, optional
+        Constant shift to subtract from the phases (default 0.0).
 
     Returns
     -------
     phases : array-like, shape = [n_periods, n_samples]
         Phased ``time`` values.
     """
-    n_periods = np.size(periods)
-    times = np.tile(time, (n_periods, 1))
-    return (times / colvec(periods) - colvec(shifts)) % 1.0
+    return (time / period - shifts) % 1.0
