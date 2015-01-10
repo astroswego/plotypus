@@ -6,7 +6,7 @@ from math import floor
 from os import path
 from .utils import (verbose_print, make_sure_path_exists,
                     get_signal, get_noise, colvec, mad)
-from .periodogram import find_period, Lomb_Scargle, rephase
+from .periodogram import find_periods, Lomb_Scargle, rephase
 from .preprocessing import Fourier
 from sklearn.cross_validation import cross_val_score
 from sklearn.linear_model import LassoLarsIC
@@ -86,7 +86,7 @@ def get_lightcurve(data, name=None,
                    predictor=None, periodogram=Lomb_Scargle,
                    sigma_clipping=mad,
                    scoring='r2', scoring_cv=3, scoring_processes=1,
-                   period=None, min_period=0.2, max_period=32,
+                   periods=None, min_period=0.2, max_period=32,
                    min_period_count=1, max_period_count=1,
                    coarse_precision=1e-5, fine_precision=1e-9,
                    period_processes=1,
@@ -107,7 +107,8 @@ def get_lightcurve(data, name=None,
         Name of star.
 
     predictor : object that has "fit" and "predict" methods, optional
-        Object which fits the light curve obtained from ``data`` after rephasing
+        Object which fits the light curve obtained from ``data`` after
+        rephasing
         (default ``make_predictor(scoring=scoring, scoring_cv=scoring_cv)``).
 
     periodogram : function, optional
@@ -132,7 +133,7 @@ def get_lightcurve(data, name=None,
     scoring_processes : positive integer, optional
         Number of processes to use for scoring cross validation (default 1).
 
-    period : array-like or None, shape = [] or [n_periods], optional
+    periods : scalar, array-like, or None, shape = [n_periods], optional
         Period(s) of oscillation used in the fit. This parameter can be:
 
             - None, in which case the period is obtained with the given
@@ -228,19 +229,19 @@ def get_lightcurve(data, name=None,
             return
 
         # Find the period of the inliers
-        if period is not None:
-            _period = period
-        else:
-            verbose_print("{}: finding period".format(name),
+        if periods is None:
+            verbose_print("{}: finding period(s)".format(name),
                           operation="period", verbosity=verbosity)
-            _period = find_period(signal,
-                                  min_period, max_period,
-                                  min_period_count, max_period_count,
-                                  coarse_precision, fine_precision,
-                                  periodogram, period_processes)
+            periods = find_periods(signal,
+                                   min_period, max_period,
+                                   min_period_count, max_period_count,
+                                   coarse_precision, fine_precision,
+                                   periodogram, period_processes)
+        if numpy.isscalar(periods):
+            periods = numpy.array([periods])
 
-        predictor.estimator.set_params(Fourier__periods=_period)
-        verbose_print("{}: using period {}".format(name, _period),
+        predictor.estimator.set_params(Fourier__periods=periods)
+        verbose_print("{}: using period(s) {}".format(name, periods),
                       operation="period", verbosity=verbosity)
         time, mag, *err = signal.T
 
@@ -280,7 +281,7 @@ def get_lightcurve(data, name=None,
 
         # Reject outliers and repeat the process if there are any
         if sigma > 0:
-            outliers = find_outliers(data.data, _period, predictor, sigma,
+            outliers = find_outliers(data.data, periods, predictor, sigma,
                                      sigma_clipping)
             num_outliers = sum(outliers)[0]
             if num_outliers == 0 or \
@@ -326,7 +327,7 @@ def get_lightcurve(data, name=None,
                              n_jobs=scoring_processes).mean()
 
     return {'name':         name,
-            'period':       _period,
+            'periods':      periods,
             'lightcurve':   lightcurve,
             'coefficients': coefficients[0],
             'dA_0':         sem(lightcurve),
@@ -339,13 +340,15 @@ def get_lightcurve(data, name=None,
             'coverage':     coverage}
 
 
-def get_data_from_file(filename, use_cols=None, skiprows=0):
+def get_data_from_file(filename, use_cols=None, skiprows=0, sep=' '):
     return numpy.loadtxt(filename, usecols=use_cols, skiprows=skiprows)
 
 
-def get_lightcurve_from_file(filename, *args, use_cols=None, skiprows=0,
+def get_lightcurve_from_file(filename, *args,
+                             use_cols=None, skiprows=0, sep=' ',
                              **kwargs):
-    data = get_data_from_file(filename, skiprows=skiprows, use_cols=use_cols)
+    data = get_data_from_file(filename,
+                              skiprows=skiprows, use_cols=use_cols, sep=sep)
     if len(data) != 0:
         masked_data = numpy.ma.array(data=data, mask=None, dtype=float)
         return get_lightcurve(masked_data, *args, **kwargs)
@@ -377,7 +380,7 @@ def single_periods(data, period, min_points=10, *args, **kwargs):
 
 def single_periods_from_file(filename, *args, use_cols=(0, 1, 2), skiprows=0,
                              **kwargs):
-    data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols,
+    data = numpy.ma.array(data=numpy.loadtxt(filename, use_cols=use_cols,
                                              skiprows=skiprows),
                           mask=None, dtype=float)
     return single_periods(data, *args, **kwargs)

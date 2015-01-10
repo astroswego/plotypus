@@ -2,7 +2,7 @@ import numpy
 from numpy import std
 from sys import exit, stdin
 from os import path, listdir
-from argparse import ArgumentParser, SUPPRESS
+from argparse import ArgumentError, ArgumentParser, SUPPRESS
 from sklearn.linear_model import LassoLarsIC, LinearRegression
 from sklearn.grid_search import GridSearchCV
 from matplotlib import rc_params_from_file
@@ -37,8 +37,18 @@ def get_args():
              '(default = None)')
     general_group.add_argument('-n', '--star-name', type=str,
         default=SUPPRESS,
-        help='name of star '
+        help='name to use for all stars, instead of using their filename '
              '(default = name of input file)')
+    general_group.add_argument('--sep', type=_sep_parser,
+        default=' ',
+        help='separator character used in all input files. '
+             'write SPACE or TAB instead of the literal characters '
+             '(default = SPACE)')
+    general_group.add_argument('--output-sep', type=_sep_parser,
+        default=' ',
+        help='separator character used when writing the table to stdout. '
+             'write SPACE or TAB instead of the literal characters '
+             '(default = SPACE)')
     general_group.add_argument('-f', '--format', type=str,
         default='%.5f',
         help='format specifier for output table')
@@ -49,11 +59,11 @@ def get_args():
         default='.dat', metavar='EXT',
         help='extension which follows a star\'s name in data filenames '
              '(default = ".dat")')
-    general_group.add_argument('--skiprows', type=int,
-        default=0,
+    general_group.add_argument('--skip-rows', dest='skiprows', metavar='N',
+        type=int, default=0,
         help='number of rows at the head of each file to skip')
-    general_group.add_argument('--use-cols', type=int, nargs='+',
-        default=SUPPRESS,
+    general_group.add_argument('--use-cols', metavar='COL', type=int,
+        default=SUPPRESS, nargs='+',
         help='columns to use from data file '
              '(default = 0 1 2)')
     general_group.add_argument('-s', '--scoring', type=str,
@@ -99,11 +109,20 @@ def get_args():
         default=1, metavar='N',
         help='number of periods to process in parallel '
              '(default = 1)')
-    period_group.add_argument('--periods', type=str,
-        default=None,
-        help='file of star names and associated periods, or a single period '
-             'to use for all stars '
+    period_group.add_argument('-p', '--periodogram', type=str,
+        choices=["Lomb_Scargle", "conditional_entropy"],
+        default="Lomb_Scargle",
+        help='method for determining period '
+             '(default = Lomb_Scargle)')
+    period_group.add_argument('--periods', type=float, default=None, nargs='+',
+        help='period(s) to use for every star, overriding all other sources '
+             'of periods if given '
              '(default = None)')
+    period_group.add_argument('--period-file', type=str, default=None,
+        help='file with star names in first column, and their associated '
+             'periods or ``NaN``s in the remaining columns. Unknown periods '
+             'will be found via periodogram '
+             '(default = None')
     period_group.add_argument('--min-period', type=float,
         default=SUPPRESS, metavar='P',
         help='minimum period of each star '
@@ -112,6 +131,15 @@ def get_args():
         default=SUPPRESS, metavar='P',
         help='maximum period of each star '
              '(default = 32.0)')
+    period_group.add_argument('--min-period-count', type=int,
+        default=1, metavar='N',
+        help='minimum number of periods to find via periodogram '
+             '(default = 1)')
+    period_group.add_argument('--max-period-count', type=int,
+        default=1, metavar='N',
+        help='maximum number of periods to find via periodogram, '
+             'or from periods file '
+             '(default = 1)')
     period_group.add_argument('--coarse-precision', type=float,
         default=SUPPRESS,
         help='level of granularity on first pass '
@@ -120,11 +148,6 @@ def get_args():
         default=SUPPRESS,
         help='level of granularity on second pass '
              '(default = 0.000000001)')
-    period_group.add_argument('--periodogram', type=str,
-        choices=["Lomb_Scargle", "conditional_entropy"],
-        default="Lomb_Scargle",
-        help='method for determining period '
-             '(default = Lomb_Scargle)')
     fourier_group.add_argument('-d', '--fourier-degree', type=int, nargs=2,
         default=(2, 20), metavar=('MIN', 'MAX'),
         help='range of degrees of fourier fits to use '
@@ -194,41 +217,49 @@ def get_args():
                                     **vars(args))
     args.phases = numpy.arange(0, 1, 1/args.phase_points)
 
-    if args.periods is not None:
-        try:
-            float(args.periods)
-        except ValueError:
-            verbose_print("Parsing periods file {}".format(args.periods),
-                          operation="period", verbosity=args.verbosity)
-            with open(args.periods, 'r') as f:
-                args.periods = {name: float(period) for (name, period)
-                                in (line.strip().split() for line
-                                    in f if ' ' in line)}
-                if args.periods == {}:
-                    verbose_print("No periods found",
-                                  operation="period",
-                                  verbosity=args.verbosity)
+    if (args.periods is None) and (args.period_file is not None):
+        verbose_print("Parsing periods file {}".format(args.periods),
+                      operation="period", verbosity=args.verbosity)
+
+        with open(args.period_file, 'r') as f:
+            import csv
+            csv_reader = csv.reader(f, delimiter=args.sep)
+            args.periods = {row[0] : [float(col) for col in row[1:]]
+                            for row in csv_reader
+                            if len(row) > 1}
+        if args.periods == {}:
+            verbose_print("Periods file empty.",
+                          operation="period",
+                          verbosity=args.verbosity)
     return args
 
 
 def main():
-    ops = get_args()
+    args = get_args()
 
-    min_degree, max_degree = ops.fourier_degree
-    filenames = list(map(lambda x: x.strip(), _get_files(ops.input)))
+    min_degree, max_degree = args.fourier_degree
+    filenames = list(map(lambda x: x.strip(), _get_photometry(args.input)))
     filepaths = map(lambda filename:
                     filename if path.isfile(filename)
-                             else path.join(ops.input, filename),
+                             else path.join(args.input, filename),
                     filenames)
 
     # a dict containing all options which can be pickled, because
     # all parameters to pmap must be picklable
-    picklable_ops = {k: vars(ops)[k]
-                     for k in vars(ops)
-                     if k not in {'input'}}
+    picklable_args = {k: vars(args)[k] for k in vars(args)
+                                       if k not in {'input'}}
+    sep = args.output_sep
+    period_labels  = sep.join(map('P_{}'.format,
+                                  range(args.max_period_count)))
+    fourier_labels = sep.join(map('A_{0}\tPhi_{0}'.format,
+                                  range(1, max_degree+1)))
+    ratio_labels   = sep.join(map('R_{0}_1\tphi_{0}_1'.format,
+                                  range(2, max_degree+1)))
+    phase_labels   = sep.join(map('Phase{}'.format,
+                                  range(args.phase_points)))
     # print file header
     print(*['Name',
-            'Period',
+            period_labels,
             'Shift',
             'Coverage',
             'Inliers',
@@ -238,48 +269,48 @@ def main():
             'Degree',
             'A_0',
             'dA_0',
-            '\t'.join(map('A_{0}\tPhi_{0}'.format, range(1, max_degree+1))),
-            '\t'.join(map('R_{0}_1\tphi_{0}_1'.format, range(2, max_degree+1))),
-            '\t'.join(map('Phase{}'.format, range(ops.phase_points)))],
-        sep='\t')
+            fourier_labels,
+            ratio_labels,
+            phase_labels],
+          sep=sep)
 
-    printer = lambda result: _print_star(result, max_degree, ops.format) \
+    printer = lambda result: _print_star(result, max_degree, args.format, sep) \
                              if result is not None else None
     pmap(process_star, filepaths, callback=printer,
-         processes=ops.star_processes, **picklable_ops)
+         processes=args.star_processes, **picklable_args)
 
 
-def process_star(filename, output, periods={}, **ops):
+def process_star(filename, output, periods={}, star_name=None, **kwargs):
     """Processes a star's lightcurve, prints its coefficients, and saves
     its plotted lightcurve to a file. Returns the result of get_lightcurve.
     """
-    if 'star_name' not in ops:
+    if star_name is None:
         _name = path.basename(filename)
-        extension = ops['extension']
+        extension = kwargs['extension']
         if _name.endswith(extension):
-            name = _name[:-len(extension)]
+            star_name = _name[:-len(extension)]
         else:
             # file has wrong extension
             return
+    if isinstance(periods, dict):
+        star_periods = periods.get(star_name) if periods is not None and \
+                                                 star_name in periods    \
+                                              else None
     else:
-        name = ops['star_name']
-    try:
-        _period = float(periods)
-    except TypeError:
-        _period = periods.get(name) if periods is not None and \
-                                       name in periods else None
+        star_periods = periods
 
-    result = get_lightcurve_from_file(filename, name=name, period=_period,
-                                      **ops)
+    result = get_lightcurve_from_file(filename,
+                                      name=star_name, periods=star_periods,
+                                      **kwargs)
     if result is None:
         return
     if output is not None:
-        plot_lightcurve(name, result['lightcurve'], result['period'],
-                        result['phased_data'], output=output, **ops)
+        plot_lightcurve(star_name, result['lightcurve'], result['periods'],
+                        result['phased_data'], output=output, **kwargs)
     return result
 
 
-def _print_star(result, max_degree, fmt):
+def _print_star(result, max_degree, fmt, sep):
     if result is None:
         return
 
@@ -296,7 +327,8 @@ def _print_star(result, max_degree, fmt):
     _coefs = numpy.concatenate(([coefs[0]],
                                [result['dA_0']],
                                coefs[1:]))
-    fourier_ratios = Fourier.fourier_ratios(coefs, 1)
+#    fourier_ratios = Fourier.fourier_ratios(coefs, 1)
+    fourier_ratios = []
 
     # create the vectors of zeroes
     coef_zeros  = repeat('0', times=(2*max_degree + 1 - len(coefs)))
@@ -307,18 +339,18 @@ def _print_star(result, max_degree, fmt):
     # continuous list which is then unpacked
     print(*chain(*[[result['name']],
                    map(str,
-                       [result['period'], result['shift'], result['coverage'],
-                        inliers, outliers,
+                       [result['periods'][0], result['shift'],
+                        result['coverage'], inliers, outliers,
                         result['R2'],     result['MSE'],   result['degree']]),
                    # coefficients and fourier ratios with trailing zeros
                    # formatted defined by the user-provided fmt string
                    format_all(_coefs),         coef_zeros,
                    format_all(fourier_ratios), ratio_zeros,
                    format_all(result['lightcurve'])]),
-        sep='\t')
+          sep=sep)
 
 
-def _get_files(input):
+def _get_photometry(input):
     if input is None:
         return stdin
     elif input[0] == "@":
@@ -331,6 +363,16 @@ def _get_files(input):
     else:
         raise FileNotFoundError('file {} not found'.format(input))
 
+
+def _sep_parser(s):
+    if s == "SPACE":
+        return ' '
+    elif s == "TAB":
+        return '\t'
+    elif len(s) == 1:
+        return s
+    else:
+        raise ArgumentError("Separator must be a single character: " + s)
 
 if __name__ == "__main__":
     exit(main())

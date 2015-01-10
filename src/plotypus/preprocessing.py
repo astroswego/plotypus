@@ -4,7 +4,7 @@ from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 
 from .periodogram import get_phase
-from .utils import autocorrelation, colvec, rowvec
+from .utils import autocorrelation, rowvec
 
 __all__ = [
     'Fourier'
@@ -19,12 +19,10 @@ class Fourier():
         self.periods = periods
         self.regressor = regressor
 
-
     def fit(self, X, y=None):
         if self.degree_range is not None:
             self.degree = self.baart_criteria(X, y)
         return self
-
 
     def transform(self, X, y=None, **params):
 #        data = numpy.dstack((numpy.array(X).T[0], range(len(X))))[0]
@@ -33,13 +31,11 @@ class Fourier():
 #        return design_matrix[order.argsort()]
         return self.design_matrix(X, self.degree, self.periods)
 
-
     def get_params(self, deep):
         return {
             'degree'  : self.degree,
             'periods' : self.periods
         }
-
 
     def set_params(self, **params):
         if 'degree' in params:
@@ -50,7 +46,6 @@ class Fourier():
             self.periods = numpy.array([periods]) \
                 if numpy.isscalar(periods)        \
                 else periods
-
 
     def baart_criteria(self, X, y):
         try:
@@ -74,11 +69,9 @@ class Fourier():
         # reached max_degree without reaching cutoff
         return max_degree
 
-
     @staticmethod
     def baart_tolerance(X):
         return (2 * (len(X) - 1))**(-1/2)
-
 
     @staticmethod
     def design_matrix(time, degree, periods):
@@ -112,7 +105,6 @@ class Fourier():
         M[:,2::2] = numpy.cos(x)
 
         return M
-
 
     @staticmethod
     def phase_shifted_coefficients(amplitude_coefficients, form='cos'):
@@ -160,7 +152,6 @@ class Fourier():
 
         return phase_shifted_coefficients_
 
-
     @staticmethod
     def fourier_ratios(phase_shifted_coeffs, N):
         """Returns an array containing
@@ -188,7 +179,6 @@ class Fourier():
         phase_deltas   -= phases[0]
 
         return ratios
-
 
 # @staticmethod
 # def amplitude_ratios(amplitudes, N):

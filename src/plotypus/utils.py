@@ -36,7 +36,6 @@ def pmap(func, args, processes=None, callback=lambda *_, **__: None, **kwargs):
             result = func(arg, **kwargs)
             results.append(result)
             callback(result)
-
         return results
     else:
         with Pool() if processes is None else Pool(processes) as p:

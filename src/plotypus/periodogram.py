@@ -1,9 +1,9 @@
 import numpy as np
 from scipy.signal import lombscargle
-from multiprocessing import Pool
+#from multiprocessing import Pool
 from functools import partial
 
-from .utils import colvec
+from .utils import pmap
 
 
 __all__ = [
@@ -14,7 +14,15 @@ __all__ = [
 ]
 
 
-def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
+def Lomb_Scargle(data, precision,
+                 min_period, max_period,
+                 min_period_count=1, max_period_count=1,
+                 period_jobs=1):
+    if min_period_count != 1 or max_period_count != 1:
+        raise Exception("Lomb Scargle can only find one period.")
+    if period_jobs != 1:
+        raise Exception("Lomb Scargle can only use one process.")
+
     time, mags, *e = data
     scaled_mags = (mags-mags.mean())/mags.std()
     minf, maxf = 2*np.pi/max_period, 2*np.pi/min_period
@@ -24,14 +32,20 @@ def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
     return 2*np.pi/freqs[np.argmax(pgram)]
 
 
-def conditional_entropy(data, precision, min_period, max_period,
+def conditional_entropy(data, precision,
+                        min_period, max_period,
+                        min_period_count=1, max_period_count=1,
                         xbins=10, ybins=5, period_jobs=1):
+    if min_period_count != 1 or max_period_count != 1:
+        raise Exception("Conditional entropy can only find one period.")
+
     periods = np.arange(min_period, max_period, precision)
     copy = np.ma.copy(data)
     copy[:,1] = (copy[:,1]  - np.min(copy[:,1])) \
        / (np.max(copy[:,1]) - np.min(copy[:,1]))
     partial_job = partial(CE, data=copy, xbins=xbins, ybins=ybins)
-    m = map if period_jobs <= 1 else Pool(period_jobs).map
+    m = partial(pmap, processes=period_jobs)
+#    m = map if period_jobs <= 1 else Pool(period_jobs).map
     entropies = list(m(partial_job, periods))
 
     return periods[np.argmin(entropies)]
@@ -79,8 +93,8 @@ def CE(period, data, xbins=10, ybins=5):
         A = np.empty((xbins, ybins), dtype=float)
         # store at every index [i,j] in A which corresponds to a positive bin:
         # bins[i,j]/size * log(bins[i,:] / size / (bins[i,j]/size))
-        A[ arg_positive] =  select_divided_bins \
-                          * np.log(select_column_sums / select_divided_bins)
+        A[ arg_positive] = select_divided_bins \
+                         * np.log(select_column_sums / select_divided_bins)
         # store 0 at every index in A which corresponds to a non-positive bin
         A[~arg_positive] = 0
 
@@ -90,23 +104,33 @@ def CE(period, data, xbins=10, ybins=5):
         return np.PINF
 
 
-def find_period(data,
-                min_period=0.2, max_period=32.0,
-                min_period_count=1, max_period_count=1,
-                coarse_precision=1e-5, fine_precision=1e-9,
-                periodogram=Lomb_Scargle,
-                period_jobs=1):
+def find_periods(data,
+                 min_period=0.2, max_period=32.0,
+                 min_period_count=1, max_period_count=1,
+                 coarse_precision=1e-5, fine_precision=1e-9,
+                 periodogram=Lomb_Scargle,
+                 period_jobs=1):
     if min_period >= max_period:
         return min_period
 
-    coarse_period = periodogram(data, coarse_precision, min_period, max_period,
+    coarse_period = periodogram(data,
+                                precision=coarse_precision,
+                                min_period=min_period,
+                                max_period=max_period,
+                                min_period_count=min_period_count,
+                                max_period_count=max_period_count,
                                 period_jobs=period_jobs)
 
-    return coarse_period if coarse_precision <= fine_precision else \
-        periodogram(data, fine_precision,
-                    coarse_period - coarse_precision,
-                    coarse_period + coarse_precision,
-                    period_jobs=period_jobs)
+    if coarse_precision <= fine_precision:
+        return coarse_period
+    else:
+        return periodogram(data,
+                           precision=fine_precision,
+                           min_period=(coarse_period - coarse_precision),
+                           max_period=(coarse_period + coarse_precision),
+                           min_period_count=min_period_count,
+                           max_period_count=max_period_count,
+                           period_jobs=period_jobs)
 
 
 def rephase(data, period=1.0, shift=0.0, copy=True, col=0):
