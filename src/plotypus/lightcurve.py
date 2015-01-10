@@ -242,7 +242,7 @@ def get_lightcurve(data, name=None,
         predictor.estimator.set_params(Fourier__periods=_period)
         verbose_print("{}: using period {}".format(name, _period),
                       operation="period", verbosity=verbosity)
-        time, mag, *err = signal
+        time, mag, *err = signal.T
 
 # TODO ###
 # Generalize number of bins to function parameter ``coverage_bins``, which
