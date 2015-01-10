@@ -239,7 +239,7 @@ def main():
             'A_0',
             'dA_0',
             '\t'.join(map('A_{0}\tPhi_{0}'.format, range(1, max_degree+1))),
-            '\t'.join(map('R_{0}1\tphi_{0}1'.format, range(2, max_degree+1))),
+            '\t'.join(map('R_{0}_1\tphi_{0}_1'.format, range(2, max_degree+1))),
             '\t'.join(map('Phase{}'.format, range(ops.phase_points)))],
         sep='\t')
 
