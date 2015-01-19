@@ -144,7 +144,7 @@ def get_args():
         help='rejection criterion for outliers '
              '(default = 20)')
     outlier_group.add_argument('--sigma-clipping', type=str,
-        choices=["std", "mad"], default=SUPPRESS,
+        choices=["std", "mad"], default="mad",
         help='sigma clipping metric to use '
              '(default = "mad")')
     lasso_group.add_argument('--max-iter', type=int,

@@ -141,6 +141,10 @@ class Fourier():
         where R_{i j} is the amplitude ratio R_i / R_j,
         and Phi_{i j} is the phase delta Phi_i - Phi_j.
         """
+        n_coeff = phase_shifted_coeffs.size
+        # there are 2*order + 1 coefficients: A_0, A_1, Phi_1, A_2, Phi_2, ...
+        order = (n_coeff - 1) / 2
+
         amplitudes = phase_shifted_coeffs[1::2]
         phases = phase_shifted_coeffs[2::2]
 
@@ -157,8 +161,9 @@ class Fourier():
         amplitude_ratios   /= amplitudes[0]
 
         # this isn't quite the right formula!!
+        i = numpy.arange(2, order+1)
         phase_deltas[:] = phases[1:]
-        phase_deltas   -= phases[0]
+        phase_deltas   -= i*phases[0]
 
         return ratios
 
