@@ -109,27 +109,25 @@ class Fourier():
         A_0 = amplitude_coefficients[0]
         a_k = amplitude_coefficients[1::2]
         b_k = amplitude_coefficients[2::2]
+        # A_k and Phi_k are the angle and hypotenuse in the right triangle
+        # pictured below. A_k is obtained with the Pythagorean theorem, and
+        # Phi_k is obtained with the 2-argument inverse tangent.
+        #
+        #    b_k
+        # ---------
+        # \ Φ_k |_|
+        #  \      |
+        #   \     |
+        #    \    | a_k
+        # A_k \   |
+        #      \  |
+        #       \ |
+        #        \|
+        A_k   = numpy.sqrt(a_k**2 + b_k**2)
+        Phi_k = numpy.arctan2(-a_k, b_k)
 
-        # determine which portions of the coefficients are in which of the
-        # four cartesian quadrants. a_k is the x-axis, and b_k is the y-axis
-        Q34 = b_k <  0
-        Q14 = a_k >= 0
-        Q23 = a_k <  0
-        Q4  = numpy.logical_and(Q34, Q14)
-        # A_k is simply the hypotenuse of the right triangle formed with
-        # a_k and b_k as the opposite and adjacent
-        A_k         = numpy.sqrt(a_k**2 + b_k**2)
-        # since we are about to divide by b_k, we need to make sure there
-        # are no zeroes. If b_k is zero, then a_k and A_k should also be zero,
-        # so we just need to make b_k anything but zero
-        b_k[b_k == 0] = 1.0
-        # Phi_k needs to be shifted by pi in quadrants II and III,
-        # and 2 pi in quadtrant IV
-        Phi_k       = numpy.arctan(a_k/b_k)
-        Phi_k[Q23] += numpy.pi
-        Phi_k[Q4]  += 2.0*numpy.pi
-
-        phase_shifted_coefficients_ = numpy.empty(amplitude_coefficients.shape)
+        phase_shifted_coefficients_ = numpy.empty(amplitude_coefficients.shape,
+                                                  dtype=float)
         phase_shifted_coefficients_[0]    = A_0
         phase_shifted_coefficients_[1::2] = A_k
         phase_shifted_coefficients_[2::2] = Phi_k
