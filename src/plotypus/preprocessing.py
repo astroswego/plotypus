@@ -169,10 +169,10 @@ class Fourier():
         amplitude_ratios[:] = amplitudes[1:]
         amplitude_ratios   /= amplitudes[0]
 
-        # this isn't quite the right formula!!
         i = numpy.arange(2, order+1)
         phase_deltas[:] = phases[1:]
         phase_deltas   -= i*phases[0]
+        phase_deltas   %= 2*pi
 
         return ratios
 
