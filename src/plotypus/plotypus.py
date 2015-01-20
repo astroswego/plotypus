@@ -292,7 +292,8 @@ def _print_star(result, max_degree, fmt):
     inliers  = points - outliers
 
     # get fourier coefficients and compute ratios
-    coefs  = Fourier.phase_shifted_coefficients(result['coefficients'])
+    coefs  = Fourier.phase_shifted_coefficients(result['coefficients'],
+                                                shift=result['shift'])
     _coefs = numpy.concatenate(([coefs[0]],
                                [result['dA_0']],
                                coefs[1:]))

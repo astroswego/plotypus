@@ -1,4 +1,5 @@
 import numpy
+from numpy import pi
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from .utils import autocorrelation, rowvec
@@ -91,7 +92,8 @@ class Fourier():
         return M
 
     @staticmethod
-    def phase_shifted_coefficients(amplitude_coefficients, form='cos'):
+    def phase_shifted_coefficients(amplitude_coefficients, form='cos',
+                                   shift=0.0):
         """Converts Fourier coefficients from the form
         m(t) = A_0 + \Sum_{k=1}^n a_k \sin(k \omega t)
                                 + b_k \cos(k \omega t)
@@ -124,7 +126,11 @@ class Fourier():
         #       \ |
         #        \|
         A_k   = numpy.sqrt(a_k**2 + b_k**2)
-        Phi_k = numpy.arctan2(-a_k, b_k)
+        # phase coefficients are shifted to the left by optional ``shift``
+        Phi_k = numpy.arctan2(-a_k, b_k) - 2*pi*shift
+        # values should range from 0 to 2*pi, but arctan2 ranges from -pi to pi
+        # adding 2*pi to negative values will correct this
+        Phi_k[Phi_k < 0] += 2*pi
 
         phase_shifted_coefficients_ = numpy.empty(amplitude_coefficients.shape,
                                                   dtype=float)
