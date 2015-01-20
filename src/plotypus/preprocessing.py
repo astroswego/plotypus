@@ -111,6 +111,9 @@ class Fourier():
         A_0 = amplitude_coefficients[0]
         a_k = amplitude_coefficients[1::2]
         b_k = amplitude_coefficients[2::2]
+
+        degree = a_k.size
+        k = numpy.arange(1, degree+1)
         # A_k and Phi_k are the angle and hypotenuse in the right triangle
         # pictured below. A_k is obtained with the Pythagorean theorem, and
         # Phi_k is obtained with the 2-argument inverse tangent.
@@ -127,10 +130,10 @@ class Fourier():
         #        \|
         A_k   = numpy.sqrt(a_k**2 + b_k**2)
         # phase coefficients are shifted to the left by optional ``shift``
-        Phi_k = numpy.arctan2(-a_k, b_k) - 2*pi*shift
+        Phi_k = numpy.arctan2(-a_k, b_k) - 2*pi*k*shift
         # values should range from 0 to 2*pi, but arctan2 ranges from -pi to pi
         # adding 2*pi to negative values will correct this
-        Phi_k[Phi_k < 0] += 2*pi
+        Phi_k %= 2*pi
 
         phase_shifted_coefficients_ = numpy.empty(amplitude_coefficients.shape,
                                                   dtype=float)
