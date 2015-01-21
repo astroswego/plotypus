@@ -91,7 +91,7 @@ def get_lightcurve(data, name=None,
                    coarse_precision=1e-5, fine_precision=1e-9,
                    period_processes=1,
                    sigma=20,
-                   shift_to_max_light=False,
+                   shift=None,
                    min_phase_cover=0.0, phases=numpy.arange(0, 1, 0.01),
                    verbosity=[], **kwargs):
     """
@@ -288,13 +288,11 @@ def get_lightcurve(data, name=None,
 
     # Build light curve and optionally shift to max light
     lightcurve = predictor.predict([[i] for i in phases])
-    if shift_to_max_light:
+    if shift is None:
         arg_max_light = lightcurve.argmin()
         lightcurve = numpy.concatenate((lightcurve[arg_max_light:],
                                         lightcurve[:arg_max_light]))
         shift = arg_max_light/len(phases)
-    else:
-        shift = 0.0
 
     data.T[0] = rephase(data.data, _period, shift).T[0]
 

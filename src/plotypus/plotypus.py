@@ -64,9 +64,10 @@ def get_args():
         default=SUPPRESS, metavar='N',
         help='number of folds in the scoring cross validation '
              '(default = 3)')
-    general_group.add_argument('--shift-to-max-light', action='store_true',
-        default=False,
-        help='shift fitted light curves such that phase 0 occurs at max light')
+    general_group.add_argument('--shift', type=float,
+        default=None,
+        help='phase shift to apply to each light curve, or shift to max '
+             'light if none given')
     general_group.add_argument('--phase-points', type=int,
         default=100, metavar='N',
         help='number of phase points to output '
