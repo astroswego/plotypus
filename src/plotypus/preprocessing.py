@@ -177,6 +177,8 @@ class Fourier():
         i = numpy.arange(2, order+1)
         phase_deltas[:] = phases[1:]
         phase_deltas   -= i*phases[0]
+        # constrain phase_deltas between 0 and 2*pi
+        phase_deltas   %= 2*pi
 
         return ratios
 
