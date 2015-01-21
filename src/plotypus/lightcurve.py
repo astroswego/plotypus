@@ -82,7 +82,7 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
                         n_jobs=selector_processes)
 
 
-def get_lightcurve(data, name=None,
+def get_lightcurve(data, copy=False, name=None,
                    predictor=None, periodogram=Lomb_Scargle,
                    sigma_clipping=mad,
                    scoring='r2', scoring_cv=3, scoring_processes=1,
@@ -218,6 +218,7 @@ def get_lightcurve(data, name=None,
     --------
     get_lightcurve_from_file, get_lightcurves_from_file
     """
+    data = numpy.ma.array(data, copy=copy)
 # TODO ###
 # Replace dA_0 with error matrix dA
     if predictor is None:
