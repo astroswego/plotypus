@@ -100,12 +100,10 @@ class Fourier():
         into the form
         m(t) = A_0 + \Sum_{k=1}^n A_k \sin(k \omega t + \Phi_k)
         """
-        if 'cos' in form:
-            pass  # this will do something once sine series are supported
-        elif 'sin' in form:
-            raise Exception('Fourier sine series not yet supported')
-        else:
-            raise Exception('Fourier series must have form sine or cosine')
+        if form != 'sin' and form != 'cos':
+            raise NotImplementedError(
+                'Fourier series must have form sin or cos')
+            
 
         # separate array of coefficients into respective parts
         A_0 = amplitude_coefficients[0]
@@ -114,23 +112,32 @@ class Fourier():
 
         degree = a_k.size
         k = numpy.arange(1, degree+1)
-        # A_k and Phi_k are the angle and hypotenuse in the right triangle
+        # A_k and Phi_k are the angle and hypotenuse in the right triangles
         # pictured below. A_k is obtained with the Pythagorean theorem, and
         # Phi_k is obtained with the 2-argument inverse tangent.
+        # The positions of a_k and b_k depend on whether it is a sin or cos
+        # series.
         #
-        #    b_k
-        # ---------
-        # \ Φ_k |_|
-        #  \      |
-        #   \     |
-        #    \    | a_k
-        # A_k \   |
-        #      \  |
-        #       \ |
-        #        \|
+        # Cos series                Sin series
+        #
+        #    b_k                          /|
+        # ---------                      / |
+        # \ Φ_k |_|                     /  |
+        #  \      |                A_k /   |
+        #   \     |                   /    | b_k
+        #    \    | a_k              /     |
+        # A_k \   |                 /     _|
+        #      \  |                / Φ_k | |
+        #       \ |                ---------
+        #        \|                   a_k
+        #
         A_k   = numpy.sqrt(a_k**2 + b_k**2)
         # phase coefficients are shifted to the left by optional ``shift``
-        Phi_k = numpy.arctan2(-a_k, b_k) + 2*pi*k*shift
+        if form == 'cos':
+            Phi_k = numpy.arctan2(-a_k, b_k) + 2*pi*k*shift
+        elif form == 'sin':
+            Phi_k = numpy.arctan2(b_k, a_k) + 2*pi*k*shift
+        # constrain Phi between 0 and 2*pi
         Phi_k %= 2*pi
 
         phase_shifted_coefficients_ = numpy.empty(amplitude_coefficients.shape,

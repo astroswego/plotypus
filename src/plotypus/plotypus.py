@@ -143,6 +143,11 @@ def get_args():
         default='GridSearch',
         help='type of model selector to use '
              '(default = "GridSearch")')
+    fourier_group.add_argument('--series-form', type=str,
+        default='cos', choices=['sin', 'cos'],
+        help='form of Fourier series to use in coefficient output, '
+             'does not effect the fit '
+             '(default = "cos")')
     outlier_group.add_argument('--sigma', type=float,
         default=SUPPRESS,
         help='rejection criterion for outliers '
@@ -247,7 +252,8 @@ def main():
             '\t'.join(map('Phase{}'.format, range(ops.phase_points)))],
         sep='\t')
 
-    printer = lambda result: _print_star(result, max_degree, ops.format) \
+    printer = lambda result: _print_star(result, max_degree, ops.series_form,
+                                         ops.format) \
                              if result is not None else None
     pmap(process_star, filepaths, callback=printer,
          processes=ops.star_processes, **picklable_ops)
@@ -283,7 +289,7 @@ def process_star(filename, output, periods={}, **ops):
     return result
 
 
-def _print_star(result, max_degree, fmt):
+def _print_star(result, max_degree, form, fmt):
     if result is None:
         return
 
@@ -297,7 +303,8 @@ def _print_star(result, max_degree, fmt):
 
     # get fourier coefficients and compute ratios
     coefs  = Fourier.phase_shifted_coefficients(result['coefficients'],
-                                                shift=result['shift'])
+                                                shift=result['shift'],
+                                                form=form)
     _coefs = numpy.concatenate(([coefs[0]],
                                [result['dA_0']],
                                coefs[1:]))
