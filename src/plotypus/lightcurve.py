@@ -293,9 +293,10 @@ def get_lightcurve(data, name=None,
         lightcurve = numpy.concatenate((lightcurve[arg_max_light:],
                                         lightcurve[:arg_max_light]))
         shift = arg_max_light/len(phases)
-        data.T[0] = rephase(data.data, _period, shift).T[0]
     else:
         shift = 0.0
+
+    data.T[0] = rephase(data.data, _period, shift).T[0]
 
     # Grab the coefficients from the model
     coefficients = predictor.named_steps['Regressor'].coef_ \
