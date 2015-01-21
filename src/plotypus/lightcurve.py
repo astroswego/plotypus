@@ -348,7 +348,8 @@ def get_lightcurves_from_file(filename, directories, *args, **kwargs):
             for d in directories]
 
 
-def single_periods(data, period, min_points=10, *args, **kwargs):
+def single_periods(data, period, min_points=10, copy=False, *args, **kwargs):
+    data = numpy.ma.array(data, copy=copy)
     time, mag, *err = data.T
 
     tstart, tfinal = numpy.min(time), numpy.max(time)

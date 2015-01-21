@@ -103,8 +103,8 @@ def find_period(data,
                     period_jobs=period_jobs)
 
 
-def rephase(data, period=1, shift=0, col=0):
-    rephased = np.ma.copy(data)
+def rephase(data, period=1, shift=0, col=0, copy=True):
+    rephased = np.ma.array(data, copy=copy)
     rephased[:, col] = get_phase(rephased[:, col], period, shift)
 
     return rephased
