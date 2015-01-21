@@ -130,9 +130,7 @@ class Fourier():
         #        \|
         A_k   = numpy.sqrt(a_k**2 + b_k**2)
         # phase coefficients are shifted to the left by optional ``shift``
-        Phi_k = numpy.arctan2(-a_k, b_k) - 2*pi*k*shift
-        # values should range from 0 to 2*pi, but arctan2 ranges from -pi to pi
-        # adding 2*pi to negative values will correct this
+        Phi_k = numpy.arctan2(-a_k, b_k) + 2*pi*k*shift
         Phi_k %= 2*pi
 
         phase_shifted_coefficients_ = numpy.empty(amplitude_coefficients.shape,
@@ -172,7 +170,6 @@ class Fourier():
         i = numpy.arange(2, order+1)
         phase_deltas[:] = phases[1:]
         phase_deltas   -= i*phases[0]
-        phase_deltas   %= 2*pi
 
         return ratios
 
