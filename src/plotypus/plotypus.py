@@ -1,8 +1,8 @@
 import numpy
 from numpy import std
-from sys import exit, stdin
+from sys import exit, stdin, stderr
 from os import path, listdir
-from argparse import ArgumentParser, SUPPRESS
+from argparse import ArgumentError, ArgumentParser, SUPPRESS
 from sklearn.linear_model import LassoLarsIC, LinearRegression
 from sklearn.grid_search import GridSearchCV
 from matplotlib import rc_params_from_file
@@ -64,7 +64,7 @@ def get_args():
         default=SUPPRESS, metavar='N',
         help='number of folds in the scoring cross validation '
              '(default = 3)')
-    general_group.add_argument('--shift', type=float,
+    general_group.add_argument('--shifts', type=str,
         default=None,
         help='phase shift to apply to each light curve, or shift to max '
              'light if none given')
@@ -217,6 +217,28 @@ def get_args():
                     verbose_print("No periods found",
                                   operation="period",
                                   verbosity=args.verbosity)
+    if args.shifts is not None:
+        if args.shifts.startswith('@'):
+            filename = args.shifts[1:]
+            verbose_print("Parsing shifts file {}".format(filename),
+                          operation="shift", verbosity=args.verbosity)
+            with open(filename, 'r') as f:
+                args.shifts = {name: float(shift) for (name, shift)
+                              in (line.strip().split() for line
+                                  in f if ' ' in line)}
+                if args.shifts == {}:
+                    verbose_print("No shifts found",
+                                  operation="shift",
+                                  verbosity=args.verbosity)
+        else:
+            try:
+                float(args.shifts)
+            except ValueError as e:
+                print("error: "
+                      "shifts must be number or a filename prefixed with '@'",
+                      file=stderr)
+                exit(1)
+
     return args
 
 
@@ -259,7 +281,7 @@ def main():
          processes=ops.star_processes, **picklable_ops)
 
 
-def process_star(filename, output, periods={}, **ops):
+def process_star(filename, output, periods={}, shifts={}, **ops):
     """Processes a star's lightcurve, prints its coefficients, and saves
     its plotted lightcurve to a file. Returns the result of get_lightcurve.
     """
@@ -276,10 +298,15 @@ def process_star(filename, output, periods={}, **ops):
     try:
         _period = float(periods)
     except TypeError:
-        _period = periods.get(name) if periods is not None and \
-                                       name in periods else None
+        _period = periods.get(name) if periods is not None else None
+    try:
+        _shift = float(shifts)
+    except TypeError:
+        _shift = shifts.get(name) if shifts is not None else None
+    
 
-    result = get_lightcurve_from_file(filename, name=name, period=_period,
+    result = get_lightcurve_from_file(filename, name=name,
+                                      period=_period, shift=_shift,
                                       **ops)
     if result is None:
         return
