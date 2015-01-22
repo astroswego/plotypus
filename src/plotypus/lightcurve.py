@@ -15,6 +15,7 @@ from sklearn.grid_search import GridSearchCV
 from sklearn.utils import ConvergenceWarning
 import warnings
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
+import matplotlib
 import matplotlib.pyplot as plt
 
 __all__ = [
