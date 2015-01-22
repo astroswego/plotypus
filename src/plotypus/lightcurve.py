@@ -31,7 +31,8 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
                    selector_processes=1,
                    use_baart=False, scoring='r2', scoring_cv=3,
                    **kwargs):
-    """
+    """make_predictor(regressor=LassoLarsIC(fit_intercept=False), Selector=GridSearchCV, fourier_degree=(2, 25), selector_processes=1, use_baart=False, scoring='r2', scoring_cv=3, **kwargs)
+
     Makes a predictor object for use in get_lightcurve.
 
     Parameters
@@ -93,8 +94,9 @@ def get_lightcurve(data, copy=False, name=None,
                    sigma=20,
                    shift=None,
                    min_phase_cover=0.0, n_phases=100,
-                   verbosity=[], **kwargs):
-    """
+                   verbosity=(), **kwargs):
+    """get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring='r2', scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, min_period_count=1, max_period_count=1, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=(), **kwargs)
+
     Fits a light curve to the given `data` using the specified methods,
     with default behavior defined for all methods.
 
@@ -186,7 +188,7 @@ def get_lightcurve(data, copy=False, name=None,
 
     Returns
     -------
-    out - dict
+    out : dict
         Results of the fit in a dictionary. The keys are:
 
             - name : str or None
@@ -274,8 +276,8 @@ def get_lightcurve(data, copy=False, name=None,
 
         # Reject outliers and repeat the process if there are any
         if sigma:
-            outliers = find_outliers(data.data, _period, predictor, sigma,
-                                     sigma_clipping)
+            outliers = find_outliers(rephase(data.data, _period), predictor,
+                                     sigma, sigma_clipping)
             num_outliers = sum(outliers)[0]
             if num_outliers == 0 or \
                set.issubset(set(numpy.nonzero(outliers.T[0])[0]),
@@ -330,13 +332,29 @@ def get_lightcurve(data, copy=False, name=None,
             'coverage':     coverage}
 
 
-def get_data_from_file(filename, use_cols=None, skiprows=0):
-    return numpy.loadtxt(filename, usecols=use_cols, skiprows=skiprows)
-
-
-def get_lightcurve_from_file(filename, *args, use_cols=None, skiprows=0,
+def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
                              **kwargs):
-    data = get_data_from_file(filename, skiprows=skiprows, use_cols=use_cols)
+    """get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0, **kwargs)
+
+    Fits a light curve to the data contained in *file* using
+    :func:`get_lightcurve`.
+
+    Parameters
+    ----------
+    file : str or file
+        File or filename to load data from.
+    use_cols : iterable or None, optional
+        Iterable of columns to read from data file, or None to read all columns
+        (default None).
+    skiprows : number, optional
+        Number of rows to skip at beginning of file (default 0)
+
+    Returns
+    -------
+    out : dict
+        See :func:`get_lightcurve`.
+    """
+    data = numpy.loadtxt(file, skiprows=skiprows, usecols=use_cols)
     if len(data) != 0:
         masked_data = numpy.ma.array(data=data, mask=None, dtype=float)
         return get_lightcurve(masked_data, *args, **kwargs)
@@ -344,40 +362,64 @@ def get_lightcurve_from_file(filename, *args, use_cols=None, skiprows=0,
         return
 
 
-def get_lightcurves_from_file(filename, directories, *args, **kwargs):
-    return [get_lightcurve_from_file(path.join(d, filename), *args, **kwargs)
-            for d in directories]
+
+## These functions were used briefly and then not maintained.
+## Will make comebacks of some form in a later release.
+##
+# def get_lightcurves_from_file(filename, directories, *args, **kwargs):
+#     return [get_lightcurve_from_file(path.join(d, filename), *args, **kwargs)
+#             for d in directories]
+#
+#
+# def single_periods(data, period, min_points=10, copy=False, *args, **kwargs):
+#     data = numpy.ma.array(data, copy=copy)
+#     time, mag, *err = data.T
+#
+#     tstart, tfinal = numpy.min(time), numpy.max(time)
+#     periods = numpy.arange(tstart, tfinal+period, period)
+#     data_range = (
+#         data[numpy.logical_and(time>pstart, time<=pend),:]
+#         for pstart, pend in zip(periods[:-1], periods[1:])
+#     )
+#
+#     return (
+#         get_lightcurve(d, period=period, *args, **kwargs)
+#         for d in data_range
+#         if d.shape[0] > min_points
+#     )
+#
+#
+# def single_periods_from_file(filename, *args, use_cols=(0, 1, 2), skiprows=0,
+#                              **kwargs):
+#     data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols,
+#                                              skiprows=skiprows),
+#                           mask=None, dtype=float)
+#     return single_periods(data, *args, **kwargs)
 
 
-def single_periods(data, period, min_points=10, copy=False, *args, **kwargs):
-    data = numpy.ma.array(data, copy=copy)
-    time, mag, *err = data.T
-
-    tstart, tfinal = numpy.min(time), numpy.max(time)
-    periods = numpy.arange(tstart, tfinal+period, period)
-    data_range = (
-        data[numpy.logical_and(time>pstart, time<=pend),:]
-        for pstart, pend in zip(periods[:-1], periods[1:])
-    )
-
-    return (
-        get_lightcurve(d, period=period, *args, **kwargs)
-        for d in data_range
-        if d.shape[0] > min_points
-    )
-
-
-def single_periods_from_file(filename, *args, use_cols=(0, 1, 2), skiprows=0,
-                             **kwargs):
-    data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols,
-                                             skiprows=skiprows),
-                          mask=None, dtype=float)
-    return single_periods(data, *args, **kwargs)
-
-
-def find_outliers(data, period, predictor, sigma,
+def find_outliers(data, predictor, sigma,
                   method=mad):
-    phase, mag, *err = rephase(data, period).T
+    """find_outliers(data, predictor, sigma, method=mad)
+
+    Returns a boolean array indicating the outliers in the given *data* array.
+
+    Parameters
+    ----------
+    data : array-like, shape = [n_samples, 2] or [n_samples, 3]
+        Input array of time, magnitude, and optional error, column-wise.
+    predictor : object that has `fit` and `predict` methods, optional
+        Object which fits the light curve obtained from *data* after rephasing.
+    sigma : number
+        Outlier cutoff criteria.
+    method : function, optional
+        Function to score residuals for outlier detection.
+
+    Returns
+    -------
+    out : array-like, shape = data.shape
+        Boolean array indicating the outliers in the given *data* array.
+    """
+    phase, mag, *err = data.T
     residuals = numpy.absolute(predictor.predict(colvec(phase)) - mag)
     outliers = numpy.logical_and((residuals > err[0]) if err else True,
                                  residuals > sigma * method(residuals))
@@ -386,9 +428,36 @@ def find_outliers(data, period, predictor, sigma,
 
 
 def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
-                    color=True, phases=numpy.arange(0, 1, 0.01),
+                    color=True, n_phases=100,
                     err_const=0.0004,
                     **kwargs):
+    """plot_lightcurve(name, lightcurve, period, data, output='.', legend=False, color=True, n_phases=100, err_const=0.0004, **kwargs)
+
+    Save a plot of the given *lightcurve* to directory *output*.
+
+    Parameters
+    ----------
+    name : str
+        Name of the star. Used in filename and plot title.
+    lightcurve : array-like, shape = [n_samples]
+        Fitted lightcurve.
+    period : number
+        Period to phase time by.
+    data : array-like, shape = [n_samples, 2] or [n_samples, 3]
+        Input array of time, magnitude, and optional error, column-wise.
+        Time should be unphased.
+    output : str, optional
+        Directory to save plot in (default '.').
+    legend : boolean, optional
+        Whether or not to display legend on plot (default False).
+    color : boolean, optional
+        Whether or not to display color in plot (default True).
+    n_phases : integer, optional
+        Number of phase points in fit (default 100).
+    err_const : number, optional
+        Constant to use in absence of error (default 0.0004).
+    """
+    phases = numpy.linspace(0, 1, n_phases, endpoint=False)
     ax = plt.gca()
     ax.invert_yaxis()
     plt.xlim(0,2)

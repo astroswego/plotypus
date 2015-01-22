@@ -32,8 +32,6 @@ nosetests.xml
 # Translations
 *.mo
 
-# Sphinx documentation
-docs/_build/
 
 data
 results
