@@ -1,0 +1,129 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>plotypus.periodogram module &mdash; plotypus 0.2.5rc1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.2.5rc1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="plotypus 0.2.5rc1 documentation" href="index.html" />
+    <link rel="up" title="plotypus package" href="plotypus.html" />
+    <link rel="next" title="plotypus.plotypus module" href="plotypus.plotypus.html" />
+    <link rel="prev" title="plotypus.lightcurve module" href="plotypus.lightcurve.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body>
+  
+  
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="plotypus.plotypus.html" title="plotypus.plotypus module"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="plotypus.lightcurve.html" title="plotypus.lightcurve module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">plotypus 0.2.5rc1 documentation</a> &raquo;</li>
+          <li><a href="plotypus.html" accesskey="U">plotypus package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-plotypus.periodogram">
+<span id="plotypus-periodogram-module"></span><h1>plotypus.periodogram module<a class="headerlink" href="#module-plotypus.periodogram" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="plotypus.periodogram.find_period">
+<tt class="descclassname">plotypus.periodogram.</tt><tt class="descname">find_period</tt><big>(</big><em>data</em>, <em>min_period=0.2</em>, <em>max_period=32.0</em>, <em>min_period_count=1</em>, <em>max_period_count=1</em>, <em>coarse_precision=1e-05</em>, <em>fine_precision=1e-09</em>, <em>periodogram=&lt;function Lomb_Scargle at 0x7f1c893d2378&gt;</em>, <em>period_jobs=1</em><big>)</big><a class="reference internal" href="_modules/plotypus/periodogram.html#find_period"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.find_period" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="plotypus.periodogram.Lomb_Scargle">
+<tt class="descclassname">plotypus.periodogram.</tt><tt class="descname">Lomb_Scargle</tt><big>(</big><em>data</em>, <em>precision</em>, <em>min_period</em>, <em>max_period</em>, <em>period_jobs=1</em><big>)</big><a class="reference internal" href="_modules/plotypus/periodogram.html#Lomb_Scargle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.Lomb_Scargle" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="plotypus.periodogram.rephase">
+<tt class="descclassname">plotypus.periodogram.</tt><tt class="descname">rephase</tt><big>(</big><em>data</em>, <em>period=1</em>, <em>shift=0</em>, <em>col=0</em>, <em>copy=True</em><big>)</big><a class="reference internal" href="_modules/plotypus/periodogram.html#rephase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.rephase" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="plotypus.periodogram.get_phase">
+<tt class="descclassname">plotypus.periodogram.</tt><tt class="descname">get_phase</tt><big>(</big><em>time</em>, <em>period=1</em>, <em>shift=0</em><big>)</big><a class="reference internal" href="_modules/plotypus/periodogram.html#get_phase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.get_phase" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation index</a><ul>
+  <li><a href="plotypus.html">plotypus package</a><ul>
+      <li>Previous: <a href="plotypus.lightcurve.html" title="previous chapter">plotypus.lightcurve module</a></li>
+      <li>Next: <a href="plotypus.plotypus.html" title="next chapter">plotypus.plotypus module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/plotypus.periodogram.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+  </div>
+  
+  </body>
+</html>

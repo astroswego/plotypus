@@ -1,0 +1,161 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>plotypus.utils module &mdash; plotypus 0.2.5rc1 documentation</title>
+    
+    <link rel="stylesheet" href="_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '0.2.5rc1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="plotypus 0.2.5rc1 documentation" href="index.html" />
+    <link rel="up" title="plotypus package" href="plotypus.html" />
+    <link rel="prev" title="plotypus.preprocessing module" href="plotypus.preprocessing.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body>
+  
+  
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="plotypus.preprocessing.html" title="plotypus.preprocessing module"
+             accesskey="P">previous</a> |</li>
+        <li><a href="index.html">plotypus 0.2.5rc1 documentation</a> &raquo;</li>
+          <li><a href="plotypus.html" accesskey="U">plotypus package</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-plotypus.utils">
+<span id="plotypus-utils-module"></span><h1>plotypus.utils module<a class="headerlink" href="#module-plotypus.utils" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="plotypus.utils.verbose_print">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">verbose_print</tt><big>(</big><em>message</em>, <em>*</em>, <em>operation</em>, <em>verbosity</em><big>)</big><a class="reference internal" href="_modules/plotypus/utils.html#verbose_print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.verbose_print" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints message to stdout only if the given operation is in the list of
+verbose operations. If &#8220;all&#8221; is in the list, all operations are printed.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.pmap">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">pmap</tt><big>(</big><em>func</em>, <em>args</em>, <em>processes=None</em>, <em>callback=&lt;function &lt;lambda&gt; at 0x7f1c89b6f8c8&gt;</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/plotypus/utils.html#pmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.pmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parallel equivalent of map(func, args), with the additional ability of
+providing keyword arguments to func, and a callback function which is
+applied to each element in the returned list. Unlike map, the output is a
+non-lazy list. If processes=1, no thread pool is used.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.make_sure_path_exists">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">make_sure_path_exists</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="_modules/plotypus/utils.html#make_sure_path_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.make_sure_path_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the supplied path. Raises OS error if the path cannot be
+created.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.get_signal">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">get_signal</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="_modules/plotypus/utils.html#get_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.get_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all of the values that are not outliers.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.get_noise">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">get_noise</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="_modules/plotypus/utils.html#get_noise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.get_noise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all identified outliers.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.colvec">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">colvec</tt><big>(</big><em>X</em><big>)</big><a class="reference internal" href="_modules/plotypus/utils.html#colvec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.colvec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a row-vector into a column-vector.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.mad">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">mad</tt><big>(</big><em>data</em>, <em>axis=None</em><big>)</big><a class="reference internal" href="_modules/plotypus/utils.html#mad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.mad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the median absolute deviation of an array.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.autocorrelation">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">autocorrelation</tt><big>(</big><em>data</em>, <em>lag=1</em><big>)</big><a class="reference internal" href="_modules/plotypus/utils.html#autocorrelation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.autocorrelation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the autocorrelation of the data with the given lag.
+Autocorrelation is simply
+autocovariance(data) / covariance(data-mean, data-mean),
+where autocovariance is simply
+covariance((data-mean)[:-lag], (data-mean)[lag:]).</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="index.html">Documentation index</a><ul>
+  <li><a href="plotypus.html">plotypus package</a><ul>
+      <li>Previous: <a href="plotypus.preprocessing.html" title="previous chapter">plotypus.preprocessing module</a></li>
+  </ul></li>
+  </ul></li>
+</ul>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="_sources/plotypus.utils.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+  </div>
+  
+  </body>
+</html>

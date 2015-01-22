@@ -1,0 +1,467 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>plotypus.plotypus &mdash; plotypus 0.2.5rc1 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.2.5rc1',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="plotypus 0.2.5rc1 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body>
+  
+  
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">plotypus 0.2.5rc1 documentation</a> &raquo;</li>
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for plotypus.plotypus</h1><div class="highlight"><pre>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">std</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="nb">exit</span><span class="p">,</span> <span class="n">stdin</span><span class="p">,</span> <span class="n">stderr</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span><span class="p">,</span> <span class="n">listdir</span>
+<span class="kn">from</span> <span class="nn">argparse</span> <span class="kn">import</span> <span class="n">ArgumentError</span><span class="p">,</span> <span class="n">ArgumentParser</span><span class="p">,</span> <span class="n">SUPPRESS</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LassoLarsIC</span><span class="p">,</span> <span class="n">LinearRegression</span>
+<span class="kn">from</span> <span class="nn">sklearn.grid_search</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
+<span class="kn">from</span> <span class="nn">matplotlib</span> <span class="kn">import</span> <span class="n">rc_params_from_file</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span> <span class="nn">itertools</span> <span class="kn">import</span> <span class="n">chain</span><span class="p">,</span> <span class="n">repeat</span>
+<span class="kn">import</span> <span class="nn">plotypus.lightcurve</span>
+<span class="kn">from</span> <span class="nn">plotypus.lightcurve</span> <span class="kn">import</span> <span class="p">(</span><span class="n">make_predictor</span><span class="p">,</span> <span class="n">get_lightcurve_from_file</span><span class="p">,</span>
+                                 <span class="n">plot_lightcurve</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">plotypus.periodogram</span> <span class="kn">import</span> <span class="n">Lomb_Scargle</span><span class="p">,</span> <span class="n">conditional_entropy</span>
+<span class="kn">import</span> <span class="nn">plotypus</span>
+<span class="kn">from</span> <span class="nn">plotypus.preprocessing</span> <span class="kn">import</span> <span class="n">Fourier</span>
+<span class="kn">from</span> <span class="nn">plotypus.utils</span> <span class="kn">import</span> <span class="n">mad</span><span class="p">,</span> <span class="n">pmap</span><span class="p">,</span> <span class="n">verbose_print</span>
+<span class="kn">from</span> <span class="nn">plotypus.resources</span> <span class="kn">import</span> <span class="n">matplotlibrc</span>
+
+
+<div class="viewcode-block" id="get_args"><a class="viewcode-back" href="../../plotypus.plotypus.html#plotypus.plotypus.get_args">[docs]</a><span class="k">def</span> <span class="nf">get_args</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">()</span>
+    <span class="n">general_group</span>  <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s">&#39;General&#39;</span><span class="p">)</span>
+    <span class="n">parallel_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s">&#39;Parallel&#39;</span><span class="p">)</span>
+    <span class="n">period_group</span>   <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s">&#39;Periodogram&#39;</span><span class="p">)</span>
+    <span class="n">fourier_group</span>  <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s">&#39;Fourier&#39;</span><span class="p">)</span>
+    <span class="n">outlier_group</span>  <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s">&#39;Outlier Detection&#39;</span><span class="p">)</span>
+    <span class="n">lasso_group</span>    <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s">&#39;Lasso&#39;</span><span class="p">)</span>
+
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-i&#39;</span><span class="p">,</span> <span class="s">&#39;--input&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;location of stellar observations &#39;</span>
+             <span class="s">&#39;(default = stdin)&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-o&#39;</span><span class="p">,</span> <span class="s">&#39;--output&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;location of plots, or nothing if no plots are to be generated &#39;</span>
+             <span class="s">&#39;(default = None)&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-n&#39;</span><span class="p">,</span> <span class="s">&#39;--star-name&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">SUPPRESS</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;name of star &#39;</span>
+             <span class="s">&#39;(default = name of input file)&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-f&#39;</span><span class="p">,</span> <span class="s">&#39;--format&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%.5f</span><span class="s">&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;format specifier for output table&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--legend&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&#39;store_true&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;whether legends should be put on the output plots &#39;</span>
+             <span class="s">&#39;(default = False)&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--extension&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s">&#39;.dat&#39;</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;EXT&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;extension which follows a star</span><span class="se">\&#39;</span><span class="s">s name in data filenames &#39;</span>
+             <span class="s">&#39;(default = &quot;.dat&quot;)&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--skiprows&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;number of rows at the head of each file to skip&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--use-cols&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s">&#39;+&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">SUPPRESS</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;columns to use from data file &#39;</span>
+             <span class="s">&#39;(default = 0 1 2)&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-s&#39;</span><span class="p">,</span> <span class="s">&#39;--scoring&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;MSE&#39;</span><span class="p">,</span> <span class="s">&#39;R2&#39;</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="n">SUPPRESS</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;scoring metric to use &#39;</span>
+             <span class="s">&#39;(default = &quot;R2&quot;)&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--scoring-cv&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">SUPPRESS</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;N&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;number of folds in the scoring cross validation &#39;</span>
+             <span class="s">&#39;(default = 3)&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--shifts&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;phase shift to apply to each light curve, or shift to max &#39;</span>
+             <span class="s">&#39;light if none given&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--phase-points&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;N&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;number of phase points to output &#39;</span>
+             <span class="s">&#39;(default = 100)&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--min-phase-cover&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">SUPPRESS</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;COVER&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;minimum fraction of phases that must have points &#39;</span>
+             <span class="s">&#39;(default = 0)&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--matplotlibrc&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">matplotlibrc</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;RC&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;matplotlibrc file to use for formatting plots &#39;</span>
+             <span class="s">&#39;(default file is in plotypus.resources.matplotlibrc)&#39;</span><span class="p">)</span>
+    <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-v&#39;</span><span class="p">,</span> <span class="s">&#39;--verbosity&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&#39;append&#39;</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="p">[],</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;all&#39;</span><span class="p">,</span> <span class="s">&#39;coverage&#39;</span><span class="p">,</span> <span class="s">&#39;outlier&#39;</span><span class="p">,</span> <span class="s">&#39;period&#39;</span><span class="p">],</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;OPERATION&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;specifies an operation to print verbose output for, or &#39;</span>
+             <span class="s">&#39;&quot;all&quot; to print all verbose output &#39;</span>
+             <span class="s">&#39;(default = None)&#39;</span><span class="p">)</span>
+    <span class="n">parallel_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--star-processes&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;N&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;number of stars to process in parallel &#39;</span>
+             <span class="s">&#39;(default = 1)&#39;</span><span class="p">)</span>
+    <span class="n">parallel_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--selector-processes&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">SUPPRESS</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;N&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;number of processes to use for each selector &#39;</span>
+             <span class="s">&#39;(default depends on selector used)&#39;</span><span class="p">)</span>
+    <span class="n">parallel_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--scoring-processes&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">SUPPRESS</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;N&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;number of processes to use for scoring, if not done by selector &#39;</span>
+             <span class="s">&#39;(default = 1)&#39;</span><span class="p">)</span>
+    <span class="n">parallel_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--period-processes&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;N&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;number of periods to process in parallel &#39;</span>
+             <span class="s">&#39;(default = 1)&#39;</span><span class="p">)</span>
+    <span class="n">period_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--periods&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;file of star names and associated periods, or a single period &#39;</span>
+             <span class="s">&#39;to use for all stars &#39;</span>
+             <span class="s">&#39;(default = None)&#39;</span><span class="p">)</span>
+    <span class="n">period_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--min-period&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">SUPPRESS</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;P&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;minimum period of each star &#39;</span>
+             <span class="s">&#39;(default = 0.2)&#39;</span><span class="p">)</span>
+    <span class="n">period_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--max-period&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">SUPPRESS</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;P&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;maximum period of each star &#39;</span>
+             <span class="s">&#39;(default = 32.0)&#39;</span><span class="p">)</span>
+    <span class="n">period_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--coarse-precision&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">SUPPRESS</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;level of granularity on first pass &#39;</span>
+             <span class="s">&#39;(default = 0.00001)&#39;</span><span class="p">)</span>
+    <span class="n">period_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--fine-precision&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">SUPPRESS</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;level of granularity on second pass &#39;</span>
+             <span class="s">&#39;(default = 0.000000001)&#39;</span><span class="p">)</span>
+    <span class="n">period_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--periodogram&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;Lomb_Scargle&quot;</span><span class="p">,</span> <span class="s">&quot;conditional_entropy&quot;</span><span class="p">],</span>
+        <span class="n">default</span><span class="o">=</span><span class="s">&quot;Lomb_Scargle&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;method for determining period &#39;</span>
+             <span class="s">&#39;(default = Lomb_Scargle)&#39;</span><span class="p">)</span>
+    <span class="n">fourier_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-d&#39;</span><span class="p">,</span> <span class="s">&#39;--fourier-degree&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">20</span><span class="p">),</span> <span class="n">metavar</span><span class="o">=</span><span class="p">(</span><span class="s">&#39;MIN&#39;</span><span class="p">,</span> <span class="s">&#39;MAX&#39;</span><span class="p">),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;range of degrees of fourier fits to use &#39;</span>
+             <span class="s">&#39;(default = 2 20)&#39;</span><span class="p">)</span>
+    <span class="n">fourier_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-r&#39;</span><span class="p">,</span> <span class="s">&#39;--regressor&#39;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;Lasso&#39;</span><span class="p">,</span> <span class="s">&#39;OLS&#39;</span><span class="p">],</span>
+        <span class="n">default</span><span class="o">=</span><span class="s">&#39;Lasso&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;type of regressor to use &#39;</span>
+             <span class="s">&#39;(default = &quot;Lasso&quot;)&#39;</span><span class="p">)</span>
+    <span class="n">fourier_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--selector&#39;</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;Baart&#39;</span><span class="p">,</span> <span class="s">&#39;GridSearch&#39;</span><span class="p">],</span>
+        <span class="n">default</span><span class="o">=</span><span class="s">&#39;GridSearch&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;type of model selector to use &#39;</span>
+             <span class="s">&#39;(default = &quot;GridSearch&quot;)&#39;</span><span class="p">)</span>
+    <span class="n">fourier_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--series-form&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="s">&#39;cos&#39;</span><span class="p">,</span> <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s">&#39;sin&#39;</span><span class="p">,</span> <span class="s">&#39;cos&#39;</span><span class="p">],</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;form of Fourier series to use in coefficient output, &#39;</span>
+             <span class="s">&#39;does not effect the fit &#39;</span>
+             <span class="s">&#39;(default = &quot;cos&quot;)&#39;</span><span class="p">)</span>
+    <span class="n">outlier_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--sigma&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">float</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">SUPPRESS</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;rejection criterion for outliers &#39;</span>
+             <span class="s">&#39;(default = 20)&#39;</span><span class="p">)</span>
+    <span class="n">outlier_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--sigma-clipping&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">choices</span><span class="o">=</span><span class="p">[</span><span class="s">&quot;std&quot;</span><span class="p">,</span> <span class="s">&quot;mad&quot;</span><span class="p">],</span> <span class="n">default</span><span class="o">=</span><span class="s">&quot;mad&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;sigma clipping metric to use &#39;</span>
+             <span class="s">&#39;(default = &quot;mad&quot;)&#39;</span><span class="p">)</span>
+    <span class="n">lasso_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--max-iter&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span> <span class="n">metavar</span><span class="o">=</span><span class="s">&#39;N&#39;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s">&#39;maximum number of iterations in the Lasso &#39;</span>
+             <span class="s">&#39;(default = 1000)&#39;</span><span class="p">)</span>
+
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">rcParams</span> <span class="o">=</span> <span class="n">rc_params_from_file</span><span class="p">(</span><span class="n">fname</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">matplotlibrc</span><span class="p">,</span>
+                                       <span class="n">fail_on_error</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">output</span><span class="p">)</span>
+        <span class="n">plotypus</span><span class="o">.</span><span class="n">lightcurve</span><span class="o">.</span><span class="n">matplotlib</span><span class="o">.</span><span class="n">rcParams</span> <span class="o">=</span> <span class="n">rcParams</span>
+
+    <span class="n">regressor_choices</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&quot;Lasso&quot;</span>               <span class="p">:</span> <span class="n">LassoLarsIC</span><span class="p">(</span><span class="n">max_iter</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">max_iter</span><span class="p">,</span>
+                                            <span class="n">fit_intercept</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+        <span class="s">&quot;OLS&quot;</span>                 <span class="p">:</span> <span class="n">LinearRegression</span><span class="p">(</span><span class="n">fit_intercept</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="p">}</span>
+    <span class="n">selector_choices</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&quot;Baart&quot;</span>               <span class="p">:</span> <span class="bp">None</span><span class="p">,</span>
+        <span class="s">&quot;GridSearch&quot;</span>          <span class="p">:</span> <span class="n">GridSearchCV</span>
+    <span class="p">}</span>
+    <span class="n">periodogram_choices</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&quot;Lomb_Scargle&quot;</span>        <span class="p">:</span> <span class="n">Lomb_Scargle</span><span class="p">,</span>
+        <span class="s">&quot;conditional_entropy&quot;</span> <span class="p">:</span> <span class="n">conditional_entropy</span>
+    <span class="p">}</span>
+    <span class="n">sigma_clipping_choices</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s">&quot;std&quot;</span>                 <span class="p">:</span> <span class="n">std</span><span class="p">,</span>
+        <span class="s">&quot;mad&quot;</span>                 <span class="p">:</span> <span class="n">mad</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="s">&#39;scoring&#39;</span><span class="p">):</span>
+        <span class="n">scoring_choices</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s">&#39;R2&#39;</span>              <span class="p">:</span> <span class="s">&#39;r2&#39;</span><span class="p">,</span>
+            <span class="s">&#39;MSE&#39;</span>             <span class="p">:</span> <span class="s">&#39;mean_squared_error&#39;</span>
+        <span class="p">}</span>
+        <span class="n">args</span><span class="o">.</span><span class="n">scoring</span> <span class="o">=</span> <span class="n">scoring_choices</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">scoring</span><span class="p">]</span>
+
+    <span class="n">args</span><span class="o">.</span><span class="n">regressor</span> <span class="o">=</span> <span class="n">regressor_choices</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">regressor</span><span class="p">]</span>
+    <span class="n">Selector</span> <span class="o">=</span> <span class="n">selector_choices</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">selector</span><span class="p">]</span> <span class="ow">or</span> <span class="n">GridSearchCV</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">periodogram</span> <span class="o">=</span> <span class="n">periodogram_choices</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">periodogram</span><span class="p">]</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">sigma_clipping</span> <span class="o">=</span> <span class="n">sigma_clipping_choices</span><span class="p">[</span><span class="n">args</span><span class="o">.</span><span class="n">sigma_clipping</span><span class="p">]</span>
+
+    <span class="n">args</span><span class="o">.</span><span class="n">predictor</span> <span class="o">=</span> <span class="n">make_predictor</span><span class="p">(</span><span class="n">Selector</span><span class="o">=</span><span class="n">Selector</span><span class="p">,</span>
+                                    <span class="n">use_baart</span><span class="o">=</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">selector</span> <span class="o">==</span> <span class="s">&#39;Baart&#39;</span><span class="p">),</span>
+                                    <span class="o">**</span><span class="nb">vars</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+    <span class="n">args</span><span class="o">.</span><span class="n">phases</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="o">/</span><span class="n">args</span><span class="o">.</span><span class="n">phase_points</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">periods</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">periods</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="n">verbose_print</span><span class="p">(</span><span class="s">&quot;Parsing periods file {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">periods</span><span class="p">),</span>
+                          <span class="n">operation</span><span class="o">=</span><span class="s">&quot;period&quot;</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">verbosity</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">periods</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">periods</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">period</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span>
+                                <span class="ow">in</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span>
+                                    <span class="ow">in</span> <span class="n">f</span> <span class="k">if</span> <span class="s">&#39; &#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">)}</span>
+                <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">periods</span> <span class="o">==</span> <span class="p">{}:</span>
+                    <span class="n">verbose_print</span><span class="p">(</span><span class="s">&quot;No periods found&quot;</span><span class="p">,</span>
+                                  <span class="n">operation</span><span class="o">=</span><span class="s">&quot;period&quot;</span><span class="p">,</span>
+                                  <span class="n">verbosity</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">verbosity</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">shifts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">shifts</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s">&#39;@&#39;</span><span class="p">):</span>
+            <span class="n">filename</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">shifts</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">verbose_print</span><span class="p">(</span><span class="s">&quot;Parsing shifts file {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">filename</span><span class="p">),</span>
+                          <span class="n">operation</span><span class="o">=</span><span class="s">&quot;shift&quot;</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">verbosity</span><span class="p">)</span>
+            <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">shifts</span> <span class="o">=</span> <span class="p">{</span><span class="n">name</span><span class="p">:</span> <span class="nb">float</span><span class="p">(</span><span class="n">shift</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
+                              <span class="ow">in</span> <span class="p">(</span><span class="n">line</span><span class="o">.</span><span class="n">strip</span><span class="p">()</span><span class="o">.</span><span class="n">split</span><span class="p">()</span> <span class="k">for</span> <span class="n">line</span>
+                                  <span class="ow">in</span> <span class="n">f</span> <span class="k">if</span> <span class="s">&#39; &#39;</span> <span class="ow">in</span> <span class="n">line</span><span class="p">)}</span>
+                <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">shifts</span> <span class="o">==</span> <span class="p">{}:</span>
+                    <span class="n">verbose_print</span><span class="p">(</span><span class="s">&quot;No shifts found&quot;</span><span class="p">,</span>
+                                  <span class="n">operation</span><span class="o">=</span><span class="s">&quot;shift&quot;</span><span class="p">,</span>
+                                  <span class="n">verbosity</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">verbosity</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="nb">float</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">shifts</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="k">print</span><span class="p">(</span><span class="s">&quot;error: &quot;</span>
+                      <span class="s">&quot;shifts must be number or a filename prefixed with &#39;@&#39;&quot;</span><span class="p">,</span>
+                      <span class="nb">file</span><span class="o">=</span><span class="n">stderr</span><span class="p">)</span>
+                <span class="nb">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">args</span>
+
+</div>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../plotypus.plotypus.html#plotypus.plotypus.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+    <span class="n">ops</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">()</span>
+
+    <span class="n">min_degree</span><span class="p">,</span> <span class="n">max_degree</span> <span class="o">=</span> <span class="n">ops</span><span class="o">.</span><span class="n">fourier_degree</span>
+    <span class="n">filenames</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">_get_files</span><span class="p">(</span><span class="n">ops</span><span class="o">.</span><span class="n">input</span><span class="p">)))</span>
+    <span class="n">filepaths</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">filename</span><span class="p">:</span>
+                    <span class="n">filename</span> <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+                             <span class="k">else</span> <span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">ops</span><span class="o">.</span><span class="n">input</span><span class="p">,</span> <span class="n">filename</span><span class="p">),</span>
+                    <span class="n">filenames</span><span class="p">)</span>
+
+    <span class="c"># a dict containing all options which can be pickled, because</span>
+    <span class="c"># all parameters to pmap must be picklable</span>
+    <span class="n">picklable_ops</span> <span class="o">=</span> <span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="nb">vars</span><span class="p">(</span><span class="n">ops</span><span class="p">)[</span><span class="n">k</span><span class="p">]</span>
+                     <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">ops</span><span class="p">)</span>
+                     <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">{</span><span class="s">&#39;input&#39;</span><span class="p">}}</span>
+    <span class="c"># print file header</span>
+    <span class="k">print</span><span class="p">(</span><span class="o">*</span><span class="p">[</span><span class="s">&#39;Name&#39;</span><span class="p">,</span>
+            <span class="s">&#39;Period&#39;</span><span class="p">,</span>
+            <span class="s">&#39;Shift&#39;</span><span class="p">,</span>
+            <span class="s">&#39;Coverage&#39;</span><span class="p">,</span>
+            <span class="s">&#39;Inliers&#39;</span><span class="p">,</span>
+            <span class="s">&#39;Outliers&#39;</span><span class="p">,</span>
+            <span class="s">&#39;R^2&#39;</span><span class="p">,</span>
+            <span class="s">&#39;MSE&#39;</span><span class="p">,</span>
+            <span class="s">&#39;Degree&#39;</span><span class="p">,</span>
+            <span class="s">&#39;A_0&#39;</span><span class="p">,</span>
+            <span class="s">&#39;dA_0&#39;</span><span class="p">,</span>
+            <span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="s">&#39;A_{0}</span><span class="se">\t</span><span class="s">Phi_{0}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_degree</span><span class="o">+</span><span class="mi">1</span><span class="p">))),</span>
+            <span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="s">&#39;R_{0}1</span><span class="se">\t</span><span class="s">phi_{0}1&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">max_degree</span><span class="o">+</span><span class="mi">1</span><span class="p">))),</span>
+            <span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">map</span><span class="p">(</span><span class="s">&#39;Phase{}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">,</span> <span class="nb">range</span><span class="p">(</span><span class="n">ops</span><span class="o">.</span><span class="n">phase_points</span><span class="p">)))],</span>
+        <span class="n">sep</span><span class="o">=</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span>
+
+    <span class="n">printer</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">result</span><span class="p">:</span> <span class="n">_print_star</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">max_degree</span><span class="p">,</span> <span class="n">ops</span><span class="o">.</span><span class="n">series_form</span><span class="p">,</span>
+                                         <span class="n">ops</span><span class="o">.</span><span class="n">format</span><span class="p">)</span> \
+                             <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="bp">None</span>
+    <span class="n">pmap</span><span class="p">(</span><span class="n">process_star</span><span class="p">,</span> <span class="n">filepaths</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="n">printer</span><span class="p">,</span>
+         <span class="n">processes</span><span class="o">=</span><span class="n">ops</span><span class="o">.</span><span class="n">star_processes</span><span class="p">,</span> <span class="o">**</span><span class="n">picklable_ops</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="process_star"><a class="viewcode-back" href="../../plotypus.plotypus.html#plotypus.plotypus.process_star">[docs]</a><span class="k">def</span> <span class="nf">process_star</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="p">{},</span> <span class="n">shifts</span><span class="o">=</span><span class="p">{},</span> <span class="o">**</span><span class="n">ops</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Processes a star&#39;s lightcurve, prints its coefficients, and saves</span>
+<span class="sd">    its plotted lightcurve to a file. Returns the result of get_lightcurve.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="s">&#39;star_name&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ops</span><span class="p">:</span>
+        <span class="n">_name</span> <span class="o">=</span> <span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">extension</span> <span class="o">=</span> <span class="n">ops</span><span class="p">[</span><span class="s">&#39;extension&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">_name</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">extension</span><span class="p">):</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">_name</span><span class="p">[:</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">extension</span><span class="p">)]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c"># file has wrong extension</span>
+            <span class="k">return</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">ops</span><span class="p">[</span><span class="s">&#39;star_name&#39;</span><span class="p">]</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_period</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">periods</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="n">_period</span> <span class="o">=</span> <span class="n">periods</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">if</span> <span class="n">periods</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="bp">None</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">_shift</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">shifts</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+        <span class="n">_shift</span> <span class="o">=</span> <span class="n">shifts</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">name</span><span class="p">)</span> <span class="k">if</span> <span class="n">shifts</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span> <span class="k">else</span> <span class="bp">None</span>
+    
+
+    <span class="n">result</span> <span class="o">=</span> <span class="n">get_lightcurve_from_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                      <span class="n">period</span><span class="o">=</span><span class="n">_period</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="n">_shift</span><span class="p">,</span>
+                                      <span class="o">**</span><span class="n">ops</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span>
+    <span class="k">if</span> <span class="n">output</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">plot_lightcurve</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;lightcurve&#39;</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;period&#39;</span><span class="p">],</span>
+                        <span class="n">result</span><span class="p">[</span><span class="s">&#39;phased_data&#39;</span><span class="p">],</span> <span class="n">output</span><span class="o">=</span><span class="n">output</span><span class="p">,</span> <span class="o">**</span><span class="n">ops</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">result</span>
+
+</div>
+<span class="k">def</span> <span class="nf">_print_star</span><span class="p">(</span><span class="n">result</span><span class="p">,</span> <span class="n">max_degree</span><span class="p">,</span> <span class="n">form</span><span class="p">,</span> <span class="n">fmt</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="c"># function which formats every number in a sequence according to fmt</span>
+    <span class="n">format_all</span> <span class="o">=</span> <span class="n">partial</span><span class="p">(</span><span class="nb">map</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">fmt</span> <span class="o">%</span> <span class="n">x</span><span class="p">)</span>
+
+    <span class="c"># count inliers and outliers</span>
+    <span class="n">points</span>   <span class="o">=</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;phased_data&#39;</span><span class="p">][:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">size</span>
+    <span class="n">outliers</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">count_masked</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;phased_data&#39;</span><span class="p">][:,</span> <span class="mi">0</span><span class="p">])</span>
+    <span class="n">inliers</span>  <span class="o">=</span> <span class="n">points</span> <span class="o">-</span> <span class="n">outliers</span>
+
+    <span class="c"># get fourier coefficients and compute ratios</span>
+    <span class="n">coefs</span>  <span class="o">=</span> <span class="n">Fourier</span><span class="o">.</span><span class="n">phase_shifted_coefficients</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;coefficients&#39;</span><span class="p">],</span>
+                                                <span class="n">shift</span><span class="o">=</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;shift&#39;</span><span class="p">],</span>
+                                                <span class="n">form</span><span class="o">=</span><span class="n">form</span><span class="p">)</span>
+    <span class="n">_coefs</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">(([</span><span class="n">coefs</span><span class="p">[</span><span class="mi">0</span><span class="p">]],</span>
+                               <span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;dA_0&#39;</span><span class="p">]],</span>
+                               <span class="n">coefs</span><span class="p">[</span><span class="mi">1</span><span class="p">:]))</span>
+    <span class="n">fourier_ratios</span> <span class="o">=</span> <span class="n">Fourier</span><span class="o">.</span><span class="n">fourier_ratios</span><span class="p">(</span><span class="n">coefs</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c"># create the vectors of zeroes</span>
+    <span class="n">coef_zeros</span>  <span class="o">=</span> <span class="n">repeat</span><span class="p">(</span><span class="s">&#39;0&#39;</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="n">max_degree</span> <span class="o">+</span> <span class="mi">1</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">coefs</span><span class="p">)))</span>
+    <span class="n">ratio_zeros</span> <span class="o">=</span> <span class="n">repeat</span><span class="p">(</span><span class="s">&#39;0&#39;</span><span class="p">,</span> <span class="n">times</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">max_degree</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">-</span> <span class="nb">len</span><span class="p">(</span><span class="n">fourier_ratios</span><span class="p">)))</span>
+
+    <span class="c"># print the entry for the star with tabs as separators</span>
+    <span class="c"># and itertools.chain to separate the different results into a</span>
+    <span class="c"># continuous list which is then unpacked</span>
+    <span class="k">print</span><span class="p">(</span><span class="o">*</span><span class="n">chain</span><span class="p">(</span><span class="o">*</span><span class="p">[[</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;name&#39;</span><span class="p">]],</span>
+                   <span class="nb">map</span><span class="p">(</span><span class="nb">str</span><span class="p">,</span>
+                       <span class="p">[</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;period&#39;</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;shift&#39;</span><span class="p">],</span> <span class="n">result</span><span class="p">[</span><span class="s">&#39;coverage&#39;</span><span class="p">],</span>
+                        <span class="n">inliers</span><span class="p">,</span> <span class="n">outliers</span><span class="p">,</span>
+                        <span class="n">result</span><span class="p">[</span><span class="s">&#39;R2&#39;</span><span class="p">],</span>     <span class="n">result</span><span class="p">[</span><span class="s">&#39;MSE&#39;</span><span class="p">],</span>   <span class="n">result</span><span class="p">[</span><span class="s">&#39;degree&#39;</span><span class="p">]]),</span>
+                   <span class="c"># coefficients and fourier ratios with trailing zeros</span>
+                   <span class="c"># formatted defined by the user-provided fmt string</span>
+                   <span class="n">format_all</span><span class="p">(</span><span class="n">_coefs</span><span class="p">),</span>         <span class="n">coef_zeros</span><span class="p">,</span>
+                   <span class="n">format_all</span><span class="p">(</span><span class="n">fourier_ratios</span><span class="p">),</span> <span class="n">ratio_zeros</span><span class="p">,</span>
+                   <span class="n">format_all</span><span class="p">(</span><span class="n">result</span><span class="p">[</span><span class="s">&#39;lightcurve&#39;</span><span class="p">])]),</span>
+        <span class="n">sep</span><span class="o">=</span><span class="s">&#39;</span><span class="se">\t</span><span class="s">&#39;</span><span class="p">)</span>
+
+
+<span class="k">def</span> <span class="nf">_get_files</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">input</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">stdin</span>
+    <span class="k">elif</span> <span class="nb">input</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s">&quot;@&quot;</span><span class="p">:</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="nb">input</span><span class="p">[</span><span class="mi">1</span><span class="p">:],</span> <span class="s">&#39;r&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">map</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">:</span> <span class="n">x</span><span class="o">.</span><span class="n">strip</span><span class="p">(),</span> <span class="n">f</span><span class="o">.</span><span class="n">readlines</span><span class="p">())</span>
+    <span class="k">elif</span> <span class="n">path</span><span class="o">.</span><span class="n">isfile</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="nb">input</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="n">path</span><span class="o">.</span><span class="n">isdir</span><span class="p">(</span><span class="nb">input</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">listdir</span><span class="p">(</span><span class="nb">input</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">FileNotFoundError</span><span class="p">(</span><span class="s">&#39;file {} not found&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">input</span><span class="p">))</span>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="nb">exit</span><span class="p">(</span><span class="n">main</span><span class="p">())</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation index</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+  </div>
+  
+  </body>
+</html>
