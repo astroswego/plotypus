@@ -1,7 +1,7 @@
 # plotypus
 
 A Python library and command line utility for manipulating and plotting stellar
-lightcurves.
+lightcurves. Full documentation available [here](https://astroswego.github.io/plotypus/).
 
 ## authors
 
