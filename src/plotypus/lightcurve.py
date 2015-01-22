@@ -406,7 +406,7 @@ def find_outliers(data, predictor, sigma,
     Parameters
     ----------
     data : array-like, shape = [n_samples, 2] or [n_samples, 3]
-        Input array of time, magnitude, and optional error, column-wise.
+        Input array of phase, magnitude, and optional error, column-wise.
     predictor : object that has `fit` and `predict` methods, optional
         Object which fits the light curve obtained from *data* after rephasing.
     sigma : number
