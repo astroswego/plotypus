@@ -92,7 +92,7 @@ def get_lightcurve(data, copy=False, name=None,
                    period_processes=1,
                    sigma=20,
                    shift=None,
-                   min_phase_cover=0.0, phases=numpy.arange(0, 1, 0.01),
+                   min_phase_cover=0.0, n_phases=100,
                    verbosity=[], **kwargs):
     """
     Fits a light curve to the given `data` using the specified methods,
@@ -219,6 +219,7 @@ def get_lightcurve(data, copy=False, name=None,
     get_lightcurve_from_file, get_lightcurves_from_file
     """
     data = numpy.ma.array(data, copy=copy)
+    phases = numpy.linspace(0, 1, n_phases, endpoint=False)
 # TODO ###
 # Replace dA_0 with error matrix dA
     if predictor is None:
