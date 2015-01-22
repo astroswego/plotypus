@@ -24,8 +24,7 @@ class Fourier():
     def transform(self, X, y=None, **params):
         data = numpy.dstack((numpy.array(X).T[0], range(len(X))))[0]
         phase, order = data[data[:,0].argsort()].T
-        coefficients = self.trigonometric_coefficient_matrix(phase,
-                                                             self.degree)
+        coefficients = self.design_matrix(phase, self.degree)
         return coefficients[order.argsort()]
 
     def get_params(self, deep):
@@ -62,7 +61,7 @@ class Fourier():
         return (2 * (len(X) - 1))**(-1/2)
 
     @staticmethod
-    def trigonometric_coefficient_matrix(phases, degree):
+    def design_matrix(phases, degree):
         """Constructs an Nx2n+1 matrix of the form:
 / 1 sin(1*2*pi*phase[0]) cos(1*2*pi*phase[0]) ... cos(n*2*pi*phase[0]) \
 | 1 sin(1*2*pi*phase[1]) cos(1*2*pi*phase[1]) ... cos(n*2*pi*phase[1]) |
