@@ -409,7 +409,7 @@
 <span class="sd">    out : dict</span>
 <span class="sd">        See :func:`get_lightcurve`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="n">skiprows</span><span class="p">,</span> <span class="n">use_cols</span><span class="o">=</span><span class="n">use_cols</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="n">skiprows</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="n">use_cols</span><span class="p">)</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="n">masked_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">get_lightcurve</span><span class="p">(</span><span class="n">masked_data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
@@ -461,7 +461,7 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    data : array-like, shape = [n_samples, 2] or [n_samples, 3]</span>
-<span class="sd">        Input array of time, magnitude, and optional error, column-wise.</span>
+<span class="sd">        Input array of phase, magnitude, and optional error, column-wise.</span>
 <span class="sd">    predictor : object that has `fit` and `predict` methods, optional</span>
 <span class="sd">        Object which fits the light curve obtained from *data* after rephasing.</span>
 <span class="sd">    sigma : number</span>
@@ -474,7 +474,7 @@
 <span class="sd">    out : array-like, shape = data.shape</span>
 <span class="sd">        Boolean array indicating the outliers in the given *data* array.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">phase</span><span class="p">,</span> <span class="n">mag</span><span class="p">,</span> <span class="o">*</span><span class="n">err</span> <span class="o">=</span> <span class="n">rephase</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">period</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">phase</span><span class="p">,</span> <span class="n">mag</span><span class="p">,</span> <span class="o">*</span><span class="n">err</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span>
     <span class="n">residuals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">predictor</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">colvec</span><span class="p">(</span><span class="n">phase</span><span class="p">))</span> <span class="o">-</span> <span class="n">mag</span><span class="p">)</span>
     <span class="n">outliers</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">logical_and</span><span class="p">((</span><span class="n">residuals</span> <span class="o">&gt;</span> <span class="n">err</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="bp">True</span><span class="p">,</span>
                                  <span class="n">residuals</span> <span class="o">&gt;</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">method</span><span class="p">(</span><span class="n">residuals</span><span class="p">))</span>
