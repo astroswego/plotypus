@@ -89,14 +89,13 @@ def get_lightcurve(data, copy=False, name=None,
                    sigma_clipping=mad,
                    scoring='r2', scoring_cv=3, scoring_processes=1,
                    period=None, min_period=0.2, max_period=32,
-                   min_period_count=1, max_period_count=1,
                    coarse_precision=1e-5, fine_precision=1e-9,
                    period_processes=1,
                    sigma=20,
                    shift=None,
                    min_phase_cover=0.0, n_phases=100,
                    verbosity=(), **kwargs):
-    """get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring='r2', scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, min_period_count=1, max_period_count=1, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=(), **kwargs)
+    """get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring='r2', scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=(), **kwargs)
 
     Fits a light curve to the given `data` using the specified methods,
     with default behavior defined for all methods.
@@ -155,14 +154,6 @@ def get_lightcurve(data, copy=False, name=None,
     max_period : non-negative number, optional
         Upper bound on period(s) obtained by ``periodogram`` (default 32.0).
 
-    min_period_count : non-negative number, optional
-        Lower bound on number of periods obtained by ``periodogram``
-        (default 1).
-
-    max_period_count : non-negative number, optional
-        Upper bound on number of periods obtained by ``periodogram``
-        (default 1).
-
     course_precision : positive number, optional
         Precision used in first period search sweep (default 1e-5).
 
@@ -194,11 +185,11 @@ def get_lightcurve(data, copy=False, name=None,
 
             - name : str or None
                 The name of the star.
-            - period : array-like, shape = [] or [n_periods]
-                The star's period(s).
+            - period : number
+                The star's period.
             - lightcurve : array-like, shape = [n_phases]
                 Magnitudes of fitted light curve sampled at ``phases``.
-            - coefficients : array-like, shape = [n_coeffs, n_phases]
+            - coefficients : array-like, shape = [n_coeffs]
                 Fitted light curve coefficients.
             - dA_0 : non-negative number
                 Error on mean magnitude.
@@ -241,7 +232,6 @@ def get_lightcurve(data, copy=False, name=None,
                           operation="period", verbosity=verbosity)
             _period = find_period(signal,
                                   min_period, max_period,
-                                  min_period_count, max_period_count,
                                   coarse_precision, fine_precision,
                                   periodogram, period_processes)
 

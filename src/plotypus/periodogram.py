@@ -13,7 +13,7 @@ __all__ = [
 
 
 def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
-    time, mags, *e = data
+    time, mags, *e = data.T
     scaled_mags = (mags-mags.mean())/mags.std()
     minf, maxf = 2*np.pi/max_period, 2*np.pi/min_period
     freqs = np.arange(minf, maxf, precision)
@@ -86,7 +86,6 @@ def CE(period, data, xbins=10, ybins=5):
 
 def find_period(data,
                 min_period=0.2, max_period=32.0,
-                min_period_count=1, max_period_count=1,
                 coarse_precision=1e-5, fine_precision=1e-9,
                 periodogram=Lomb_Scargle,
                 period_jobs=1):
