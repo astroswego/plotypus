@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Welcome to plotypus’s documentation! &mdash; plotypus 0.2.5rc1 documentation</title>
+    <title>Introduction &mdash; plotypus 0.2.5.dev0 documentation</title>
     
     <link rel="stylesheet" href="_static/readable.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    './',
-        VERSION:     '0.2.5rc1',
+        VERSION:     '0.2.5.dev0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,8 +23,8 @@
     <script type="text/javascript" src="_static/jquery.js"></script>
     <script type="text/javascript" src="_static/underscore.js"></script>
     <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="plotypus 0.2.5rc1 documentation" href="#" />
-    <link rel="next" title="plotypus package" href="plotypus.html" />
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="plotypus 0.2.5.dev0 documentation" href="#" />
    
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
@@ -35,6 +35,20 @@
   <div class="indexwrapper">
   
 
+
+<link rel="shortcut icon" href="_static/icon.png">
+
+<!-- The "Fork me on github" ribbon -->
+<img style="float: right; margin-bottom: -40px; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" usemap="#ribbonmap"/>
+<map name="ribbonmap">
+    <area shape="poly" coords="15,0,148,-1,148,135" href="https://github.com/astroswego/plotypus" title="Fork me on GitHub" />
+</map>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="#"><img src="_static/logo.svg" border="0" alt="plotypus"/></a>
+</div>
+
+
     <div class="related">
       <h3>Navigation</h3>
       <ul>
@@ -44,56 +58,27 @@
         <li class="right" >
           <a href="py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="plotypus.html" title="plotypus package"
-             accesskey="N">next</a> |</li>
-        <li><a href="#">plotypus 0.2.5rc1 documentation</a> &raquo;</li> 
+        <li><a href="#">home</a>|&nbsp;</li>
+        <li><a href="search.html">search</a>|&nbsp;</li>
+        <li><a href="examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="contents.html">docs</a> &raquo;</li>
+ 
       </ul>
-    </div>  
+    </div>
 
-    <div class="document">
-      <div class="documentwrapper">
-        <div class="bodywrapper">
-          <div class="body">
-            
-  <div class="section" id="welcome-to-plotypus-s-documentation">
-<h1>Welcome to plotypus&#8217;s documentation!<a class="headerlink" href="#welcome-to-plotypus-s-documentation" title="Permalink to this headline">¶</a></h1>
-<p>Contents:</p>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="plotypus.html">plotypus package</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="plotypus.html#subpackages">Subpackages</a></li>
-<li class="toctree-l2"><a class="reference internal" href="plotypus.html#submodules">Submodules</a></li>
-<li class="toctree-l2"><a class="reference internal" href="plotypus.html#module-contents">Module contents</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
-<div class="section" id="indices-and-tables">
-<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
-<ul class="simple">
-<li><a class="reference internal" href="genindex.html"><em>Index</em></a></li>
-<li><a class="reference internal" href="py-modindex.html"><em>Module Index</em></a></li>
-<li><a class="reference internal" href="search.html"><em>Search Page</em></a></li>
-</ul>
-</div>
-
-
-          </div>
-        </div>
-      </div>
       <div class="sphinxsidebar">
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
-<li><a class="reference internal" href="#">Welcome to plotypus&#8217;s documentation!</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#">Introduction</a></li>
+<li><a class="reference internal" href="#installation">Installation</a></li>
+<li><a class="reference internal" href="#documentation">Documentation</a></li>
+<li><a class="reference internal" href="#citing-plotypus">Citing plotypus</a></li>
+<li><a class="reference internal" href="#open-source">Open source</a></li>
 </ul>
 <h3>Related Topics</h3>
 <ul>
   <li><a href="#">Documentation index</a><ul>
-      <li>Next: <a href="plotypus.html" title="next chapter">plotypus package</a></li>
   </ul></li>
 </ul>
   <h3>This Page</h3>
@@ -114,6 +99,38 @@
     </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>plotypus is a <a class="reference external" href="http://www.python.org">Python</a> library and command line tool
+for modelling and plotting the <a class="reference external" href="https://en.wikipedia.org/wiki/Light_curve">light curves</a> of <a class="reference external" href="https://en.wikipedia.org/wiki/Variable_star#Intrinsic_variable_stars">intrinsic variable stars</a>.</p>
+</div>
+<div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>See <a class="reference external" href="user_guide/install.html">installation guide</a>.</p>
+</div>
+<div class="section" id="documentation">
+<h1>Documentation<a class="headerlink" href="#documentation" title="Permalink to this headline">¶</a></h1>
+<p>This is the documentation for version 0.2.5.</p>
+</div>
+<div class="section" id="citing-plotypus">
+<h1>Citing plotypus<a class="headerlink" href="#citing-plotypus" title="Permalink to this headline">¶</a></h1>
+<p>plotypus was created by <a class="reference external" href="mailto:ebelling&#37;&#52;&#48;indiana&#46;edu">Earl Bellinger</a> and <a class="reference external" href="mailto:dwysocki&#37;&#52;&#48;oswego&#46;edu">Daniel Wysocki</a>, with advisement from <a class="reference external" href="mailto:shashi&#46;kanbur&#37;&#52;&#48;oswego&#46;edu">Dr<span>&#46;</span> Shashi Kanbur</a>. If plotypus is used in a project that leads to a scientific publication, please acknowledge this work by citing the project. You can use this <a class="reference external" href="citing.html">citation entry</a>.</p>
+</div>
+<div class="section" id="open-source">
+<h1>Open source<a class="headerlink" href="#open-source" title="Permalink to this headline">¶</a></h1>
+<p>plotypus is an open source project, published under the Lesser GNU General Public License (<a class="reference external" href="https://www.gnu.org/copyleft/lesser.html">LGPLv3</a>).</p>
+</div>
+
+
+          </div>
         </div>
       </div>
       <div class="clearer"></div>

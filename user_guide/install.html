@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Overview: module code &mdash; plotypus 0.2.5.dev0 documentation</title>
+    <title>Installation &mdash; plotypus 0.2.5.dev0 documentation</title>
     
     <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -70,6 +70,11 @@
   <li><a href="../index.html">Documentation index</a><ul>
   </ul></li>
 </ul>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/user_guide/install.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -91,13 +96,43 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <h1>All modules for which code is available</h1>
-<ul><li><a href="plotypus/lightcurve.html">plotypus.lightcurve</a></li>
-<li><a href="plotypus/periodogram.html">plotypus.periodogram</a></li>
-<li><a href="plotypus/plotypus.html">plotypus.plotypus</a></li>
-<li><a href="plotypus/preprocessing.html">plotypus.preprocessing</a></li>
-<li><a href="plotypus/utils.html">plotypus.utils</a></li>
+  <div class="section" id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Permalink to this headline">¶</a></h1>
+<p>To install plotypus, you will first need to install some dependencies. Read
+the documentation for installing each package, and ensure that they are all
+built for Python <strong>3</strong>. plotypus is not compatible with Python 2.</p>
+<ul class="simple">
+<li><a class="reference external" href="https://www.python.org/">Python 3</a></li>
+<li><a class="reference external" href="http://pythonhosted.org/setuptools/">setuptools</a></li>
+<li><a class="reference external" href="http://www.numpy.org/">numpy</a></li>
+<li><a class="reference external" href="http://scipy.org/">scipy</a></li>
+<li><a class="reference external" href="http://scikit-learn.org/stable/">scikit-learn</a></li>
+<li><a class="reference external" href="http://matplotlib.org/">matplotlib</a></li>
 </ul>
+<p>Once you have installed all dependencies, download the source from github:</p>
+<div class="highlight-python"><div class="highlight"><pre>git clone https://github.com/astroswego/plotypus.git
+</pre></div>
+</div>
+<p>and install:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt; cd plotypus
+&gt; python3 setup.py install
+</pre></div>
+</div>
+<p>If you would like to stay up-to-date with development, replace the last command with:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt; python3 setup.py develop
+</pre></div>
+</div>
+<p>Then, when you want to update, simply run:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt; git pull
+</pre></div>
+</div>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Depending on your setup, you may need to run <em>setup.py</em> as root, or
+install locally by appending the <tt class="docutils literal"><span class="pre">--user</span></tt> flag.</p>
+</div>
+</div>
+
 
           </div>
         </div>

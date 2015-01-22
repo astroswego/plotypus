@@ -6,27 +6,25 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>plotypus.lightcurve module &mdash; plotypus 0.2.5rc1 documentation</title>
+    <title>plotypus.lightcurve module &mdash; plotypus 0.2.5.dev0 documentation</title>
     
-    <link rel="stylesheet" href="_static/readable.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
     
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
-        URL_ROOT:    './',
-        VERSION:     '0.2.5rc1',
+        URL_ROOT:    '../',
+        VERSION:     '0.2.5.dev0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
       };
     </script>
-    <script type="text/javascript" src="_static/jquery.js"></script>
-    <script type="text/javascript" src="_static/underscore.js"></script>
-    <script type="text/javascript" src="_static/doctools.js"></script>
-    <link rel="top" title="plotypus 0.2.5rc1 documentation" href="index.html" />
-    <link rel="up" title="plotypus package" href="plotypus.html" />
-    <link rel="next" title="plotypus.periodogram module" href="plotypus.periodogram.html" />
-    <link rel="prev" title="plotypus.resources package" href="plotypus.resources.html" />
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="plotypus 0.2.5.dev0 documentation" href="../index.html" />
    
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
@@ -35,25 +33,63 @@
   
   
 
+
+<link rel="shortcut icon" href="_static/icon.png">
+
+<!-- The "Fork me on github" ribbon -->
+<img style="float: right; margin-bottom: -40px; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" usemap="#ribbonmap"/>
+<map name="ribbonmap">
+    <area shape="poly" coords="15,0,148,-1,148,135" href="https://github.com/astroswego/plotypus" title="Fork me on GitHub" />
+</map>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.svg" border="0" alt="plotypus"/></a>
+</div>
+
+
     <div class="related">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
-          <a href="genindex.html" title="General Index"
+          <a href="../genindex.html" title="General Index"
              accesskey="I">index</a></li>
         <li class="right" >
-          <a href="py-modindex.html" title="Python Module Index"
+          <a href="../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li class="right" >
-          <a href="plotypus.periodogram.html" title="plotypus.periodogram module"
-             accesskey="N">next</a> |</li>
-        <li class="right" >
-          <a href="plotypus.resources.html" title="plotypus.resources package"
-             accesskey="P">previous</a> |</li>
-        <li><a href="index.html">plotypus 0.2.5rc1 documentation</a> &raquo;</li>
-          <li><a href="plotypus.html" accesskey="U">plotypus package</a> &raquo;</li> 
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../contents.html">docs</a> &raquo;</li>
+ 
       </ul>
-    </div>  
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation index</a><ul>
+  </ul></li>
+</ul>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/plotypus.lightcurve.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -64,7 +100,7 @@
 <span id="plotypus-lightcurve-module"></span><h1>plotypus.lightcurve module<a class="headerlink" href="#module-plotypus.lightcurve" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="plotypus.lightcurve.make_predictor">
-<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">make_predictor</tt><big>(</big><em>regressor=LassoLarsIC(fit_intercept=False)</em>, <em>Selector=GridSearchCV</em>, <em>fourier_degree=(2</em>, <em>25)</em>, <em>selector_processes=1</em>, <em>use_baart=False</em>, <em>scoring='r2'</em>, <em>scoring_cv=3</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/plotypus/lightcurve.html#make_predictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.make_predictor" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">make_predictor</tt><big>(</big><em>regressor=LassoLarsIC(fit_intercept=False)</em>, <em>Selector=GridSearchCV</em>, <em>fourier_degree=(2</em>, <em>25)</em>, <em>selector_processes=1</em>, <em>use_baart=False</em>, <em>scoring='r2'</em>, <em>scoring_cv=3</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#make_predictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.make_predictor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Makes a predictor object for use in get_lightcurve.</p>
 <dl class="docutils">
 <dt>regressor <span class="classifier-delimiter">:</span> <span class="classifier">object with &#8220;fit&#8221; and &#8220;transform&#8221; methods, optional</span></dt>
@@ -101,7 +137,7 @@ order (default (2, 25)).</dd>
 
 <dl class="function">
 <dt id="plotypus.lightcurve.get_lightcurve">
-<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">get_lightcurve</tt><big>(</big><em>data</em>, <em>copy=False</em>, <em>name=None</em>, <em>predictor=None</em>, <em>periodogram=Lomb_Scargle</em>, <em>sigma_clipping=mad</em>, <em>scoring='r2'</em>, <em>scoring_cv=3</em>, <em>scoring_processes=1</em>, <em>period=None</em>, <em>min_period=0.2</em>, <em>max_period=32</em>, <em>min_period_count=1</em>, <em>max_period_count=1</em>, <em>coarse_precision=1e-5</em>, <em>fine_precision=1e-9</em>, <em>period_processes=1</em>, <em>sigma=20</em>, <em>shift=None</em>, <em>min_phase_cover=0.0</em>, <em>n_phases=100</em>, <em>verbosity=()</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/plotypus/lightcurve.html#get_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.get_lightcurve" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">get_lightcurve</tt><big>(</big><em>data</em>, <em>copy=False</em>, <em>name=None</em>, <em>predictor=None</em>, <em>periodogram=Lomb_Scargle</em>, <em>sigma_clipping=mad</em>, <em>scoring='r2'</em>, <em>scoring_cv=3</em>, <em>scoring_processes=1</em>, <em>period=None</em>, <em>min_period=0.2</em>, <em>max_period=32</em>, <em>coarse_precision=1e-5</em>, <em>fine_precision=1e-9</em>, <em>period_processes=1</em>, <em>sigma=20</em>, <em>shift=None</em>, <em>min_phase_cover=0.0</em>, <em>n_phases=100</em>, <em>verbosity=()</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#get_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.get_lightcurve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fits a light curve to the given <cite>data</cite> using the specified methods,
 with default behavior defined for all methods.</p>
 <dl class="docutils">
@@ -150,12 +186,6 @@ data.</li>
 <dd>Lower bound on period(s) obtained by <tt class="docutils literal"><span class="pre">periodogram</span></tt> (default 0.2).</dd>
 <dt>max_period <span class="classifier-delimiter">:</span> <span class="classifier">non-negative number, optional</span></dt>
 <dd>Upper bound on period(s) obtained by <tt class="docutils literal"><span class="pre">periodogram</span></tt> (default 32.0).</dd>
-<dt>min_period_count <span class="classifier-delimiter">:</span> <span class="classifier">non-negative number, optional</span></dt>
-<dd>Lower bound on number of periods obtained by <tt class="docutils literal"><span class="pre">periodogram</span></tt>
-(default 1).</dd>
-<dt>max_period_count <span class="classifier-delimiter">:</span> <span class="classifier">non-negative number, optional</span></dt>
-<dd>Upper bound on number of periods obtained by <tt class="docutils literal"><span class="pre">periodogram</span></tt>
-(default 1).</dd>
 <dt>course_precision <span class="classifier-delimiter">:</span> <span class="classifier">positive number, optional</span></dt>
 <dd>Precision used in first period search sweep (default 1e-5).</dd>
 <dt>fine_precision <span class="classifier-delimiter">:</span> <span class="classifier">positive number, optional</span></dt>
@@ -186,8 +216,8 @@ printed if &#8220;outlier&#8221; verbosity is on, and None is returned</dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [] or [n_periods]</span></dt>
-<dd><p class="first last">The star&#8217;s period(s).</p>
+<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
+<dd><p class="first last">The star&#8217;s period.</p>
 </dd>
 </dl>
 </li>
@@ -198,7 +228,7 @@ printed if &#8220;outlier&#8221; verbosity is on, and None is returned</dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>coefficients <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_coeffs, n_phases]</span></dt>
+<dt>coefficients <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_coeffs]</span></dt>
 <dd><p class="first last">Fitted light curve coefficients.</p>
 </dd>
 </dl>
@@ -260,7 +290,7 @@ printed if &#8220;outlier&#8221; verbosity is on, and None is returned</dd>
 
 <dl class="function">
 <dt id="plotypus.lightcurve.get_lightcurve_from_file">
-<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">get_lightcurve_from_file</tt><big>(</big><em>file</em>, <em>*args</em>, <em>use_cols=None</em>, <em>skiprows=0</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/plotypus/lightcurve.html#get_lightcurve_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.get_lightcurve_from_file" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">get_lightcurve_from_file</tt><big>(</big><em>file</em>, <em>*args</em>, <em>use_cols=None</em>, <em>skiprows=0</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#get_lightcurve_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.get_lightcurve_from_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fits a light curve to the data contained in <em>file</em> using
 <a class="reference internal" href="#plotypus.lightcurve.get_lightcurve" title="plotypus.lightcurve.get_lightcurve"><tt class="xref py py-func docutils literal"><span class="pre">get_lightcurve()</span></tt></a>.</p>
 <dl class="docutils">
@@ -280,7 +310,7 @@ printed if &#8220;outlier&#8221; verbosity is on, and None is returned</dd>
 
 <dl class="function">
 <dt id="plotypus.lightcurve.find_outliers">
-<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">find_outliers</tt><big>(</big><em>data</em>, <em>predictor</em>, <em>sigma</em>, <em>method=mad</em><big>)</big><a class="reference internal" href="_modules/plotypus/lightcurve.html#find_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.find_outliers" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">find_outliers</tt><big>(</big><em>data</em>, <em>predictor</em>, <em>sigma</em>, <em>method=mad</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#find_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.find_outliers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a boolean array indicating the outliers in the given <em>data</em> array.</p>
 <dl class="docutils">
 <dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
@@ -300,7 +330,7 @@ printed if &#8220;outlier&#8221; verbosity is on, and None is returned</dd>
 
 <dl class="function">
 <dt id="plotypus.lightcurve.plot_lightcurve">
-<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">plot_lightcurve</tt><big>(</big><em>name</em>, <em>lightcurve</em>, <em>period</em>, <em>data</em>, <em>output='.'</em>, <em>legend=False</em>, <em>color=True</em>, <em>n_phases=100</em>, <em>err_const=0.0004</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="_modules/plotypus/lightcurve.html#plot_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.plot_lightcurve" title="Permalink to this definition">¶</a></dt>
+<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">plot_lightcurve</tt><big>(</big><em>name</em>, <em>lightcurve</em>, <em>period</em>, <em>data</em>, <em>output='.'</em>, <em>legend=False</em>, <em>color=True</em>, <em>n_phases=100</em>, <em>err_const=0.0004</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#plot_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.plot_lightcurve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a plot of the given <em>lightcurve</em> to directory <em>output</em>.</p>
 <dl class="docutils">
 <dt>name <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
@@ -329,36 +359,6 @@ Time should be unphased.</dd>
 
 
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
-<ul>
-  <li><a href="index.html">Documentation index</a><ul>
-  <li><a href="plotypus.html">plotypus package</a><ul>
-      <li>Previous: <a href="plotypus.resources.html" title="previous chapter">plotypus.resources package</a></li>
-      <li>Next: <a href="plotypus.periodogram.html" title="next chapter">plotypus.periodogram module</a></li>
-  </ul></li>
-  </ul></li>
-</ul>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/plotypus.lightcurve.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

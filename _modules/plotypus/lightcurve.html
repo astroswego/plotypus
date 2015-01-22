@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>plotypus.lightcurve &mdash; plotypus 0.2.5rc1 documentation</title>
+    <title>plotypus.lightcurve &mdash; plotypus 0.2.5.dev0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/readable.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.5rc1',
+        VERSION:     '0.2.5.dev0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="plotypus 0.2.5rc1 documentation" href="../../index.html" />
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="plotypus 0.2.5.dev0 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" />
    
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
@@ -32,6 +33,20 @@
   <body>
   
   
+
+
+<link rel="shortcut icon" href="_static/icon.png">
+
+<!-- The "Fork me on github" ribbon -->
+<img style="float: right; margin-bottom: -40px; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" usemap="#ribbonmap"/>
+<map name="ribbonmap">
+    <area shape="poly" coords="15,0,148,-1,148,135" href="https://github.com/astroswego/plotypus" title="Fork me on GitHub" />
+</map>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.svg" border="0" alt="plotypus"/></a>
+</div>
+
 
     <div class="related">
       <h3>Navigation</h3>
@@ -42,10 +57,38 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">plotypus 0.2.5rc1 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../contents.html">docs</a> &raquo;</li>
+
           <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation index</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -70,6 +113,7 @@
 <span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="kn">import</span> <span class="n">ConvergenceWarning</span>
 <span class="kn">import</span> <span class="nn">warnings</span>
 <span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">ConvergenceWarning</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
 <span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
@@ -81,7 +125,7 @@
 <span class="p">]</span>
 
 
-<div class="viewcode-block" id="make_predictor"><a class="viewcode-back" href="../../plotypus.lightcurve.html#plotypus.lightcurve.make_predictor">[docs]</a><span class="k">def</span> <span class="nf">make_predictor</span><span class="p">(</span><span class="n">regressor</span><span class="o">=</span><span class="n">LassoLarsIC</span><span class="p">(</span><span class="n">fit_intercept</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+<div class="viewcode-block" id="make_predictor"><a class="viewcode-back" href="../../api/plotypus.lightcurve.html#plotypus.lightcurve.make_predictor">[docs]</a><span class="k">def</span> <span class="nf">make_predictor</span><span class="p">(</span><span class="n">regressor</span><span class="o">=</span><span class="n">LassoLarsIC</span><span class="p">(</span><span class="n">fit_intercept</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
                    <span class="n">Selector</span><span class="o">=</span><span class="n">GridSearchCV</span><span class="p">,</span> <span class="n">fourier_degree</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span>
                    <span class="n">selector_processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                    <span class="n">use_baart</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s">&#39;r2&#39;</span><span class="p">,</span> <span class="n">scoring_cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
@@ -138,19 +182,18 @@
                         <span class="n">n_jobs</span><span class="o">=</span><span class="n">selector_processes</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="get_lightcurve"><a class="viewcode-back" href="../../plotypus.lightcurve.html#plotypus.lightcurve.get_lightcurve">[docs]</a><span class="k">def</span> <span class="nf">get_lightcurve</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+<div class="viewcode-block" id="get_lightcurve"><a class="viewcode-back" href="../../api/plotypus.lightcurve.html#plotypus.lightcurve.get_lightcurve">[docs]</a><span class="k">def</span> <span class="nf">get_lightcurve</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                    <span class="n">predictor</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">periodogram</span><span class="o">=</span><span class="n">Lomb_Scargle</span><span class="p">,</span>
                    <span class="n">sigma_clipping</span><span class="o">=</span><span class="n">mad</span><span class="p">,</span>
                    <span class="n">scoring</span><span class="o">=</span><span class="s">&#39;r2&#39;</span><span class="p">,</span> <span class="n">scoring_cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">scoring_processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                    <span class="n">period</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">min_period</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">max_period</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
-                   <span class="n">min_period_count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_period_count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                    <span class="n">coarse_precision</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">fine_precision</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span>
                    <span class="n">period_processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                    <span class="n">sigma</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
                    <span class="n">shift</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                    <span class="n">min_phase_cover</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">n_phases</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                    <span class="n">verbosity</span><span class="o">=</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring=&#39;r2&#39;, scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, min_period_count=1, max_period_count=1, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=(), **kwargs)</span>
+    <span class="sd">&quot;&quot;&quot;get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring=&#39;r2&#39;, scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=(), **kwargs)</span>
 
 <span class="sd">    Fits a light curve to the given `data` using the specified methods,</span>
 <span class="sd">    with default behavior defined for all methods.</span>
@@ -209,14 +252,6 @@
 <span class="sd">    max_period : non-negative number, optional</span>
 <span class="sd">        Upper bound on period(s) obtained by ``periodogram`` (default 32.0).</span>
 
-<span class="sd">    min_period_count : non-negative number, optional</span>
-<span class="sd">        Lower bound on number of periods obtained by ``periodogram``</span>
-<span class="sd">        (default 1).</span>
-
-<span class="sd">    max_period_count : non-negative number, optional</span>
-<span class="sd">        Upper bound on number of periods obtained by ``periodogram``</span>
-<span class="sd">        (default 1).</span>
-
 <span class="sd">    course_precision : positive number, optional</span>
 <span class="sd">        Precision used in first period search sweep (default 1e-5).</span>
 
@@ -248,11 +283,11 @@
 
 <span class="sd">            - name : str or None</span>
 <span class="sd">                The name of the star.</span>
-<span class="sd">            - period : array-like, shape = [] or [n_periods]</span>
-<span class="sd">                The star&#39;s period(s).</span>
+<span class="sd">            - period : number</span>
+<span class="sd">                The star&#39;s period.</span>
 <span class="sd">            - lightcurve : array-like, shape = [n_phases]</span>
 <span class="sd">                Magnitudes of fitted light curve sampled at ``phases``.</span>
-<span class="sd">            - coefficients : array-like, shape = [n_coeffs, n_phases]</span>
+<span class="sd">            - coefficients : array-like, shape = [n_coeffs]</span>
 <span class="sd">                Fitted light curve coefficients.</span>
 <span class="sd">            - dA_0 : non-negative number</span>
 <span class="sd">                Error on mean magnitude.</span>
@@ -295,7 +330,6 @@
                           <span class="n">operation</span><span class="o">=</span><span class="s">&quot;period&quot;</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
             <span class="n">_period</span> <span class="o">=</span> <span class="n">find_period</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span>
                                   <span class="n">min_period</span><span class="p">,</span> <span class="n">max_period</span><span class="p">,</span>
-                                  <span class="n">min_period_count</span><span class="p">,</span> <span class="n">max_period_count</span><span class="p">,</span>
                                   <span class="n">coarse_precision</span><span class="p">,</span> <span class="n">fine_precision</span><span class="p">,</span>
                                   <span class="n">periodogram</span><span class="p">,</span> <span class="n">period_processes</span><span class="p">)</span>
 
@@ -387,7 +421,7 @@
             <span class="s">&#39;coverage&#39;</span><span class="p">:</span>     <span class="n">coverage</span><span class="p">}</span>
 
 </div>
-<div class="viewcode-block" id="get_lightcurve_from_file"><a class="viewcode-back" href="../../plotypus.lightcurve.html#plotypus.lightcurve.get_lightcurve_from_file">[docs]</a><span class="k">def</span> <span class="nf">get_lightcurve_from_file</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">use_cols</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+<div class="viewcode-block" id="get_lightcurve_from_file"><a class="viewcode-back" href="../../api/plotypus.lightcurve.html#plotypus.lightcurve.get_lightcurve_from_file">[docs]</a><span class="k">def</span> <span class="nf">get_lightcurve_from_file</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">use_cols</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
                              <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0, **kwargs)</span>
 
@@ -452,7 +486,7 @@
 <span class="c">#     return single_periods(data, *args, **kwargs)</span>
 
 </div>
-<div class="viewcode-block" id="find_outliers"><a class="viewcode-back" href="../../plotypus.lightcurve.html#plotypus.lightcurve.find_outliers">[docs]</a><span class="k">def</span> <span class="nf">find_outliers</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">predictor</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span>
+<div class="viewcode-block" id="find_outliers"><a class="viewcode-back" href="../../api/plotypus.lightcurve.html#plotypus.lightcurve.find_outliers">[docs]</a><span class="k">def</span> <span class="nf">find_outliers</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">predictor</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span>
                   <span class="n">method</span><span class="o">=</span><span class="n">mad</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;find_outliers(data, predictor, sigma, method=mad)</span>
 
@@ -482,7 +516,7 @@
     <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">outliers</span><span class="p">),</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
 
 </div>
-<div class="viewcode-block" id="plot_lightcurve"><a class="viewcode-back" href="../../plotypus.lightcurve.html#plotypus.lightcurve.plot_lightcurve">[docs]</a><span class="k">def</span> <span class="nf">plot_lightcurve</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">lightcurve</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+<div class="viewcode-block" id="plot_lightcurve"><a class="viewcode-back" href="../../api/plotypus.lightcurve.html#plotypus.lightcurve.plot_lightcurve">[docs]</a><span class="k">def</span> <span class="nf">plot_lightcurve</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">lightcurve</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
                     <span class="n">color</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">n_phases</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                     <span class="n">err_const</span><span class="o">=</span><span class="mf">0.0004</span><span class="p">,</span>
                     <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -562,29 +596,6 @@
 </pre></div>
 
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
-<ul>
-  <li><a href="../../index.html">Documentation index</a><ul>
-  <li><a href="../index.html">Module code</a><ul>
-  </ul></li>
-  </ul></li>
-</ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

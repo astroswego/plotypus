@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>plotypus.plotypus &mdash; plotypus 0.2.5rc1 documentation</title>
+    <title>plotypus.plotypus &mdash; plotypus 0.2.5.dev0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/readable.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.5rc1',
+        VERSION:     '0.2.5.dev0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="plotypus 0.2.5rc1 documentation" href="../../index.html" />
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="plotypus 0.2.5.dev0 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" />
    
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
@@ -32,6 +33,20 @@
   <body>
   
   
+
+
+<link rel="shortcut icon" href="_static/icon.png">
+
+<!-- The "Fork me on github" ribbon -->
+<img style="float: right; margin-bottom: -40px; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" usemap="#ribbonmap"/>
+<map name="ribbonmap">
+    <area shape="poly" coords="15,0,148,-1,148,135" href="https://github.com/astroswego/plotypus" title="Fork me on GitHub" />
+</map>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.svg" border="0" alt="plotypus"/></a>
+</div>
+
 
     <div class="related">
       <h3>Navigation</h3>
@@ -42,10 +57,38 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">plotypus 0.2.5rc1 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../contents.html">docs</a> &raquo;</li>
+
           <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation index</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -73,7 +116,7 @@
 <span class="kn">from</span> <span class="nn">plotypus.resources</span> <span class="kn">import</span> <span class="n">matplotlibrc</span>
 
 
-<div class="viewcode-block" id="get_args"><a class="viewcode-back" href="../../plotypus.plotypus.html#plotypus.plotypus.get_args">[docs]</a><span class="k">def</span> <span class="nf">get_args</span><span class="p">():</span>
+<div class="viewcode-block" id="get_args"><a class="viewcode-back" href="../../api/plotypus.plotypus.html#plotypus.plotypus.get_args">[docs]</a><span class="k">def</span> <span class="nf">get_args</span><span class="p">():</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">()</span>
     <span class="n">general_group</span>  <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s">&#39;General&#39;</span><span class="p">)</span>
     <span class="n">parallel_group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s">&#39;Parallel&#39;</span><span class="p">)</span>
@@ -297,7 +340,7 @@
     <span class="k">return</span> <span class="n">args</span>
 
 </div>
-<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../plotypus.plotypus.html#plotypus.plotypus.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
+<div class="viewcode-block" id="main"><a class="viewcode-back" href="../../api/plotypus.plotypus.html#plotypus.plotypus.main">[docs]</a><span class="k">def</span> <span class="nf">main</span><span class="p">():</span>
     <span class="n">ops</span> <span class="o">=</span> <span class="n">get_args</span><span class="p">()</span>
 
     <span class="n">min_degree</span><span class="p">,</span> <span class="n">max_degree</span> <span class="o">=</span> <span class="n">ops</span><span class="o">.</span><span class="n">fourier_degree</span>
@@ -336,7 +379,7 @@
          <span class="n">processes</span><span class="o">=</span><span class="n">ops</span><span class="o">.</span><span class="n">star_processes</span><span class="p">,</span> <span class="o">**</span><span class="n">picklable_ops</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="process_star"><a class="viewcode-back" href="../../plotypus.plotypus.html#plotypus.plotypus.process_star">[docs]</a><span class="k">def</span> <span class="nf">process_star</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="p">{},</span> <span class="n">shifts</span><span class="o">=</span><span class="p">{},</span> <span class="o">**</span><span class="n">ops</span><span class="p">):</span>
+<div class="viewcode-block" id="process_star"><a class="viewcode-back" href="../../api/plotypus.plotypus.html#plotypus.plotypus.process_star">[docs]</a><span class="k">def</span> <span class="nf">process_star</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">output</span><span class="p">,</span> <span class="n">periods</span><span class="o">=</span><span class="p">{},</span> <span class="n">shifts</span><span class="o">=</span><span class="p">{},</span> <span class="o">**</span><span class="n">ops</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;Processes a star&#39;s lightcurve, prints its coefficients, and saves</span>
 <span class="sd">    its plotted lightcurve to a file. Returns the result of get_lightcurve.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -431,29 +474,6 @@
 </pre></div>
 
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
-<ul>
-  <li><a href="../../index.html">Documentation index</a><ul>
-  <li><a href="../index.html">Module code</a><ul>
-  </ul></li>
-  </ul></li>
-</ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

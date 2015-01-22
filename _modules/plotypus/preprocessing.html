@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>plotypus.preprocessing &mdash; plotypus 0.2.5rc1 documentation</title>
+    <title>plotypus.preprocessing &mdash; plotypus 0.2.5.dev0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/readable.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.5rc1',
+        VERSION:     '0.2.5.dev0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="plotypus 0.2.5rc1 documentation" href="../../index.html" />
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="plotypus 0.2.5.dev0 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" />
    
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
@@ -32,6 +33,20 @@
   <body>
   
   
+
+
+<link rel="shortcut icon" href="_static/icon.png">
+
+<!-- The "Fork me on github" ribbon -->
+<img style="float: right; margin-bottom: -40px; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" usemap="#ribbonmap"/>
+<map name="ribbonmap">
+    <area shape="poly" coords="15,0,148,-1,148,135" href="https://github.com/astroswego/plotypus" title="Fork me on GitHub" />
+</map>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.svg" border="0" alt="plotypus"/></a>
+</div>
+
 
     <div class="related">
       <h3>Navigation</h3>
@@ -42,10 +57,38 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">plotypus 0.2.5rc1 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../contents.html">docs</a> &raquo;</li>
+
           <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation index</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -64,33 +107,33 @@
 <span class="p">]</span>
 
 
-<div class="viewcode-block" id="Fourier"><a class="viewcode-back" href="../../plotypus.preprocessing.html#plotypus.preprocessing.Fourier">[docs]</a><span class="k">class</span> <span class="nc">Fourier</span><span class="p">():</span>
+<div class="viewcode-block" id="Fourier"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier">[docs]</a><span class="k">class</span> <span class="nc">Fourier</span><span class="p">():</span>
     <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">degree_range</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                  <span class="n">regressor</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">()):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">degree</span> <span class="o">=</span> <span class="n">degree</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">degree_range</span> <span class="o">=</span> <span class="n">degree_range</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">regressor</span> <span class="o">=</span> <span class="n">regressor</span>
 
-<div class="viewcode-block" id="Fourier.fit"><a class="viewcode-back" href="../../plotypus.preprocessing.html#plotypus.preprocessing.Fourier.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
+<div class="viewcode-block" id="Fourier.fit"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">degree_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">degree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baart_criteria</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
         <span class="k">return</span> <span class="bp">self</span>
 </div>
-<div class="viewcode-block" id="Fourier.transform"><a class="viewcode-back" href="../../plotypus.preprocessing.html#plotypus.preprocessing.Fourier.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+<div class="viewcode-block" id="Fourier.transform"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dstack</span><span class="p">((</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">))))[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">phase</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">argsort</span><span class="p">()]</span><span class="o">.</span><span class="n">T</span>
         <span class="n">coefficients</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">trigonometric_coefficient_matrix</span><span class="p">(</span><span class="n">phase</span><span class="p">,</span>
                                                              <span class="bp">self</span><span class="o">.</span><span class="n">degree</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">coefficients</span><span class="p">[</span><span class="n">order</span><span class="o">.</span><span class="n">argsort</span><span class="p">()]</span>
 </div>
-<div class="viewcode-block" id="Fourier.get_params"><a class="viewcode-back" href="../../plotypus.preprocessing.html#plotypus.preprocessing.Fourier.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="p">):</span>
+<div class="viewcode-block" id="Fourier.get_params"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">{</span><span class="s">&#39;degree&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">degree</span><span class="p">}</span>
 </div>
-<div class="viewcode-block" id="Fourier.set_params"><a class="viewcode-back" href="../../plotypus.preprocessing.html#plotypus.preprocessing.Fourier.set_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
+<div class="viewcode-block" id="Fourier.set_params"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.set_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
         <span class="k">if</span> <span class="s">&#39;degree&#39;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">degree</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s">&#39;degree&#39;</span><span class="p">]</span>
 </div>
-<div class="viewcode-block" id="Fourier.baart_criteria"><a class="viewcode-back" href="../../plotypus.preprocessing.html#plotypus.preprocessing.Fourier.baart_criteria">[docs]</a>    <span class="k">def</span> <span class="nf">baart_criteria</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<div class="viewcode-block" id="Fourier.baart_criteria"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.baart_criteria">[docs]</a>    <span class="k">def</span> <span class="nf">baart_criteria</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">min_degree</span><span class="p">,</span> <span class="n">max_degree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">degree_range</span>
         <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
@@ -113,11 +156,11 @@
         <span class="k">return</span> <span class="n">max_degree</span>
 </div>
     <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="Fourier.baart_tolerance"><a class="viewcode-back" href="../../plotypus.preprocessing.html#plotypus.preprocessing.Fourier.baart_tolerance">[docs]</a>    <span class="k">def</span> <span class="nf">baart_tolerance</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
+<div class="viewcode-block" id="Fourier.baart_tolerance"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.baart_tolerance">[docs]</a>    <span class="k">def</span> <span class="nf">baart_tolerance</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
 </div>
     <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="Fourier.trigonometric_coefficient_matrix"><a class="viewcode-back" href="../../plotypus.preprocessing.html#plotypus.preprocessing.Fourier.trigonometric_coefficient_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">trigonometric_coefficient_matrix</span><span class="p">(</span><span class="n">phases</span><span class="p">,</span> <span class="n">degree</span><span class="p">):</span>
+<div class="viewcode-block" id="Fourier.trigonometric_coefficient_matrix"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.trigonometric_coefficient_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">trigonometric_coefficient_matrix</span><span class="p">(</span><span class="n">phases</span><span class="p">,</span> <span class="n">degree</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Constructs an Nx2n+1 matrix of the form:</span>
 <span class="sd">/ 1 sin(1*2*pi*phase[0]) cos(1*2*pi*phase[0]) ... cos(n*2*pi*phase[0]) \</span>
 <span class="sd">| 1 sin(1*2*pi*phase[1]) cos(1*2*pi*phase[1]) ... cos(n*2*pi*phase[1]) |</span>
@@ -147,7 +190,7 @@
         <span class="k">return</span> <span class="n">M</span>
 </div>
     <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="Fourier.phase_shifted_coefficients"><a class="viewcode-back" href="../../plotypus.preprocessing.html#plotypus.preprocessing.Fourier.phase_shifted_coefficients">[docs]</a>    <span class="k">def</span> <span class="nf">phase_shifted_coefficients</span><span class="p">(</span><span class="n">amplitude_coefficients</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s">&#39;cos&#39;</span><span class="p">,</span>
+<div class="viewcode-block" id="Fourier.phase_shifted_coefficients"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.phase_shifted_coefficients">[docs]</a>    <span class="k">def</span> <span class="nf">phase_shifted_coefficients</span><span class="p">(</span><span class="n">amplitude_coefficients</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s">&#39;cos&#39;</span><span class="p">,</span>
                                    <span class="n">shift</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Converts Fourier coefficients from the form</span>
 <span class="sd">        m(t) = A_0 + \Sum_{k=1}^n a_k \sin(k \omega t)</span>
@@ -204,7 +247,7 @@
         <span class="k">return</span> <span class="n">phase_shifted_coefficients_</span>
 </div>
     <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="Fourier.fourier_ratios"><a class="viewcode-back" href="../../plotypus.preprocessing.html#plotypus.preprocessing.Fourier.fourier_ratios">[docs]</a>    <span class="k">def</span> <span class="nf">fourier_ratios</span><span class="p">(</span><span class="n">phase_shifted_coeffs</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
+<div class="viewcode-block" id="Fourier.fourier_ratios"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.fourier_ratios">[docs]</a>    <span class="k">def</span> <span class="nf">fourier_ratios</span><span class="p">(</span><span class="n">phase_shifted_coeffs</span><span class="p">,</span> <span class="n">N</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;Returns an array containing</span>
 <span class="sd">        [ R_{N+1 N}, Phi_{N+1 N}, ..., R_{n N}, Phi_{n N} ],</span>
 <span class="sd">        where R_{i j} is the amplitude ratio R_i / R_j,</span>
@@ -255,29 +298,6 @@
 </pre></div>
 
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
-<ul>
-  <li><a href="../../index.html">Documentation index</a><ul>
-  <li><a href="../index.html">Module code</a><ul>
-  </ul></li>
-  </ul></li>
-</ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

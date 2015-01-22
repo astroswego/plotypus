@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>plotypus.periodogram &mdash; plotypus 0.2.5rc1 documentation</title>
+    <title>plotypus.periodogram &mdash; plotypus 0.2.5.dev0 documentation</title>
     
     <link rel="stylesheet" href="../../_static/readable.css" type="text/css" />
     <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.5rc1',
+        VERSION:     '0.2.5.dev0',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,8 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <link rel="top" title="plotypus 0.2.5rc1 documentation" href="../../index.html" />
+    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="top" title="plotypus 0.2.5.dev0 documentation" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" />
    
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
@@ -32,6 +33,20 @@
   <body>
   
   
+
+
+<link rel="shortcut icon" href="_static/icon.png">
+
+<!-- The "Fork me on github" ribbon -->
+<img style="float: right; margin-bottom: -40px; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" usemap="#ribbonmap"/>
+<map name="ribbonmap">
+    <area shape="poly" coords="15,0,148,-1,148,135" href="https://github.com/astroswego/plotypus" title="Fork me on GitHub" />
+</map>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.svg" border="0" alt="plotypus"/></a>
+</div>
+
 
     <div class="related">
       <h3>Navigation</h3>
@@ -42,10 +57,38 @@
         <li class="right" >
           <a href="../../py-modindex.html" title="Python Module Index"
              >modules</a> |</li>
-        <li><a href="../../index.html">plotypus 0.2.5rc1 documentation</a> &raquo;</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../contents.html">docs</a> &raquo;</li>
+
           <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
-    </div>  
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation index</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
 
     <div class="document">
       <div class="documentwrapper">
@@ -67,8 +110,8 @@
 <span class="p">]</span>
 
 
-<div class="viewcode-block" id="Lomb_Scargle"><a class="viewcode-back" href="../../plotypus.periodogram.html#plotypus.periodogram.Lomb_Scargle">[docs]</a><span class="k">def</span> <span class="nf">Lomb_Scargle</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">min_period</span><span class="p">,</span> <span class="n">max_period</span><span class="p">,</span> <span class="n">period_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="n">time</span><span class="p">,</span> <span class="n">mags</span><span class="p">,</span> <span class="o">*</span><span class="n">e</span> <span class="o">=</span> <span class="n">data</span>
+<div class="viewcode-block" id="Lomb_Scargle"><a class="viewcode-back" href="../../api/plotypus.periodogram.html#plotypus.periodogram.Lomb_Scargle">[docs]</a><span class="k">def</span> <span class="nf">Lomb_Scargle</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">min_period</span><span class="p">,</span> <span class="n">max_period</span><span class="p">,</span> <span class="n">period_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="n">time</span><span class="p">,</span> <span class="n">mags</span><span class="p">,</span> <span class="o">*</span><span class="n">e</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span>
     <span class="n">scaled_mags</span> <span class="o">=</span> <span class="p">(</span><span class="n">mags</span><span class="o">-</span><span class="n">mags</span><span class="o">.</span><span class="n">mean</span><span class="p">())</span><span class="o">/</span><span class="n">mags</span><span class="o">.</span><span class="n">std</span><span class="p">()</span>
     <span class="n">minf</span><span class="p">,</span> <span class="n">maxf</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">max_period</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">min_period</span>
     <span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">minf</span><span class="p">,</span> <span class="n">maxf</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
@@ -139,9 +182,8 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">PINF</span>
 
 
-<div class="viewcode-block" id="find_period"><a class="viewcode-back" href="../../plotypus.periodogram.html#plotypus.periodogram.find_period">[docs]</a><span class="k">def</span> <span class="nf">find_period</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
+<div class="viewcode-block" id="find_period"><a class="viewcode-back" href="../../api/plotypus.periodogram.html#plotypus.periodogram.find_period">[docs]</a><span class="k">def</span> <span class="nf">find_period</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
                 <span class="n">min_period</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">max_period</span><span class="o">=</span><span class="mf">32.0</span><span class="p">,</span>
-                <span class="n">min_period_count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">max_period_count</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
                 <span class="n">coarse_precision</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">fine_precision</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span>
                 <span class="n">periodogram</span><span class="o">=</span><span class="n">Lomb_Scargle</span><span class="p">,</span>
                 <span class="n">period_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
@@ -158,41 +200,18 @@
                     <span class="n">period_jobs</span><span class="o">=</span><span class="n">period_jobs</span><span class="p">)</span>
 
 </div>
-<div class="viewcode-block" id="rephase"><a class="viewcode-back" href="../../plotypus.periodogram.html#plotypus.periodogram.rephase">[docs]</a><span class="k">def</span> <span class="nf">rephase</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
+<div class="viewcode-block" id="rephase"><a class="viewcode-back" href="../../api/plotypus.periodogram.html#plotypus.periodogram.rephase">[docs]</a><span class="k">def</span> <span class="nf">rephase</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="n">rephased</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">)</span>
     <span class="n">rephased</span><span class="p">[:,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_phase</span><span class="p">(</span><span class="n">rephased</span><span class="p">[:,</span> <span class="n">col</span><span class="p">],</span> <span class="n">period</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
 
     <span class="k">return</span> <span class="n">rephased</span>
 
 </div>
-<div class="viewcode-block" id="get_phase"><a class="viewcode-back" href="../../plotypus.periodogram.html#plotypus.periodogram.get_phase">[docs]</a><span class="k">def</span> <span class="nf">get_phase</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
+<div class="viewcode-block" id="get_phase"><a class="viewcode-back" href="../../api/plotypus.periodogram.html#plotypus.periodogram.get_phase">[docs]</a><span class="k">def</span> <span class="nf">get_phase</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">time</span> <span class="o">/</span> <span class="n">period</span> <span class="o">-</span> <span class="n">shift</span><span class="p">)</span> <span class="o">%</span> <span class="mi">1</span></div>
 </pre></div>
 
           </div>
-        </div>
-      </div>
-      <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
-<ul>
-  <li><a href="../../index.html">Documentation index</a><ul>
-  <li><a href="../index.html">Module code</a><ul>
-  </ul></li>
-  </ul></li>
-</ul>
-<div id="searchbox" style="display: none">
-  <h3>Quick search</h3>
-    <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
-      <input type="hidden" name="check_keywords" value="yes" />
-      <input type="hidden" name="area" value="default" />
-    </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
-</div>
-<script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
       </div>
       <div class="clearer"></div>

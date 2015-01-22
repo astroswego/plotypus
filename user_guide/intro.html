@@ -6,7 +6,7 @@
   <head>
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
     
-    <title>Overview: module code &mdash; plotypus 0.2.5.dev0 documentation</title>
+    <title>Introduction &mdash; plotypus 0.2.5.dev0 documentation</title>
     
     <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
     <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
@@ -70,6 +70,11 @@
   <li><a href="../index.html">Documentation index</a><ul>
   </ul></li>
 </ul>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/user_guide/intro.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
 <div id="searchbox" style="display: none">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
@@ -91,13 +96,14 @@
         <div class="bodywrapper">
           <div class="body">
             
-  <h1>All modules for which code is available</h1>
-<ul><li><a href="plotypus/lightcurve.html">plotypus.lightcurve</a></li>
-<li><a href="plotypus/periodogram.html">plotypus.periodogram</a></li>
-<li><a href="plotypus/plotypus.html">plotypus.plotypus</a></li>
-<li><a href="plotypus/preprocessing.html">plotypus.preprocessing</a></li>
-<li><a href="plotypus/utils.html">plotypus.utils</a></li>
-</ul>
+  <div class="section" id="introduction">
+<h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
+<p>plotypus is a <a class="reference external" href="http://www.python.org">Python</a> library and command line tool
+for modelling and plotting the <a class="reference external" href="https://en.wikipedia.org/wiki/Light_curve">light curves</a> of <a class="reference external" href="https://en.wikipedia.org/wiki/Variable_star#Intrinsic_variable_stars">intrinsic variable stars</a>.</p>
+<p>Certain types of variable stars can be used as <a class="reference external" href="https://en.wikipedia.org/wiki/Cosmic_distance_ladder#Standard_candles">standard candles</a>, and are therefore essential in understanding the structure of the Universe. A property of <a class="reference external" href="https://en.wikipedia.org/wiki/Classical_Cepheid_variable">classical Cepheid variable stars</a> known as the <a class="reference external" href="https://en.wikipedia.org/wiki/Classical_Cepheid_variable#Period-luminosity_relation">period-luminosity relation</a> was discovered in 1908 by <a class="reference external" href="https://en.wikipedia.org/wiki/Henrietta_Swan_Leavitt">Henrietta Swan Leavitt</a>. This relation depends on knowing the <a class="reference external" href="https://en.wikipedia.org/wiki/Frequency">period</a> of oscillation and the mean <a class="reference external" href="https://en.wikipedia.org/wiki/Magnitude_%28astronomy%29">magnitude</a> of a sample of Cepheids at a similar distance. In order to obtain these two parameters for a given star, its brightness must be observed over a length of time so that a <a class="reference external" href="https://en.wikipedia.org/wiki/Periodogram">periodogram</a> may be used to find its period, and <a class="reference external" href="https://en.wikipedia.org/wiki/Regression_analysis">regression</a> to fit a periodic function to the observations.</p>
+<p>plotypus provides both a command line interface and Python API for finding periods and fitting <a class="reference external" href="https://en.wikipedia.org/wiki/Fourier_series">Fourier series</a> to observations, and plotting the resulting light curves. A number of light curve parameters are obtained, including amplitudes <span class="math">\(A_i\)</span>, phase shifts <span class="math">\(\phi_i\)</span>, aplitude ratios <span class="math">\(R_{i1}\)</span>, and phase deltas <span class="math">\(\Phi_{i1}\)</span>. Finding periods is computationally intensive, and therefore existing periods can be provided ahead of time, either obtained previously with plotypus, or externally, from sources such as the <a class="reference external" href="http://ogledb.astrouw.edu.pl/~ogle/CVS/">OGLE-III</a> catalog.</p>
+</div>
+
 
           </div>
         </div>
