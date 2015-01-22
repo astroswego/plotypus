@@ -1,8 +1,5 @@
-plotypus.resources package
+plotypus.resources module
 ==========================
-
-Module contents
----------------
 
 .. automodule:: plotypus.resources
     :members:

@@ -24,7 +24,6 @@ MAJOR      = 0
 MINOR      = 2
 MICRO      = 5
 ISRELEASED = False
-PRERELEASE = 1
 VERSION    = '%d.%d.%d' % (MAJOR, MINOR, MICRO)
 
 
@@ -32,10 +31,11 @@ def get_version_info():
     FULLVERSION = VERSION
 
     if not ISRELEASED:
-        FULLVERSION += '-pre' + str(PRERELEASE)
+        FULLVERSION += '-dev'
 
     return FULLVERSION
 
+__version__ = get_version_info()
 
 def setup_package():
     metadata = dict(
@@ -43,7 +43,7 @@ def setup_package():
         url='https://github.com/astroswego/plotypus',
         description=DOCLINES[0],
         long_description="\n".join(DOCLINES[2:]),
-        version=get_version_info(),
+        version=__version__,
         package_dir={'': 'src'},
         packages=['plotypus', 'plotypus.resources'],
         package_data={'plotypus': ['resources/matplotlibrc']},
