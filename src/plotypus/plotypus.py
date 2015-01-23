@@ -335,7 +335,7 @@ def _print_star(result, max_degree, form, fmt):
     _coefs = numpy.concatenate(([coefs[0]],
                                [result['dA_0']],
                                coefs[1:]))
-    fourier_ratios = Fourier.fourier_ratios(coefs, 1)
+    fourier_ratios = Fourier.fourier_ratios(coefs)
 
     # create the vectors of zeroes
     coef_zeros  = repeat('0', times=(2*max_degree + 1 - len(coefs)))

@@ -116,9 +116,14 @@ class Fourier():
         design_matrix = self.design_matrix(phase, self.degree)
         return design_matrix[order.argsort()]
 
-    def get_params(self):
+    def get_params(self, deep=False):
         """
         Get parameters for this preprocessor.
+
+        **Parameters**
+
+        deep : boolean, optional
+            Only here for scikit-learn compliance. Ignore it (default False).
 
         **Returns**
 
