@@ -147,7 +147,7 @@ def colvec(X):
 
     **Returns**
 
-    out : array-like, shape = [1, n_samples]
+    out : array-like, shape = [n_samples, 1]
     """
     return resize(X, (X.shape[0], 1))
 
@@ -158,7 +158,7 @@ def rowvec(X):
 
     **Parameters**
 
-    X : array-like, shape = [1, n_samples]
+    X : array-like, shape = [n_samples, 1]
 
     **Returns*
 

@@ -80,7 +80,7 @@ class Fourier():
 
         **Parameters**
 
-        X : array-like, shape = [1, n_samples]
+        X : array-like, shape = [n_samples, 1]
             Column vector of phases.
         y : array-like or None, shape = [n_samples], optional
             Row vector of magnitudes (default None).
@@ -101,7 +101,7 @@ class Fourier():
 
         **Parameters**
 
-        X : array-like, shape = [1, n_samples]
+        X : array-like, shape = [n_samples, 1]
             Column vector of phases.
         y : None, optional
             Unused argument for conformity (default None).
@@ -186,7 +186,7 @@ class Fourier():
 
         **Parameters**
 
-        X : array-like, shape = [1, n_samples]
+        X : array-like, shape = [n_samples, 1]
             Column vector of phases
 
         **Returns**
