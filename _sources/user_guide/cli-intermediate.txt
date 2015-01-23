@@ -247,6 +247,9 @@ marked as such:
 
 .. image:: images/OGLE-LMC-CEP-0227-std.png
 
+That concludes this guide. We recommend you download the OGLE-III catalog
+yourself and try running plotypus on more of the data there.
+
 **Citations**
 
 .. [USSP] Udalski, A. ; Szymanski, M. K. ; Soszynski, I. ; Poleski, R., 2008,
