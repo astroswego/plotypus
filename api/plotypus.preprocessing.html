@@ -172,7 +172,7 @@ as given by</p>
 \[\frac{1}{\sqrt{2 (\operatorname{card}(\mathbf{X}) - 1)}}\]</div>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [1, n_samples]</span></dt>
+<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 1]</span></dt>
 <dd>Column vector of phases</dd>
 </dl>
 <p><strong>Returns</strong></p>
@@ -217,7 +217,7 @@ as given by</p>
 is not None, otherwise does nothing.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [1, n_samples]</span></dt>
+<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 1]</span></dt>
 <dd>Column vector of phases.</dd>
 <dt>y <span class="classifier-delimiter">:</span> <span class="classifier">array-like or None, shape = [n_samples], optional</span></dt>
 <dd>Row vector of magnitudes (default None).</dd>
@@ -310,7 +310,7 @@ matrix produced by <a class="reference internal" href="#plotypus.preprocessing.F
 regressor.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [1, n_samples]</span></dt>
+<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 1]</span></dt>
 <dd>Column vector of phases.</dd>
 <dt>y <span class="classifier-delimiter">:</span> <span class="classifier">None, optional</span></dt>
 <dd>Unused argument for conformity (default None).</dd>
