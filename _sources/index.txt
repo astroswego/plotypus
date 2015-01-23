@@ -16,6 +16,7 @@ Documentation
 
 This is the documentation for version |version|.
 
+Take a look through the `API <api/index.html>`_, the `User's Guide <user_guide/index.html>`_, and the `examples <examples/index.html>`_.
 
 Citing plotypus
 ===============

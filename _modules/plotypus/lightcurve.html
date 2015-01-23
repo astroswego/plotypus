@@ -134,8 +134,8 @@
 
 <span class="sd">    Makes a predictor object for use in get_lightcurve.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
+<span class="sd">    **Parameters**</span>
+
 <span class="sd">    regressor : object with &quot;fit&quot; and &quot;transform&quot; methods, optional</span>
 <span class="sd">        Regression object used for solving Fourier matrix</span>
 <span class="sd">        (default LassoLarsIC(fit_intercept=False)).</span>
@@ -165,8 +165,8 @@
 <span class="sd">    scoring_cv : positive integer, optional</span>
 <span class="sd">        Number of cross validation folds used in scoring (default 3).</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
+<span class="sd">    **Returns**</span>
+
 <span class="sd">    out : object with &quot;fit&quot; and &quot;predict&quot; methods</span>
 <span class="sd">        The created predictor object.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -198,8 +198,8 @@
 <span class="sd">    Fits a light curve to the given `data` using the specified methods,</span>
 <span class="sd">    with default behavior defined for all methods.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
+<span class="sd">    **Parameters**</span>
+
 <span class="sd">    data : array-like, shape = [n_samples, 2] or [n_samples, 3]</span>
 <span class="sd">        Input array of time, magnitude, and optional error, column-wise.</span>
 <span class="sd">        Time should be unphased.</span>
@@ -276,8 +276,8 @@
 <span class="sd">    verbosity : list, optional</span>
 <span class="sd">        See ``utils.verbose_print``.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
+<span class="sd">    **Returns**</span>
+
 <span class="sd">    out : dict</span>
 <span class="sd">        Results of the fit in a dictionary. The keys are:</span>
 
@@ -306,8 +306,8 @@
 <span class="sd">            - coverage : number between 0 and 1</span>
 <span class="sd">                The light curve coverage.</span>
 
-<span class="sd">    See also</span>
-<span class="sd">    --------</span>
+<span class="sd">    **See also**</span>
+
 <span class="sd">    get_lightcurve_from_file, get_lightcurves_from_file</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">)</span>
@@ -428,8 +428,8 @@
 <span class="sd">    Fits a light curve to the data contained in *file* using</span>
 <span class="sd">    :func:`get_lightcurve`.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
+<span class="sd">    **Parameters**</span>
+
 <span class="sd">    file : str or file</span>
 <span class="sd">        File or filename to load data from.</span>
 <span class="sd">    use_cols : iterable or None, optional</span>
@@ -438,8 +438,8 @@
 <span class="sd">    skiprows : number, optional</span>
 <span class="sd">        Number of rows to skip at beginning of file (default 0)</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
+<span class="sd">    **Returns**</span>
+
 <span class="sd">    out : dict</span>
 <span class="sd">        See :func:`get_lightcurve`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -492,8 +492,8 @@
 
 <span class="sd">    Returns a boolean array indicating the outliers in the given *data* array.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
+<span class="sd">    **Parameters**</span>
+
 <span class="sd">    data : array-like, shape = [n_samples, 2] or [n_samples, 3]</span>
 <span class="sd">        Input array of phase, magnitude, and optional error, column-wise.</span>
 <span class="sd">    predictor : object that has `fit` and `predict` methods, optional</span>
@@ -503,8 +503,8 @@
 <span class="sd">    method : function, optional</span>
 <span class="sd">        Function to score residuals for outlier detection.</span>
 
-<span class="sd">    Returns</span>
-<span class="sd">    -------</span>
+<span class="sd">    **Returns**</span>
+
 <span class="sd">    out : array-like, shape = data.shape</span>
 <span class="sd">        Boolean array indicating the outliers in the given *data* array.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
@@ -524,8 +524,8 @@
 
 <span class="sd">    Save a plot of the given *lightcurve* to directory *output*.</span>
 
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
+<span class="sd">    **Parameters**</span>
+
 <span class="sd">    name : str</span>
 <span class="sd">        Name of the star. Used in filename and plot title.</span>
 <span class="sd">    lightcurve : array-like, shape = [n_samples]</span>
@@ -545,6 +545,10 @@
 <span class="sd">        Number of phase points in fit (default 100).</span>
 <span class="sd">    err_const : number, optional</span>
 <span class="sd">        Constant to use in absence of error (default 0.0004).</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">phases</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_phases</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
     <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>

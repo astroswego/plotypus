@@ -102,6 +102,7 @@
 <dt id="plotypus.lightcurve.make_predictor">
 <tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">make_predictor</tt><big>(</big><em>regressor=LassoLarsIC(fit_intercept=False)</em>, <em>Selector=GridSearchCV</em>, <em>fourier_degree=(2</em>, <em>25)</em>, <em>selector_processes=1</em>, <em>use_baart=False</em>, <em>scoring='r2'</em>, <em>scoring_cv=3</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#make_predictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.make_predictor" title="Permalink to this definition">¶</a></dt>
 <dd><p>Makes a predictor object for use in get_lightcurve.</p>
+<p><strong>Parameters</strong></p>
 <dl class="docutils">
 <dt>regressor <span class="classifier-delimiter">:</span> <span class="classifier">object with &#8220;fit&#8221; and &#8220;transform&#8221; methods, optional</span></dt>
 <dd>Regression object used for solving Fourier matrix
@@ -129,6 +130,7 @@ order (default (2, 25)).</dd>
 <dt>scoring_cv <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span></dt>
 <dd>Number of cross validation folds used in scoring (default 3).</dd>
 </dl>
+<p><strong>Returns</strong></p>
 <dl class="docutils">
 <dt>out <span class="classifier-delimiter">:</span> <span class="classifier">object with &#8220;fit&#8221; and &#8220;predict&#8221; methods</span></dt>
 <dd>The created predictor object.</dd>
@@ -140,6 +142,7 @@ order (default (2, 25)).</dd>
 <tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">get_lightcurve</tt><big>(</big><em>data</em>, <em>copy=False</em>, <em>name=None</em>, <em>predictor=None</em>, <em>periodogram=Lomb_Scargle</em>, <em>sigma_clipping=mad</em>, <em>scoring='r2'</em>, <em>scoring_cv=3</em>, <em>scoring_processes=1</em>, <em>period=None</em>, <em>min_period=0.2</em>, <em>max_period=32</em>, <em>coarse_precision=1e-5</em>, <em>fine_precision=1e-9</em>, <em>period_processes=1</em>, <em>sigma=20</em>, <em>shift=None</em>, <em>min_phase_cover=0.0</em>, <em>n_phases=100</em>, <em>verbosity=()</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#get_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.get_lightcurve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fits a light curve to the given <cite>data</cite> using the specified methods,
 with default behavior defined for all methods.</p>
+<p><strong>Parameters</strong></p>
 <dl class="docutils">
 <dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
 <dd>Input array of time, magnitude, and optional error, column-wise.
@@ -204,6 +207,7 @@ printed if &#8220;outlier&#8221; verbosity is on, and None is returned</dd>
 <dt>verbosity <span class="classifier-delimiter">:</span> <span class="classifier">list, optional</span></dt>
 <dd>See <tt class="docutils literal"><span class="pre">utils.verbose_print</span></tt>.</dd>
 </dl>
+<p><strong>Returns</strong></p>
 <dl class="docutils">
 <dt>out <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
 <dd><p class="first">Results of the fit in a dictionary. The keys are:</p>
@@ -285,6 +289,7 @@ printed if &#8220;outlier&#8221; verbosity is on, and None is returned</dd>
 </div></blockquote>
 </dd>
 </dl>
+<p><strong>See also</strong></p>
 <p>get_lightcurve_from_file, get_lightcurves_from_file</p>
 </dd></dl>
 
@@ -293,6 +298,7 @@ printed if &#8220;outlier&#8221; verbosity is on, and None is returned</dd>
 <tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">get_lightcurve_from_file</tt><big>(</big><em>file</em>, <em>*args</em>, <em>use_cols=None</em>, <em>skiprows=0</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#get_lightcurve_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.get_lightcurve_from_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fits a light curve to the data contained in <em>file</em> using
 <a class="reference internal" href="#plotypus.lightcurve.get_lightcurve" title="plotypus.lightcurve.get_lightcurve"><tt class="xref py py-func docutils literal"><span class="pre">get_lightcurve()</span></tt></a>.</p>
+<p><strong>Parameters</strong></p>
 <dl class="docutils">
 <dt>file <span class="classifier-delimiter">:</span> <span class="classifier">str or file</span></dt>
 <dd>File or filename to load data from.</dd>
@@ -302,6 +308,7 @@ printed if &#8220;outlier&#8221; verbosity is on, and None is returned</dd>
 <dt>skiprows <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
 <dd>Number of rows to skip at beginning of file (default 0)</dd>
 </dl>
+<p><strong>Returns</strong></p>
 <dl class="docutils">
 <dt>out <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
 <dd>See <a class="reference internal" href="#plotypus.lightcurve.get_lightcurve" title="plotypus.lightcurve.get_lightcurve"><tt class="xref py py-func docutils literal"><span class="pre">get_lightcurve()</span></tt></a>.</dd>
@@ -312,6 +319,7 @@ printed if &#8220;outlier&#8221; verbosity is on, and None is returned</dd>
 <dt id="plotypus.lightcurve.find_outliers">
 <tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">find_outliers</tt><big>(</big><em>data</em>, <em>predictor</em>, <em>sigma</em>, <em>method=mad</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#find_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.find_outliers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a boolean array indicating the outliers in the given <em>data</em> array.</p>
+<p><strong>Parameters</strong></p>
 <dl class="docutils">
 <dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
 <dd>Input array of phase, magnitude, and optional error, column-wise.</dd>
@@ -322,6 +330,7 @@ printed if &#8220;outlier&#8221; verbosity is on, and None is returned</dd>
 <dt>method <span class="classifier-delimiter">:</span> <span class="classifier">function, optional</span></dt>
 <dd>Function to score residuals for outlier detection.</dd>
 </dl>
+<p><strong>Returns</strong></p>
 <dl class="docutils">
 <dt>out <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = data.shape</span></dt>
 <dd>Boolean array indicating the outliers in the given <em>data</em> array.</dd>
@@ -332,6 +341,7 @@ printed if &#8220;outlier&#8221; verbosity is on, and None is returned</dd>
 <dt id="plotypus.lightcurve.plot_lightcurve">
 <tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">plot_lightcurve</tt><big>(</big><em>name</em>, <em>lightcurve</em>, <em>period</em>, <em>data</em>, <em>output='.'</em>, <em>legend=False</em>, <em>color=True</em>, <em>n_phases=100</em>, <em>err_const=0.0004</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#plot_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.plot_lightcurve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Save a plot of the given <em>lightcurve</em> to directory <em>output</em>.</p>
+<p><strong>Parameters</strong></p>
 <dl class="docutils">
 <dt>name <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
 <dd>Name of the star. Used in filename and plot title.</dd>
@@ -353,6 +363,8 @@ Time should be unphased.</dd>
 <dt>err_const <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
 <dd>Constant to use in absence of error (default 0.0004).</dd>
 </dl>
+<p><strong>Returns</strong></p>
+<p>None</p>
 </dd></dl>
 
 </div>

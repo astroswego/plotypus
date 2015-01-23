@@ -100,8 +100,9 @@
 <span id="plotypus-preprocessing-module"></span><h1>plotypus.preprocessing module<a class="headerlink" href="#module-plotypus.preprocessing" title="Permalink to this headline">¶</a></h1>
 <dl class="class">
 <dt id="plotypus.preprocessing.Fourier">
-<em class="property">class </em><tt class="descclassname">plotypus.preprocessing.</tt><tt class="descname">Fourier</tt><big>(</big><em>degree=3</em>, <em>degree_range=None</em>, <em>regressor=LinearRegression(copy_X=True</em>, <em>fit_intercept=True</em>, <em>normalize=False)</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier" title="Permalink to this definition">¶</a></dt>
+<em class="property">class </em><tt class="descclassname">plotypus.preprocessing.</tt><tt class="descname">Fourier</tt><big>(</big><em>degree=3</em>, <em>degree_range=None</em>, <em>regressor=LinearRegression(copy_X=True</em>, <em>fit_intercept=False</em>, <em>normalize=False)</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier" title="Permalink to this definition">¶</a></dt>
 <dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<p>Transforms observed data from phase-space to Fourier-space.</p>
 <dl class="method">
 <dt id="plotypus.preprocessing.Fourier.baart_criteria">
 <tt class="descname">baart_criteria</tt><big>(</big><em>X</em>, <em>y</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.baart_criteria"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.baart_criteria" title="Permalink to this definition">¶</a></dt>
@@ -112,6 +113,38 @@
 <em class="property">static </em><tt class="descname">baart_tolerance</tt><big>(</big><em>X</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.baart_tolerance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.baart_tolerance" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="staticmethod">
+<dt id="plotypus.preprocessing.Fourier.design_matrix">
+<em class="property">static </em><tt class="descname">design_matrix</tt><big>(</big><em>phases</em>, <em>degree</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.design_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.design_matrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs an <span class="math">\(N \times 2n+1\)</span> matrix of the form:</p>
+<div class="math">
+\[\begin{split}\begin{bmatrix}
+  1
+&amp; \sin(1 \cdot 2\pi \cdot \phi_0)
+&amp; \cos(1 \cdot 2\pi \cdot \phi_0)
+&amp; \ldots
+&amp; \sin(n \cdot 2\pi \cdot \phi_0)
+&amp; \cos(n \cdot 2\pi \cdot \phi_0)
+\\
+  \vdots
+&amp; \vdots
+&amp; \vdots
+&amp; \ddots
+&amp; \vdots
+&amp; \vdots
+\\
+  1
+&amp; \sin(1 \cdot 2\pi \cdot \phi_N)
+&amp; \cos(1 \cdot 2\pi \cdot \phi_N)
+&amp; \ldots
+&amp; \sin(n \cdot 2\pi \cdot \phi_N)
+&amp; \cos(n \cdot 2\pi \cdot \phi_N)
+\end{bmatrix}\end{split}\]</div>
+<p>where <span class="math">\(n =\)</span> <em>degree</em>, <span class="math">\(N =\)</span> <em>n_samples</em>, and
+<span class="math">\(\phi_i =\)</span> <em>phases[i]</em>.</p>
+<p>phases : array-like, shape = [n_samples]</p>
+</dd></dl>
+
 <dl class="method">
 <dt id="plotypus.preprocessing.Fourier.fit">
 <tt class="descname">fit</tt><big>(</big><em>X</em>, <em>y=None</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.fit" title="Permalink to this definition">¶</a></dt>
@@ -119,30 +152,64 @@
 
 <dl class="staticmethod">
 <dt id="plotypus.preprocessing.Fourier.fourier_ratios">
-<em class="property">static </em><tt class="descname">fourier_ratios</tt><big>(</big><em>phase_shifted_coeffs</em>, <em>N</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.fourier_ratios"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.fourier_ratios" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns an array containing
-[ R_{N+1 N}, Phi_{N+1 N}, ..., R_{n N}, Phi_{n N} ],
-where R_{i j} is the amplitude ratio R_i / R_j,
-and Phi_{i j} is the phase delta Phi_i - Phi_j.</p>
+<em class="property">static </em><tt class="descname">fourier_ratios</tt><big>(</big><em>phase_shifted_coeffs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.fourier_ratios"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.fourier_ratios" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the <span class="math">\(R_{j1}\)</span> and <span class="math">\(\phi_{j1}\)</span> values for the given
+phase-shifted coefficients.</p>
+<div class="math">
+\[R_{j1} = A_j / A_1\]</div>
+<div class="math">
+\[\phi_{j1} = \phi_j - j \phi_1\]</div>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>phase_shifted_coeffs <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<span class="math">\(2n+1\)</span>]</span></dt>
+<dd>Fourier sine or cosine series coefficients.
+<span class="math">\([ A_0, A_1, \Phi_1, \ldots, A_n, \Phi_n ]\)</span>.</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<span class="math">\(2n+1\)</span>]</span></dt>
+<dd>Fourier ratios
+<span class="math">\([ R_{21}, \phi_{21}, \ldots, R_{n1}, \phi_{n1} ]\)</span>.</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
 <dt id="plotypus.preprocessing.Fourier.get_params">
-<tt class="descname">get_params</tt><big>(</big><em>deep</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.get_params" title="Permalink to this definition">¶</a></dt>
+<tt class="descname">get_params</tt><big>(</big><em>deep=False</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.get_params" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="staticmethod">
 <dt id="plotypus.preprocessing.Fourier.phase_shifted_coefficients">
 <em class="property">static </em><tt class="descname">phase_shifted_coefficients</tt><big>(</big><em>amplitude_coefficients</em>, <em>form='cos'</em>, <em>shift=0.0</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.phase_shifted_coefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.phase_shifted_coefficients" title="Permalink to this definition">¶</a></dt>
-<dd><p>Converts Fourier coefficients from the form
-m(t) = A_0 + Sum_{k=1}^n a_k sin(k omega t)</p>
-<blockquote>
-<div><ul class="simple">
-<li>b_k cos(k omega t)</li>
-</ul>
-</div></blockquote>
-<p>into the form
-m(t) = A_0 + Sum_{k=1}^n A_k sin(k omega t + Phi_k)</p>
+<dd><p>Converts Fourier coefficients from the amplitude form to the
+phase-shifted form, as either a sine or cosine series.</p>
+<p>Amplitude form:</p>
+<div class="math">
+\[m(t) = A_0 + \sum_{k=1}^n (a_k \sin(k \omega t)
+                         + b_k \cos(k \omega t))\]</div>
+<p>Sine form:</p>
+<div class="math">
+\[m(t) = A_0 + \sum_{k=1}^n A_k \sin(k \omega t + \Phi_k)\]</div>
+<p>Cosine form:</p>
+<div class="math">
+\[m(t) = A_0 + \sum_{k=1}^n A_k \cos(k \omega t + \Phi_k)\]</div>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>amplitude_coefficients <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<span class="math">\(2n+1\)</span>]</span></dt>
+<dd>Array of coefficients
+<span class="math">\([ A_0, a_1, b_1, \ldots a_n, b_n ]\)</span>.</dd>
+<dt>form <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd>Form of output coefficients, must be one of &#8216;sin&#8217; or &#8216;cos&#8217;
+(default &#8216;cos&#8217;).</dd>
+<dt>shift <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
+<dd>Shift to apply to light curve (default 0.0).</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<span class="math">\(2n+1\)</span>]</span></dt>
+<dd>Array of coefficients
+<span class="math">\([ A_0, A_1, \Phi_1, \ldots, A_n, \Phi_n ]\)</span>.</dd>
+</dl>
 </dd></dl>
 
 <dl class="method">
@@ -154,17 +221,6 @@ m(t) = A_0 + Sum_{k=1}^n A_k sin(k omega t + Phi_k)</p>
 <dt id="plotypus.preprocessing.Fourier.transform">
 <tt class="descname">transform</tt><big>(</big><em>X</em>, <em>y=None</em>, <em>**params</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.transform" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
-
-<dl class="staticmethod">
-<dt id="plotypus.preprocessing.Fourier.trigonometric_coefficient_matrix">
-<em class="property">static </em><tt class="descname">trigonometric_coefficient_matrix</tt><big>(</big><em>phases</em>, <em>degree</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.trigonometric_coefficient_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.trigonometric_coefficient_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constructs an Nx2n+1 matrix of the form:
-/ 1 sin(1*2*pi*phase[0]) cos(1*2*pi*phase[0]) ... cos(n*2*pi*phase[0]) | 1 sin(1*2*pi*phase[1]) cos(1*2*pi*phase[1]) ... cos(n*2*pi*phase[1]) |
-| .         .                    .            .             .          |
-| .         .                    .             .            .          |
-| .         .                    .              .           .          |
-1 sin(1*2*pi*phase[N]) cos(1*2*pi*phase[N]) ... cos(n*2*pi*phase[N]) /</p>
-</dd></dl>
 
 </dd></dl>
 
