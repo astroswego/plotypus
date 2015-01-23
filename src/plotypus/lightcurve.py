@@ -36,8 +36,8 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
 
     Makes a predictor object for use in get_lightcurve.
 
-    Parameters
-    ----------
+    **Parameters**
+
     regressor : object with "fit" and "transform" methods, optional
         Regression object used for solving Fourier matrix
         (default LassoLarsIC(fit_intercept=False)).
@@ -67,8 +67,8 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
     scoring_cv : positive integer, optional
         Number of cross validation folds used in scoring (default 3).
 
-    Returns
-    -------
+    **Returns**
+
     out : object with "fit" and "predict" methods
         The created predictor object.
     """
@@ -100,8 +100,8 @@ def get_lightcurve(data, copy=False, name=None,
     Fits a light curve to the given `data` using the specified methods,
     with default behavior defined for all methods.
 
-    Parameters
-    ----------
+    **Parameters**
+
     data : array-like, shape = [n_samples, 2] or [n_samples, 3]
         Input array of time, magnitude, and optional error, column-wise.
         Time should be unphased.
@@ -178,8 +178,8 @@ def get_lightcurve(data, copy=False, name=None,
     verbosity : list, optional
         See ``utils.verbose_print``.
 
-    Returns
-    -------
+    **Returns**
+
     out : dict
         Results of the fit in a dictionary. The keys are:
 
@@ -208,8 +208,8 @@ def get_lightcurve(data, copy=False, name=None,
             - coverage : number between 0 and 1
                 The light curve coverage.
 
-    See also
-    --------
+    **See also**
+
     get_lightcurve_from_file, get_lightcurves_from_file
     """
     data = numpy.ma.array(data, copy=copy)
@@ -330,8 +330,8 @@ def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
     Fits a light curve to the data contained in *file* using
     :func:`get_lightcurve`.
 
-    Parameters
-    ----------
+    **Parameters**
+
     file : str or file
         File or filename to load data from.
     use_cols : iterable or None, optional
@@ -340,8 +340,8 @@ def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
     skiprows : number, optional
         Number of rows to skip at beginning of file (default 0)
 
-    Returns
-    -------
+    **Returns**
+
     out : dict
         See :func:`get_lightcurve`.
     """
@@ -394,8 +394,8 @@ def find_outliers(data, predictor, sigma,
 
     Returns a boolean array indicating the outliers in the given *data* array.
 
-    Parameters
-    ----------
+    **Parameters**
+
     data : array-like, shape = [n_samples, 2] or [n_samples, 3]
         Input array of phase, magnitude, and optional error, column-wise.
     predictor : object that has `fit` and `predict` methods, optional
@@ -405,8 +405,8 @@ def find_outliers(data, predictor, sigma,
     method : function, optional
         Function to score residuals for outlier detection.
 
-    Returns
-    -------
+    **Returns**
+
     out : array-like, shape = data.shape
         Boolean array indicating the outliers in the given *data* array.
     """
@@ -426,8 +426,8 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
 
     Save a plot of the given *lightcurve* to directory *output*.
 
-    Parameters
-    ----------
+    **Parameters**
+
     name : str
         Name of the star. Used in filename and plot title.
     lightcurve : array-like, shape = [n_samples]
@@ -447,6 +447,10 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
         Number of phase points in fit (default 100).
     err_const : number, optional
         Constant to use in absence of error (default 0.0004).
+
+    **Returns**
+
+    None
     """
     phases = numpy.linspace(0, 1, n_phases, endpoint=False)
     ax = plt.gca()

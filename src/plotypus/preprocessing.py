@@ -10,8 +10,11 @@ __all__ = [
 
 
 class Fourier():
+    """
+    Transforms observed data from phase-space to Fourier-space.
+    """
     def __init__(self, degree=3, degree_range=None,
-                 regressor=LinearRegression()):
+                 regressor=LinearRegression(fit_intercept=False)):
         self.degree = degree
         self.degree_range = degree_range
         self.regressor = regressor
@@ -27,7 +30,7 @@ class Fourier():
         coefficients = self.design_matrix(phase, self.degree)
         return coefficients[order.argsort()]
 
-    def get_params(self, deep):
+    def get_params(self, deep=False):
         return {'degree': self.degree}
 
     def set_params(self, **params):
@@ -62,21 +65,50 @@ class Fourier():
 
     @staticmethod
     def design_matrix(phases, degree):
-        """Constructs an Nx2n+1 matrix of the form:
-/ 1 sin(1*2*pi*phase[0]) cos(1*2*pi*phase[0]) ... cos(n*2*pi*phase[0]) \
-| 1 sin(1*2*pi*phase[1]) cos(1*2*pi*phase[1]) ... cos(n*2*pi*phase[1]) |
-| .         .                    .            .             .          |
-| .         .                    .             .            .          |
-| .         .                    .              .           .          |
-\ 1 sin(1*2*pi*phase[N]) cos(1*2*pi*phase[N]) ... cos(n*2*pi*phase[N]) /
+        r"""
+        Constructs an :math:`N \times 2n+1` matrix of the form:
+
+        .. math::
+
+            \begin{bmatrix}
+              1
+            & \sin(1 \cdot 2\pi \cdot \phi_0)
+            & \cos(1 \cdot 2\pi \cdot \phi_0)
+            & \ldots
+            & \sin(n \cdot 2\pi \cdot \phi_0)
+            & \cos(n \cdot 2\pi \cdot \phi_0)
+            \\
+              \vdots
+            & \vdots
+            & \vdots
+            & \ddots
+            & \vdots
+            & \vdots
+            \\
+              1
+            & \sin(1 \cdot 2\pi \cdot \phi_N)
+            & \cos(1 \cdot 2\pi \cdot \phi_N)
+            & \ldots
+            & \sin(n \cdot 2\pi \cdot \phi_N)
+            & \cos(n \cdot 2\pi \cdot \phi_N)
+            \end{bmatrix}
+
+        where :math:`n =` *degree*, :math:`N =` *n_samples*, and
+        :math:`\phi_i =` *phases[i]*.
+
+        Parameters
+        ----------
+        phases : array-like, shape = [n_samples]
+            
         """
+        n_samples = phases.size
         # initialize coefficient matrix
-        M = numpy.empty((phases.size, 2*degree+1))
+        M = numpy.empty((n_samples, 2*degree+1))
         # indices
         i = numpy.arange(1, degree+1)
         # initialize the Nxn matrix that is repeated within the
         # sine and cosine terms
-        x = numpy.empty((phases.size, degree))
+        x = numpy.empty((n_samples, degree))
         # the Nxn matrix now has N copies of the same row, and each row is
         # integer multiples of pi counting from 1 to the degree
         x[:,:] = i*2*numpy.pi
@@ -93,11 +125,42 @@ class Fourier():
     @staticmethod
     def phase_shifted_coefficients(amplitude_coefficients, form='cos',
                                    shift=0.0):
-        """Converts Fourier coefficients from the form
-        m(t) = A_0 + \Sum_{k=1}^n a_k \sin(k \omega t)
-                                + b_k \cos(k \omega t)
-        into the form
-        m(t) = A_0 + \Sum_{k=1}^n A_k \sin(k \omega t + \Phi_k)
+        r"""
+        Converts Fourier coefficients from the amplitude form to the
+        phase-shifted form, as either a sine or cosine series.
+
+        Amplitude form:
+
+        .. math::
+            m(t) = A_0 + \sum_{k=1}^n (a_k \sin(k \omega t)
+                                     + b_k \cos(k \omega t))
+
+        Sine form:
+
+        .. math::
+            m(t) = A_0 + \sum_{k=1}^n A_k \sin(k \omega t + \Phi_k)
+
+        Cosine form:
+
+        .. math::
+            m(t) = A_0 + \sum_{k=1}^n A_k \cos(k \omega t + \Phi_k)
+
+        **Parameters**
+
+        amplitude_coefficients : array-like, shape = [:math:`2n+1`]
+            Array of coefficients
+            :math:`[ A_0, a_1, b_1, \ldots a_n, b_n ]`.
+        form : str, optional
+            Form of output coefficients, must be one of 'sin' or 'cos'
+            (default 'cos').
+        shift : number, optional
+            Shift to apply to light curve (default 0.0).
+
+        **Returns**
+
+        out : array-like, shape = [:math:`2n+1`]
+            Array of coefficients
+            :math:`[ A_0, A_1, \Phi_1, \ldots, A_n, \Phi_n ]`.
         """
         if form != 'sin' and form != 'cos':
             raise NotImplementedError(
@@ -148,12 +211,33 @@ class Fourier():
         return phase_shifted_coefficients_
 
     @staticmethod
-    def fourier_ratios(phase_shifted_coeffs, N):
-        """Returns an array containing
-        [ R_{N+1 N}, Phi_{N+1 N}, ..., R_{n N}, Phi_{n N} ],
-        where R_{i j} is the amplitude ratio R_i / R_j,
-        and Phi_{i j} is the phase delta Phi_i - Phi_j.
+    def fourier_ratios(phase_shifted_coeffs):
+        r"""
+        Returns the :math:`R_{j1}` and :math:`\phi_{j1}` values for the given
+        phase-shifted coefficients.
+
+        .. math::
+
+            R_{j1} = A_j / A_1
+
+        .. math::
+
+            \phi_{j1} = \phi_j - j \phi_1
+
+        **Parameters**
+
+        phase_shifted_coeffs : array-like, shape = [:math:`2n+1`]
+            Fourier sine or cosine series coefficients.
+            :math:`[ A_0, A_1, \Phi_1, \ldots, A_n, \Phi_n ]`.
+
+        **Returns**
+
+        out : array-like, shape = [:math:`2n+1`]
+            Fourier ratios
+            :math:`[ R_{21}, \phi_{21}, \ldots, R_{n1}, \phi_{n1} ]`.
         """
+
+
         n_coeff = phase_shifted_coeffs.size
         # there are 2*order + 1 coefficients: A_0, A_1, Phi_1, A_2, Phi_2, ...
         order = (n_coeff - 1) / 2

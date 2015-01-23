@@ -13,7 +13,31 @@ __all__ = [
 
 
 def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
-    time, mags, *e = data.T
+    """
+    Returns the period of *data* according to the
+    `Lomb-Scargle periodogram <https://en.wikipedia.org/wiki/Least-squares_spectral_analysis#The_Lomb.E2.80.93Scargle_periodogram>`_.
+
+    **Parameters**
+
+    data : array-like, shape = [n_samples, 2] or [n_samples, 3]
+        Array containing columns *time*, *mag*, and (optional) *error*.
+    precision : number
+        Distance between contiguous frequencies in search-space.
+    min_period : number
+        Minimum period in search-space.
+    max_period : number
+        Maximum period in search-space.
+    period_jobs : int, optional
+        Number of simultaneous processes to use while searching. Only one
+        process will ever be used, but argument is included to conform to
+        *periodogram* standards of :func:`find_period` (default 1).
+
+    **Returns**
+
+    period : number
+        The period of *data*.
+    """
+    time, mags, *err = data.T
     scaled_mags = (mags-mags.mean())/mags.std()
     minf, maxf = 2*np.pi/max_period, 2*np.pi/min_period
     freqs = np.arange(minf, maxf, precision)
@@ -89,6 +113,36 @@ def find_period(data,
                 coarse_precision=1e-5, fine_precision=1e-9,
                 periodogram=Lomb_Scargle,
                 period_jobs=1):
+    """find_period(data, min_period=0.2, max_period=32.0, coarse_precision=1e-5, fine_precision=1e-9, periodogram=Lomb_Scargle, period_jobs=1)
+
+    Returns the period of *data* according to the given *periodogram*,
+    searching first with a coarse precision, and then a fine precision.
+
+    **Parameters**
+
+    data : array-like, shape = [n_samples, 2] or [n_samples, 3]
+        Array containing columns *time*, *mag*, and (optional) *error*.
+    min_period : number
+        Minimum period in search-space.
+    max_period : number
+        Maximum period in search-space.
+    coarse_precision : number
+        Distance between contiguous frequencies in search-space during first
+        sweep.
+    fine_precision : number
+        Distance between contiguous frequencies in search-space during second
+        sweep.
+    periodogram : function
+        A function with arguments *data*, *precision*, *min_period*,
+        *max_period*, and *period_jobs*, and return value *period*.
+    period_jobs : int, optional
+        Number of simultaneous processes to use while searching (default 1).
+
+    **Returns**
+
+    period : number
+        The period of *data*.
+    """
     if min_period >= max_period:
         return min_period
 
@@ -102,12 +156,50 @@ def find_period(data,
                     period_jobs=period_jobs)
 
 
-def rephase(data, period=1, shift=0, col=0, copy=True):
+def rephase(data, period=1.0, shift=0.0, col=0, copy=True):
+    """
+    Returns *data* (or a copy) phased with *period*, and shifted by a
+    phase-shift *shift*.
+
+    **Parameters**
+
+    data : array-like, shape = [n_samples, n_cols]
+        Array containing the time or phase values to be rephased in column
+        *col*.
+    period : number, optional
+        Period to phase *data* by (default 1.0).
+    shift : number, optional
+        Phase shift to apply to phases (default 0.0).
+    col : int, optional
+        Column in *data* containing the time or phase values to be rephased
+        (default 0).
+    copy : bool, optional
+        If True, a new array is returned, otherwise *data* is rephased
+        in-place (default True).
+
+    **Returns**
+
+    rephased : array-like, shape = [n_samples, n_cols]
+        Array containing the rephased *data*.
+    """
     rephased = np.ma.array(data, copy=copy)
     rephased[:, col] = get_phase(rephased[:, col], period, shift)
 
     return rephased
 
 
-def get_phase(time, period=1, shift=0):
+def get_phase(time, period=1.0, shift=0.0):
+    """
+    Returns *time* transformed to phase-space with *period*, after applying a
+    phase-shift *shift*.
+
+    **Parameters**
+
+    time : array-like, shape = [n_samples]
+        The times to transform.
+    period : number, optional
+        The period to phase by (default 1.0).
+    shift : number, optional
+        The phase-shift to apply to the phases (default 0.0).
+    """
     return (time / period - shift) % 1
