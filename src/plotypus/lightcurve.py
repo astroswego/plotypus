@@ -1,3 +1,7 @@
+"""
+Light curve fitting and plotting functions.
+"""
+
 import numpy
 numpy.random.seed(0)
 from scipy.stats import sem
@@ -34,36 +38,28 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
                    **kwargs):
     """make_predictor(regressor=LassoLarsIC(fit_intercept=False), Selector=GridSearchCV, fourier_degree=(2, 25), selector_processes=1, use_baart=False, scoring='r2', scoring_cv=3, **kwargs)
 
-    Makes a predictor object for use in get_lightcurve.
+    Makes a predictor object for use in :func:`get_lightcurve`.
 
     **Parameters**
 
     regressor : object with "fit" and "transform" methods, optional
         Regression object used for solving Fourier matrix
-        (default LassoLarsIC(fit_intercept=False)).
-
+        (default ``sklearn.linear_model.LassoLarsIC(fit_intercept=False)``).
     Selector : class with "fit" and "predict" methods, optional
         Model selection class used for finding the best fit
-        (default GridSearchCV).
-
+        (default :class:`sklearn.grid_search.GridSearchCV`).
     selector_processes : positive integer, optional
-        Number of processes to use for ``Selector`` (default 1).
-
+        Number of processes to use for *Selector* (default 1).
     use_baart : boolean, optional
-        If True, ignores ``Selector`` and uses Baart's Criteria to find
+        If True, ignores *Selector* and uses Baart's Criteria to find
         the Fourier degree, within the boundaries (default False).
-
     fourier_degree : 2-tuple, optional
         Tuple containing lower and upper bounds on Fourier degree, in that
         order (default (2, 25)).
-
     scoring : str, optional
-        Scoring method to use for ``Selector``. This parameter can be:
-
-            - "r2", in which case use R^2 (the default)
-
-            - "mse", in which case use mean square error
-
+        Scoring method to use for *Selector*. This parameter can be:
+            * "r2", in which case use :math:`R^2` (the default)
+            * "mse", in which case use mean square error
     scoring_cv : positive integer, optional
         Number of cross validation folds used in scoring (default 3).
 
@@ -94,7 +90,7 @@ def get_lightcurve(data, copy=False, name=None,
                    sigma=20,
                    shift=None,
                    min_phase_cover=0.0, n_phases=100,
-                   verbosity=(), **kwargs):
+                   verbosity=None, **kwargs):
     """get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring='r2', scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=(), **kwargs)
 
     Fits a light curve to the given `data` using the specified methods,
@@ -103,114 +99,91 @@ def get_lightcurve(data, copy=False, name=None,
     **Parameters**
 
     data : array-like, shape = [n_samples, 2] or [n_samples, 3]
-        Input array of time, magnitude, and optional error, column-wise.
-        Time should be unphased.
-
+        Photometry array with columns *time*, *magnitude*, and (optional)
+        *error*. *time* should be unphased.
     name : string or None, optional
-        Name of star.
-
+        Name of star being processed.
     predictor : object that has "fit" and "predict" methods, optional
-        Object which fits the light curve obtained from ``data`` after rephasing
+        Object which fits the light curve obtained from *data* after rephasing
         (default ``make_predictor(scoring=scoring, scoring_cv=scoring_cv)``).
-
     periodogram : function, optional
-        Function which finds one or more `period`s. If ``period`` is already
+        Function which finds one or more *period*\s. If *period* is already
         provided, the function is not used. Defaults to
-        ``lightcurve.Lomb_Scargle``
-
+        :func:`plotypus.periodogram.Lomb_Scargle`
     sigma_clipping : function, optional
         Function which takes an array and assigns sigma scores to each element.
-        Defaults to ``utils.mad``.
-
+        Defaults to :func:`plotypus.utils.mad`.
     scoring : str, optional
-        Scoring method used by ``predictor``. This parameter can be
-
-            - "r2", in which case use R^2 (the default)
-
-            - "mse", in which case use mean square error
-
+        Scoring method used by *predictor*. This parameter can be
+            * "r2", in which case use :func:`R^2` (the default)
+            * "mse", in which case use mean square error
     scoring_cv : positive integer, optional
         Number of cross validation folds used in scoring (default 3).
-
     scoring_processes : positive integer, optional
         Number of processes to use for scoring cross validation (default 1).
-
-    period : array-like or None, shape = [] or [n_periods], optional
-        Period(s) of oscillation used in the fit. This parameter can be:
-
-            - None, in which case the period is obtained with the given
-              ``periodogram`` function (the default).
-
-            - Zero, in which case the data are unphased.
-
-            - A single positive number, giving the period to phase the data.
-
-            - An array of positive numbers, giving the periods to phase the
-              data.
-
+    period : number or None, optional
+        Period of oscillation used in the fit. This parameter can be:
+            * None, in which case the period is obtained with the given
+              *periodogram* function (the default).
+            * A single positive number, giving the period to phase *data*.
     min_period : non-negative number, optional
-        Lower bound on period(s) obtained by ``periodogram`` (default 0.2).
-
+        Lower bound on period obtained by *periodogram* (default 0.2).
     max_period : non-negative number, optional
-        Upper bound on period(s) obtained by ``periodogram`` (default 32.0).
-
+        Upper bound on period obtained by *periodogram* (default 32.0).
     course_precision : positive number, optional
         Precision used in first period search sweep (default 1e-5).
-
     fine_precision : positive number, optional
         Precision used in second period search sweep (default 1e-9).
-
     period_processes : positive integer, optional
         Number of processes to use for period finding (default 1).
-
     sigma : number, optional
-        Upper bound on score obtained by ``sigma_clipping`` to be considered
-        an inlier.
-
-    min_phase_cover : number between 0 and 1, optional
+        Upper bound on score obtained by *sigma_clipping* for a point to be
+        considered an inlier.
+    shift : number or None, optional
+        Phase shift to apply to light curve if provided. Light curve is shifted
+        such that max light occurs at ``phase[0]`` if None given (default None).
+    min_phase_cover : number on interval [0, 1], optional
         Fraction of binned light curve that must contain points in order to
         proceed. If light curve has insufficient coverage, a warning is
-        printed if "outlier" verbosity is on, and None is returned
-
-    phases : array-like, shape = [n_phases]
-        Array of phases to predict magnitudes at (default [0, 0.01, ..., 1.0]).
-
-    verbosity : list, optional
-        See ``utils.verbose_print``.
+        printed if "outlier" *verbosity* is on, and None is returned
+        (default 0.0).
+    n_phases : positive integer
+        Number of equally spaced phases to predict magnitudes at (default 100)
+    verbosity : list or None, optional
+        Verbosity level. See :func:`plotypus.utils.verbose_print`.
 
     **Returns**
 
     out : dict
         Results of the fit in a dictionary. The keys are:
-
-            - name : str or None
+            * name : str or None
                 The name of the star.
-            - period : number
+            * period : number
                 The star's period.
-            - lightcurve : array-like, shape = [n_phases]
-                Magnitudes of fitted light curve sampled at ``phases``.
-            - coefficients : array-like, shape = [n_coeffs]
+            * lightcurve : array-like, shape = [n_phases]
+                Magnitudes of fitted light curve sampled at sample phases.
+            * coefficients : array-like, shape = [n_coeffs]
                 Fitted light curve coefficients.
-            - dA_0 : non-negative number
+            * dA_0 : non-negative number
                 Error on mean magnitude.
-            - phased_data : array-like, shape = [n_samples]
-                ``data`` transformed from temporal to phase space.
-            - model : predictor object
+            * phased_data : array-like, shape = [n_samples]
+                *data* transformed from temporal to phase space.
+            * model : predictor object
                 The predictor used to fit the light curve.
-            - R2 : number
-                The R^2 score of the fit.
-            - MSE : number
+            * R2 : number
+                The :math:`R^2` score of the fit.
+            * MSE : number
                 The mean square error of the fit.
-            - degree : positive integer
+            * degree : positive integer
                 The degree of the Fourier fit.
-            - shift : number
-                The phase shift used to move phase zero to maximum brightness.
-            - coverage : number between 0 and 1
+            * shift : number
+                The phase shift applied.
+            * coverage : number on interval [0, 1]
                 The light curve coverage.
 
     **See also**
 
-    get_lightcurve_from_file, get_lightcurves_from_file
+    :func:`get_lightcurve_from_file`
     """
     data = numpy.ma.array(data, copy=copy)
     phases = numpy.linspace(0, 1, n_phases, endpoint=False)
@@ -338,7 +311,7 @@ def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
         Iterable of columns to read from data file, or None to read all columns
         (default None).
     skiprows : number, optional
-        Number of rows to skip at beginning of file (default 0)
+        Number of rows to skip at beginning of *file* (default 0)
 
     **Returns**
 
@@ -397,13 +370,15 @@ def find_outliers(data, predictor, sigma,
     **Parameters**
 
     data : array-like, shape = [n_samples, 2] or [n_samples, 3]
-        Input array of phase, magnitude, and optional error, column-wise.
-    predictor : object that has `fit` and `predict` methods, optional
+        Photometry array containing columns *phase*, *magnitude*, and
+        (optional) *error*.
+    predictor : object that has "fit" and "predict" methods, optional
         Object which fits the light curve obtained from *data* after rephasing.
     sigma : number
         Outlier cutoff criteria.
     method : function, optional
-        Function to score residuals for outlier detection.
+        Function to score residuals for outlier detection
+        (default :func:`plotypus.utils.mad`).
 
     **Returns**
 
@@ -435,10 +410,10 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
     period : number
         Period to phase time by.
     data : array-like, shape = [n_samples, 2] or [n_samples, 3]
-        Input array of time, magnitude, and optional error, column-wise.
-        Time should be unphased.
+        Photometry array containing columns *time*, *magnitude*, and
+        (optional) *error*. *time* should be unphased.
     output : str, optional
-        Directory to save plot in (default '.').
+        Directory to save plot to (default '.').
     legend : boolean, optional
         Whether or not to display legend on plot (default False).
     color : boolean, optional

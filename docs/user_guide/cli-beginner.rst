@@ -128,6 +128,8 @@ That covers all of the basic functionality of plotypus. Continue on to the
 `Intermediate Guide <cli-intermediate.html>`_.
 
 
+**Citations**
+
 .. [USSP] Udalski, A. ; Szymanski, M. K. ; Soszynski, I. ; Poleski, R., 2008,
           "The Optical Gravitational Lensing Experiment.
           Final Reductions of the OGLE-III Data",

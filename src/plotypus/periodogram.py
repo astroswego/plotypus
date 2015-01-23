@@ -1,3 +1,6 @@
+"""
+Period finding and rephasing functions.
+"""
 import numpy as np
 from scipy.signal import lombscargle
 from multiprocessing import Pool
@@ -6,6 +9,8 @@ from functools import partial
 
 __all__ = [
     'find_period',
+    'conditional_entropy',
+    'CE',
     'Lomb_Scargle',
     'rephase',
     'get_phase'
@@ -48,6 +53,41 @@ def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
 
 def conditional_entropy(data, precision, min_period, max_period,
                         xbins=10, ybins=5, period_jobs=1):
+    """
+    Returns the period of *data* by minimizing conditional entropy.
+    See `link <http://arxiv.org/pdf/1306.6664v2.pdf>`_ [GDDMD] for details.
+
+    **Parameters**
+
+    data : array-like, shape = [n_samples, 2] or [n_samples, 3]
+        Array containing columns *time*, *mag*, and (optional) *error*.
+    precision : number
+        Distance between contiguous frequencies in search-space.
+    min_period : number
+        Minimum period in search-space.
+    max_period : number
+        Maximum period in search-space.
+    xbins : int, optional
+        Number of phase bins for each trial period (default 10).
+    ybins : int, optional
+        Number of magnitude bins for each trial period (default 5).
+    period_jobs : int, optional
+        Number of simultaneous processes to use while searching. Only one
+        process will ever be used, but argument is included to conform to
+        *periodogram* standards of :func:`find_period` (default 1).
+
+    **Returns**
+
+    period : number
+        The period of *data*.
+
+    **Citations**
+
+    .. [GDDMD] Graham, Matthew J. ; Drake, Andrew J. ; Djorgovski, S. G. ;
+               Mahabal, Ashish A. ; Donalek, Ciro, 2013,
+               Monthly Notices of the Royal Astronomical Society,
+               Volume 434, Issue 3, p.2629-2635
+    """
     periods = np.arange(min_period, max_period, precision)
     copy = np.ma.copy(data)
     copy[:,1] = (copy[:,1]  - np.min(copy[:,1])) \
@@ -60,6 +100,20 @@ def conditional_entropy(data, precision, min_period, max_period,
 
 
 def CE(period, data, xbins=10, ybins=5):
+    """
+    Returns the conditional entropy of *data* rephased with *period*.
+
+    **Parameters**
+
+    period : number
+        The period to rephase *data* by.
+    data : array-like, shape = [n_samples, 2] or [n_samples, 3]
+        Array containing columns *time*, *mag*, and (optional) *error*.
+    xbins : int, optional
+        Number of phase bins (default 10).
+    ybins : int, optional
+        Number of magnitude bins (default 5).
+    """
     if period <= 0:
         return np.PINF
 
@@ -97,8 +151,8 @@ def CE(period, data, xbins=10, ybins=5):
         A = np.empty((xbins, ybins), dtype=float)
         # store at every index [i,j] in A which corresponds to a positive bin:
         # bins[i,j]/size * log(bins[i,:] / size / (bins[i,j]/size))
-        A[ arg_positive] =  select_divided_bins \
-                          * np.log(select_column_sums / select_divided_bins)
+        A[ arg_positive] = select_divided_bins \
+                         * np.log(select_column_sums / select_divided_bins)
         # store 0 at every index in A which corresponds to a non-positive bin
         A[~arg_positive] = 0
 
@@ -201,5 +255,11 @@ def get_phase(time, period=1.0, shift=0.0):
         The period to phase by (default 1.0).
     shift : number, optional
         The phase-shift to apply to the phases (default 0.0).
+
+    **Returns**
+
+    phase : array-like, shape = [n_samples]
+        *time* transformed into phase-space with *period*, after applying a
+        phase-shift *shift*.
     """
     return (time / period - shift) % 1

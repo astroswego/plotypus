@@ -1,3 +1,6 @@
+"""
+Light curve space transformation preprocessors for regressing upon.
+"""
 import numpy
 from numpy import pi
 from sklearn.linear_model import LinearRegression
@@ -10,8 +13,59 @@ __all__ = [
 
 
 class Fourier():
-    """
+    r"""
     Transforms observed data from phase-space to Fourier-space.
+
+    In order to represent a light curve as a Fourier series of the form
+
+    .. math::
+        m(t) = A_0 + \sum_{k=1}^n (a_k \sin(k \omega t) + b_k \cos(k \omega t)),
+
+    phased time observations are transformed into a design matrix
+    :math:`\mathbf{X}` by :func:`Fourier.design_matrix`, such that linear
+    regression can be used to solve for coefficients
+
+    .. math::
+        \hat{b} = \begin{bmatrix}
+                    A_0    \\
+                    a_1    \\
+                    b_1    \\
+                    \vdots \\
+                    a_n    \\
+                    b_n
+                  \end{bmatrix}
+
+    in the matrix equation
+
+    .. math::
+        \mathbf{X} \hat{b} = \hat{y}
+
+    where :math:`\vec{y}` is the vector of observed magnitudes
+
+    .. math::
+        \hat{y} = \begin{bmatrix}
+                    m_0    \\
+                    m_1    \\
+                    \vdots \\
+                    m_n
+                  \end{bmatrix}
+
+    If *degree_range* is not None, *degree* is selected via
+    :func:`baart_criteria`. Otherwise the provided *degree* is used.
+
+    **Parameters**
+
+    degree : positive int, optional
+        Degree of Fourier series to use, assuming *degree_range* is None
+        (default 3).
+    degree_range : 2-tuple or None, optional
+        Range of allowed *degree*\s to search via :func:`baart_criteria`, or
+        None if single provided *degree* is to be used (default None).
+    regressor : object with "fit" and "transform" methods, optional
+        Regression object used for fitting light curve when selecting *degree*
+        via :func:`baart_criteria`. Not used otherwise
+        (default
+        ``sklearn.linear_model.LinearRegression(fit_intercept=False)``).
     """
     def __init__(self, degree=3, degree_range=None,
                  regressor=LinearRegression(fit_intercept=False)):
@@ -20,28 +74,88 @@ class Fourier():
         self.regressor = regressor
 
     def fit(self, X, y=None):
+        """
+        Sets *self.degree* according to :func:`baart_criteria` if *degree_range*
+        is not None, otherwise does nothing.
+
+        **Parameters**
+
+        X : array-like, shape = [1, n_samples]
+            Column vector of phases.
+        y : array-like or None, shape = [n_samples], optional
+            Row vector of magnitudes (default None).
+
+        **Returns**
+
+        self : returns an instance of self
+        """
         if self.degree_range is not None:
             self.degree = self.baart_criteria(X, y)
         return self
 
     def transform(self, X, y=None, **params):
+        """
+        Transforms *X* from phase-space to Fourier-space, returning the design
+        matrix produced by :func:`Fourier.design_matrix` for input to a
+        regressor.
+
+        **Parameters**
+
+        X : array-like, shape = [1, n_samples]
+            Column vector of phases.
+        y : None, optional
+            Unused argument for conformity (default None).
+
+        **Returns**
+
+        design_matrix : array-like, shape = [n_samples, 2*degree+1]
+            Fourier design matrix produced by :func:`Fourier.design_matrix`.
+        """
         data = numpy.dstack((numpy.array(X).T[0], range(len(X))))[0]
         phase, order = data[data[:,0].argsort()].T
-        coefficients = self.design_matrix(phase, self.degree)
-        return coefficients[order.argsort()]
+        design_matrix = self.design_matrix(phase, self.degree)
+        return design_matrix[order.argsort()]
 
-    def get_params(self, deep=False):
+    def get_params(self):
+        """
+        Get parameters for this preprocessor.
+
+        **Returns**
+
+        params : dict
+            Mapping of parameter name to value.
+        """
         return {'degree': self.degree}
 
     def set_params(self, **params):
+        """
+        Set parameters for this preprocessor.
+
+        **Returns**
+
+        self : returns an instance of self
+        """
         if 'degree' in params:
             self.degree = params['degree']
 
+        return self
+
     def baart_criteria(self, X, y):
+        """
+        Returns the optimal Fourier series degree as determined by
+        `Baart's Criteria <http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1986A%26A...170...59P&amp;data_type=PDF_HIGH&amp;whole_paper=YES&amp;type=PRINTER&amp;filetype=.pdf>`_ [JOP]_.
+
+        **Citations**
+
+        .. [JOP] J. O. Petersen, 1986,
+                 "Studies of Cepheid type variability. IV.
+                 The uncertainties of Fourier decomposition parameters.",
+                 A&A, Vol. 170, p. 59-69
+        """
         try:
             min_degree, max_degree = self.degree_range
-        except Exception:
-            raise Exception("Degree range must be a length two sequence")
+        except ValueError:
+            raise ValueError("Degree range must be a length two sequence")
 
         cutoff = self.baart_tolerance(X)
         pipeline = Pipeline([('Fourier', Fourier()),
@@ -61,6 +175,24 @@ class Fourier():
 
     @staticmethod
     def baart_tolerance(X):
+        r"""
+        Returns the autocorrelation cutoff of *X* for :func:`baart_criteria`,
+        as given by
+
+        .. math::
+
+            \frac{1}{\sqrt{2 (\operatorname{card}(\mathbf{X}) - 1)}}
+        
+
+        **Parameters**
+
+        X : array-like, shape = [1, n_samples]
+            Column vector of phases
+
+        **Returns**
+
+        
+        """
         return (2 * (len(X) - 1))**(-1/2)
 
     @staticmethod
@@ -165,7 +297,6 @@ class Fourier():
         if form != 'sin' and form != 'cos':
             raise NotImplementedError(
                 'Fourier series must have form sin or cos')
-            
 
         # separate array of coefficients into respective parts
         A_0 = amplitude_coefficients[0]
