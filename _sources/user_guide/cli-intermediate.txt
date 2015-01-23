@@ -215,7 +215,7 @@ Now take a look at the plots generated in the *baart-ols-plots* and
 *gridsearch-lasso-plots* directories, both named *OGLE-LMC-CEP-0227.png*. They
 should look something like this:
 
-.. image:: samples/OGLE-LMC-CEP-0227-without-sigma.png
+.. image:: images/OGLE-LMC-CEP-0227-without-sigma.png
 
 
 Those outliers caused by its companion star are really problematic. Let's try
@@ -228,7 +228,7 @@ with that::
 This time it should come out much better. Notice the outliers have been colored
 green instead of blue:
 
-.. image:: samples/OGLE-LMC-CEP-0227-mad.png
+.. image:: images/OGLE-LMC-CEP-0227-mad.png
 
 In addition to providing a cutoff *sigma*, you can also provide the method by
 which sigma-clipping is performed. The default method is
@@ -245,7 +245,7 @@ with the ``--sigma-clipping std`` option. You will want to use a much smaller
 It's not terrible, but notice there are many outliers which have not been
 marked as such:
 
-.. image:: samples/OGLE-LMC-CEP-0227-std.png
+.. image:: images/OGLE-LMC-CEP-0227-std.png
 
 **Citations**
 
