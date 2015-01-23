@@ -98,6 +98,7 @@
             
   <div class="section" id="module-plotypus.periodogram">
 <span id="plotypus-periodogram-module"></span><h1>plotypus.periodogram module<a class="headerlink" href="#module-plotypus.periodogram" title="Permalink to this headline">¶</a></h1>
+<p>Period finding and rephasing functions.</p>
 <dl class="function">
 <dt id="plotypus.periodogram.find_period">
 <tt class="descclassname">plotypus.periodogram.</tt><tt class="descname">find_period</tt><big>(</big><em>data</em>, <em>min_period=0.2</em>, <em>max_period=32.0</em>, <em>coarse_precision=1e-5</em>, <em>fine_precision=1e-9</em>, <em>periodogram=Lomb_Scargle</em>, <em>period_jobs=1</em><big>)</big><a class="reference internal" href="../_modules/plotypus/periodogram.html#find_period"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.find_period" title="Permalink to this definition">¶</a></dt>
@@ -127,6 +128,64 @@ sweep.</dd>
 <dl class="docutils">
 <dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
 <dd>The period of <em>data</em>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.periodogram.conditional_entropy">
+<tt class="descclassname">plotypus.periodogram.</tt><tt class="descname">conditional_entropy</tt><big>(</big><em>data</em>, <em>precision</em>, <em>min_period</em>, <em>max_period</em>, <em>xbins=10</em>, <em>ybins=5</em>, <em>period_jobs=1</em><big>)</big><a class="reference internal" href="../_modules/plotypus/periodogram.html#conditional_entropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.conditional_entropy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the period of <em>data</em> by minimizing conditional entropy.
+See <a class="reference external" href="http://arxiv.org/pdf/1306.6664v2.pdf">link</a> [GDDMD] for details.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
+<dd>Array containing columns <em>time</em>, <em>mag</em>, and (optional) <em>error</em>.</dd>
+<dt>precision <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
+<dd>Distance between contiguous frequencies in search-space.</dd>
+<dt>min_period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
+<dd>Minimum period in search-space.</dd>
+<dt>max_period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
+<dd>Maximum period in search-space.</dd>
+<dt>xbins <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>Number of phase bins for each trial period (default 10).</dd>
+<dt>ybins <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>Number of magnitude bins for each trial period (default 5).</dd>
+<dt>period_jobs <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>Number of simultaneous processes to use while searching. Only one
+process will ever be used, but argument is included to conform to
+<em>periodogram</em> standards of <a class="reference internal" href="#plotypus.periodogram.find_period" title="plotypus.periodogram.find_period"><tt class="xref py py-func docutils literal"><span class="pre">find_period()</span></tt></a> (default 1).</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
+<dd>The period of <em>data</em>.</dd>
+</dl>
+<p><strong>Citations</strong></p>
+<table class="docutils citation" frame="void" id="gddmd" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[GDDMD]</td><td>Graham, Matthew J. ; Drake, Andrew J. ; Djorgovski, S. G. ;
+Mahabal, Ashish A. ; Donalek, Ciro, 2013,
+Monthly Notices of the Royal Astronomical Society,
+Volume 434, Issue 3, p.2629-2635</td></tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.periodogram.CE">
+<tt class="descclassname">plotypus.periodogram.</tt><tt class="descname">CE</tt><big>(</big><em>period</em>, <em>data</em>, <em>xbins=10</em>, <em>ybins=5</em><big>)</big><a class="reference internal" href="../_modules/plotypus/periodogram.html#CE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.CE" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the conditional entropy of <em>data</em> rephased with <em>period</em>.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
+<dd>The period to rephase <em>data</em> by.</dd>
+<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
+<dd>Array containing columns <em>time</em>, <em>mag</em>, and (optional) <em>error</em>.</dd>
+<dt>xbins <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>Number of phase bins (default 10).</dd>
+<dt>ybins <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>Number of magnitude bins (default 5).</dd>
 </dl>
 </dd></dl>
 
@@ -198,6 +257,12 @@ phase-shift <em>shift</em>.</p>
 <dd>The period to phase by (default 1.0).</dd>
 <dt>shift <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
 <dd>The phase-shift to apply to the phases (default 0.0).</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>phase <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span></dt>
+<dd><em>time</em> transformed into phase-space with <em>period</em>, after applying a
+phase-shift <em>shift</em>.</dd>
 </dl>
 </dd></dl>
 

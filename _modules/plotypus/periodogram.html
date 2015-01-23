@@ -96,6 +96,9 @@
           <div class="body">
             
   <h1>Source code for plotypus.periodogram</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Period finding and rephasing functions.</span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">scipy.signal</span> <span class="kn">import</span> <span class="n">lombscargle</span>
 <span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span>
@@ -104,6 +107,8 @@
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
     <span class="s">&#39;find_period&#39;</span><span class="p">,</span>
+    <span class="s">&#39;conditional_entropy&#39;</span><span class="p">,</span>
+    <span class="s">&#39;CE&#39;</span><span class="p">,</span>
     <span class="s">&#39;Lomb_Scargle&#39;</span><span class="p">,</span>
     <span class="s">&#39;rephase&#39;</span><span class="p">,</span>
     <span class="s">&#39;get_phase&#39;</span>
@@ -144,8 +149,43 @@
     <span class="k">return</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">freqs</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">pgram</span><span class="p">)]</span>
 
 </div>
-<span class="k">def</span> <span class="nf">conditional_entropy</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">min_period</span><span class="p">,</span> <span class="n">max_period</span><span class="p">,</span>
+<div class="viewcode-block" id="conditional_entropy"><a class="viewcode-back" href="../../api/plotypus.periodogram.html#plotypus.periodogram.conditional_entropy">[docs]</a><span class="k">def</span> <span class="nf">conditional_entropy</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">min_period</span><span class="p">,</span> <span class="n">max_period</span><span class="p">,</span>
                         <span class="n">xbins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">ybins</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">period_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the period of *data* by minimizing conditional entropy.</span>
+<span class="sd">    See `link &lt;http://arxiv.org/pdf/1306.6664v2.pdf&gt;`_ [GDDMD] for details.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    data : array-like, shape = [n_samples, 2] or [n_samples, 3]</span>
+<span class="sd">        Array containing columns *time*, *mag*, and (optional) *error*.</span>
+<span class="sd">    precision : number</span>
+<span class="sd">        Distance between contiguous frequencies in search-space.</span>
+<span class="sd">    min_period : number</span>
+<span class="sd">        Minimum period in search-space.</span>
+<span class="sd">    max_period : number</span>
+<span class="sd">        Maximum period in search-space.</span>
+<span class="sd">    xbins : int, optional</span>
+<span class="sd">        Number of phase bins for each trial period (default 10).</span>
+<span class="sd">    ybins : int, optional</span>
+<span class="sd">        Number of magnitude bins for each trial period (default 5).</span>
+<span class="sd">    period_jobs : int, optional</span>
+<span class="sd">        Number of simultaneous processes to use while searching. Only one</span>
+<span class="sd">        process will ever be used, but argument is included to conform to</span>
+<span class="sd">        *periodogram* standards of :func:`find_period` (default 1).</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    period : number</span>
+<span class="sd">        The period of *data*.</span>
+
+<span class="sd">    **Citations**</span>
+
+<span class="sd">    .. [GDDMD] Graham, Matthew J. ; Drake, Andrew J. ; Djorgovski, S. G. ;</span>
+<span class="sd">               Mahabal, Ashish A. ; Donalek, Ciro, 2013,</span>
+<span class="sd">               Monthly Notices of the Royal Astronomical Society,</span>
+<span class="sd">               Volume 434, Issue 3, p.2629-2635</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">periods</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">min_period</span><span class="p">,</span> <span class="n">max_period</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
     <span class="n">copy</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">copy</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
     <span class="n">copy</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">copy</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]</span>  <span class="o">-</span> <span class="n">np</span><span class="o">.</span><span class="n">min</span><span class="p">(</span><span class="n">copy</span><span class="p">[:,</span><span class="mi">1</span><span class="p">]))</span> \
@@ -156,8 +196,22 @@
 
     <span class="k">return</span> <span class="n">periods</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">entropies</span><span class="p">)]</span>
 
+</div>
+<div class="viewcode-block" id="CE"><a class="viewcode-back" href="../../api/plotypus.periodogram.html#plotypus.periodogram.CE">[docs]</a><span class="k">def</span> <span class="nf">CE</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">xbins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">ybins</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Returns the conditional entropy of *data* rephased with *period*.</span>
 
-<span class="k">def</span> <span class="nf">CE</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">xbins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">ybins</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    period : number</span>
+<span class="sd">        The period to rephase *data* by.</span>
+<span class="sd">    data : array-like, shape = [n_samples, 2] or [n_samples, 3]</span>
+<span class="sd">        Array containing columns *time*, *mag*, and (optional) *error*.</span>
+<span class="sd">    xbins : int, optional</span>
+<span class="sd">        Number of phase bins (default 10).</span>
+<span class="sd">    ybins : int, optional</span>
+<span class="sd">        Number of magnitude bins (default 5).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="n">period</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">PINF</span>
 
@@ -195,8 +249,8 @@
         <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">xbins</span><span class="p">,</span> <span class="n">ybins</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="c"># store at every index [i,j] in A which corresponds to a positive bin:</span>
         <span class="c"># bins[i,j]/size * log(bins[i,:] / size / (bins[i,j]/size))</span>
-        <span class="n">A</span><span class="p">[</span> <span class="n">arg_positive</span><span class="p">]</span> <span class="o">=</span>  <span class="n">select_divided_bins</span> \
-                          <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">select_column_sums</span> <span class="o">/</span> <span class="n">select_divided_bins</span><span class="p">)</span>
+        <span class="n">A</span><span class="p">[</span> <span class="n">arg_positive</span><span class="p">]</span> <span class="o">=</span> <span class="n">select_divided_bins</span> \
+                         <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">select_column_sums</span> <span class="o">/</span> <span class="n">select_divided_bins</span><span class="p">)</span>
         <span class="c"># store 0 at every index in A which corresponds to a non-positive bin</span>
         <span class="n">A</span><span class="p">[</span><span class="o">~</span><span class="n">arg_positive</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -205,7 +259,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">PINF</span>
 
-
+</div>
 <div class="viewcode-block" id="find_period"><a class="viewcode-back" href="../../api/plotypus.periodogram.html#plotypus.periodogram.find_period">[docs]</a><span class="k">def</span> <span class="nf">find_period</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
                 <span class="n">min_period</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">max_period</span><span class="o">=</span><span class="mf">32.0</span><span class="p">,</span>
                 <span class="n">coarse_precision</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">fine_precision</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span>
@@ -299,6 +353,12 @@
 <span class="sd">        The period to phase by (default 1.0).</span>
 <span class="sd">    shift : number, optional</span>
 <span class="sd">        The phase-shift to apply to the phases (default 0.0).</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    phase : array-like, shape = [n_samples]</span>
+<span class="sd">        *time* transformed into phase-space with *period*, after applying a</span>
+<span class="sd">        phase-shift *shift*.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">return</span> <span class="p">(</span><span class="n">time</span> <span class="o">/</span> <span class="n">period</span> <span class="o">-</span> <span class="n">shift</span><span class="p">)</span> <span class="o">%</span> <span class="mi">1</span></div>
 </pre></div>

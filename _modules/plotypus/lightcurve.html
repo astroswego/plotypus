@@ -96,6 +96,10 @@
           <div class="body">
             
   <h1>Source code for plotypus.lightcurve</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Light curve fitting and plotting functions.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
 <span class="kn">import</span> <span class="nn">numpy</span>
 <span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
 <span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">sem</span>
@@ -132,36 +136,28 @@
                    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;make_predictor(regressor=LassoLarsIC(fit_intercept=False), Selector=GridSearchCV, fourier_degree=(2, 25), selector_processes=1, use_baart=False, scoring=&#39;r2&#39;, scoring_cv=3, **kwargs)</span>
 
-<span class="sd">    Makes a predictor object for use in get_lightcurve.</span>
+<span class="sd">    Makes a predictor object for use in :func:`get_lightcurve`.</span>
 
 <span class="sd">    **Parameters**</span>
 
 <span class="sd">    regressor : object with &quot;fit&quot; and &quot;transform&quot; methods, optional</span>
 <span class="sd">        Regression object used for solving Fourier matrix</span>
-<span class="sd">        (default LassoLarsIC(fit_intercept=False)).</span>
-
+<span class="sd">        (default ``sklearn.linear_model.LassoLarsIC(fit_intercept=False)``).</span>
 <span class="sd">    Selector : class with &quot;fit&quot; and &quot;predict&quot; methods, optional</span>
 <span class="sd">        Model selection class used for finding the best fit</span>
-<span class="sd">        (default GridSearchCV).</span>
-
+<span class="sd">        (default :class:`sklearn.grid_search.GridSearchCV`).</span>
 <span class="sd">    selector_processes : positive integer, optional</span>
-<span class="sd">        Number of processes to use for ``Selector`` (default 1).</span>
-
+<span class="sd">        Number of processes to use for *Selector* (default 1).</span>
 <span class="sd">    use_baart : boolean, optional</span>
-<span class="sd">        If True, ignores ``Selector`` and uses Baart&#39;s Criteria to find</span>
+<span class="sd">        If True, ignores *Selector* and uses Baart&#39;s Criteria to find</span>
 <span class="sd">        the Fourier degree, within the boundaries (default False).</span>
-
 <span class="sd">    fourier_degree : 2-tuple, optional</span>
 <span class="sd">        Tuple containing lower and upper bounds on Fourier degree, in that</span>
 <span class="sd">        order (default (2, 25)).</span>
-
 <span class="sd">    scoring : str, optional</span>
-<span class="sd">        Scoring method to use for ``Selector``. This parameter can be:</span>
-
-<span class="sd">            - &quot;r2&quot;, in which case use R^2 (the default)</span>
-
-<span class="sd">            - &quot;mse&quot;, in which case use mean square error</span>
-
+<span class="sd">        Scoring method to use for *Selector*. This parameter can be:</span>
+<span class="sd">            * &quot;r2&quot;, in which case use :math:`R^2` (the default)</span>
+<span class="sd">            * &quot;mse&quot;, in which case use mean square error</span>
 <span class="sd">    scoring_cv : positive integer, optional</span>
 <span class="sd">        Number of cross validation folds used in scoring (default 3).</span>
 
@@ -192,7 +188,7 @@
                    <span class="n">sigma</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
                    <span class="n">shift</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                    <span class="n">min_phase_cover</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">n_phases</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
-                   <span class="n">verbosity</span><span class="o">=</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+                   <span class="n">verbosity</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring=&#39;r2&#39;, scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=(), **kwargs)</span>
 
 <span class="sd">    Fits a light curve to the given `data` using the specified methods,</span>
@@ -201,114 +197,91 @@
 <span class="sd">    **Parameters**</span>
 
 <span class="sd">    data : array-like, shape = [n_samples, 2] or [n_samples, 3]</span>
-<span class="sd">        Input array of time, magnitude, and optional error, column-wise.</span>
-<span class="sd">        Time should be unphased.</span>
-
+<span class="sd">        Photometry array with columns *time*, *magnitude*, and (optional)</span>
+<span class="sd">        *error*. *time* should be unphased.</span>
 <span class="sd">    name : string or None, optional</span>
-<span class="sd">        Name of star.</span>
-
+<span class="sd">        Name of star being processed.</span>
 <span class="sd">    predictor : object that has &quot;fit&quot; and &quot;predict&quot; methods, optional</span>
-<span class="sd">        Object which fits the light curve obtained from ``data`` after rephasing</span>
+<span class="sd">        Object which fits the light curve obtained from *data* after rephasing</span>
 <span class="sd">        (default ``make_predictor(scoring=scoring, scoring_cv=scoring_cv)``).</span>
-
 <span class="sd">    periodogram : function, optional</span>
-<span class="sd">        Function which finds one or more `period`s. If ``period`` is already</span>
+<span class="sd">        Function which finds one or more *period*\s. If *period* is already</span>
 <span class="sd">        provided, the function is not used. Defaults to</span>
-<span class="sd">        ``lightcurve.Lomb_Scargle``</span>
-
+<span class="sd">        :func:`plotypus.periodogram.Lomb_Scargle`</span>
 <span class="sd">    sigma_clipping : function, optional</span>
 <span class="sd">        Function which takes an array and assigns sigma scores to each element.</span>
-<span class="sd">        Defaults to ``utils.mad``.</span>
-
+<span class="sd">        Defaults to :func:`plotypus.utils.mad`.</span>
 <span class="sd">    scoring : str, optional</span>
-<span class="sd">        Scoring method used by ``predictor``. This parameter can be</span>
-
-<span class="sd">            - &quot;r2&quot;, in which case use R^2 (the default)</span>
-
-<span class="sd">            - &quot;mse&quot;, in which case use mean square error</span>
-
+<span class="sd">        Scoring method used by *predictor*. This parameter can be</span>
+<span class="sd">            * &quot;r2&quot;, in which case use :func:`R^2` (the default)</span>
+<span class="sd">            * &quot;mse&quot;, in which case use mean square error</span>
 <span class="sd">    scoring_cv : positive integer, optional</span>
 <span class="sd">        Number of cross validation folds used in scoring (default 3).</span>
-
 <span class="sd">    scoring_processes : positive integer, optional</span>
 <span class="sd">        Number of processes to use for scoring cross validation (default 1).</span>
-
-<span class="sd">    period : array-like or None, shape = [] or [n_periods], optional</span>
-<span class="sd">        Period(s) of oscillation used in the fit. This parameter can be:</span>
-
-<span class="sd">            - None, in which case the period is obtained with the given</span>
-<span class="sd">              ``periodogram`` function (the default).</span>
-
-<span class="sd">            - Zero, in which case the data are unphased.</span>
-
-<span class="sd">            - A single positive number, giving the period to phase the data.</span>
-
-<span class="sd">            - An array of positive numbers, giving the periods to phase the</span>
-<span class="sd">              data.</span>
-
+<span class="sd">    period : number or None, optional</span>
+<span class="sd">        Period of oscillation used in the fit. This parameter can be:</span>
+<span class="sd">            * None, in which case the period is obtained with the given</span>
+<span class="sd">              *periodogram* function (the default).</span>
+<span class="sd">            * A single positive number, giving the period to phase *data*.</span>
 <span class="sd">    min_period : non-negative number, optional</span>
-<span class="sd">        Lower bound on period(s) obtained by ``periodogram`` (default 0.2).</span>
-
+<span class="sd">        Lower bound on period obtained by *periodogram* (default 0.2).</span>
 <span class="sd">    max_period : non-negative number, optional</span>
-<span class="sd">        Upper bound on period(s) obtained by ``periodogram`` (default 32.0).</span>
-
+<span class="sd">        Upper bound on period obtained by *periodogram* (default 32.0).</span>
 <span class="sd">    course_precision : positive number, optional</span>
 <span class="sd">        Precision used in first period search sweep (default 1e-5).</span>
-
 <span class="sd">    fine_precision : positive number, optional</span>
 <span class="sd">        Precision used in second period search sweep (default 1e-9).</span>
-
 <span class="sd">    period_processes : positive integer, optional</span>
 <span class="sd">        Number of processes to use for period finding (default 1).</span>
-
 <span class="sd">    sigma : number, optional</span>
-<span class="sd">        Upper bound on score obtained by ``sigma_clipping`` to be considered</span>
-<span class="sd">        an inlier.</span>
-
-<span class="sd">    min_phase_cover : number between 0 and 1, optional</span>
+<span class="sd">        Upper bound on score obtained by *sigma_clipping* for a point to be</span>
+<span class="sd">        considered an inlier.</span>
+<span class="sd">    shift : number or None, optional</span>
+<span class="sd">        Phase shift to apply to light curve if provided. Light curve is shifted</span>
+<span class="sd">        such that max light occurs at ``phase[0]`` if None given (default None).</span>
+<span class="sd">    min_phase_cover : number on interval [0, 1], optional</span>
 <span class="sd">        Fraction of binned light curve that must contain points in order to</span>
 <span class="sd">        proceed. If light curve has insufficient coverage, a warning is</span>
-<span class="sd">        printed if &quot;outlier&quot; verbosity is on, and None is returned</span>
-
-<span class="sd">    phases : array-like, shape = [n_phases]</span>
-<span class="sd">        Array of phases to predict magnitudes at (default [0, 0.01, ..., 1.0]).</span>
-
-<span class="sd">    verbosity : list, optional</span>
-<span class="sd">        See ``utils.verbose_print``.</span>
+<span class="sd">        printed if &quot;outlier&quot; *verbosity* is on, and None is returned</span>
+<span class="sd">        (default 0.0).</span>
+<span class="sd">    n_phases : positive integer</span>
+<span class="sd">        Number of equally spaced phases to predict magnitudes at (default 100)</span>
+<span class="sd">    verbosity : list or None, optional</span>
+<span class="sd">        Verbosity level. See :func:`plotypus.utils.verbose_print`.</span>
 
 <span class="sd">    **Returns**</span>
 
 <span class="sd">    out : dict</span>
 <span class="sd">        Results of the fit in a dictionary. The keys are:</span>
-
-<span class="sd">            - name : str or None</span>
+<span class="sd">            * name : str or None</span>
 <span class="sd">                The name of the star.</span>
-<span class="sd">            - period : number</span>
+<span class="sd">            * period : number</span>
 <span class="sd">                The star&#39;s period.</span>
-<span class="sd">            - lightcurve : array-like, shape = [n_phases]</span>
-<span class="sd">                Magnitudes of fitted light curve sampled at ``phases``.</span>
-<span class="sd">            - coefficients : array-like, shape = [n_coeffs]</span>
+<span class="sd">            * lightcurve : array-like, shape = [n_phases]</span>
+<span class="sd">                Magnitudes of fitted light curve sampled at sample phases.</span>
+<span class="sd">            * coefficients : array-like, shape = [n_coeffs]</span>
 <span class="sd">                Fitted light curve coefficients.</span>
-<span class="sd">            - dA_0 : non-negative number</span>
+<span class="sd">            * dA_0 : non-negative number</span>
 <span class="sd">                Error on mean magnitude.</span>
-<span class="sd">            - phased_data : array-like, shape = [n_samples]</span>
-<span class="sd">                ``data`` transformed from temporal to phase space.</span>
-<span class="sd">            - model : predictor object</span>
+<span class="sd">            * phased_data : array-like, shape = [n_samples]</span>
+<span class="sd">                *data* transformed from temporal to phase space.</span>
+<span class="sd">            * model : predictor object</span>
 <span class="sd">                The predictor used to fit the light curve.</span>
-<span class="sd">            - R2 : number</span>
-<span class="sd">                The R^2 score of the fit.</span>
-<span class="sd">            - MSE : number</span>
+<span class="sd">            * R2 : number</span>
+<span class="sd">                The :math:`R^2` score of the fit.</span>
+<span class="sd">            * MSE : number</span>
 <span class="sd">                The mean square error of the fit.</span>
-<span class="sd">            - degree : positive integer</span>
+<span class="sd">            * degree : positive integer</span>
 <span class="sd">                The degree of the Fourier fit.</span>
-<span class="sd">            - shift : number</span>
-<span class="sd">                The phase shift used to move phase zero to maximum brightness.</span>
-<span class="sd">            - coverage : number between 0 and 1</span>
+<span class="sd">            * shift : number</span>
+<span class="sd">                The phase shift applied.</span>
+<span class="sd">            * coverage : number on interval [0, 1]</span>
 <span class="sd">                The light curve coverage.</span>
 
 <span class="sd">    **See also**</span>
 
-<span class="sd">    get_lightcurve_from_file, get_lightcurves_from_file</span>
+<span class="sd">    :func:`get_lightcurve_from_file`</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">)</span>
     <span class="n">phases</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_phases</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
@@ -436,7 +409,7 @@
 <span class="sd">        Iterable of columns to read from data file, or None to read all columns</span>
 <span class="sd">        (default None).</span>
 <span class="sd">    skiprows : number, optional</span>
-<span class="sd">        Number of rows to skip at beginning of file (default 0)</span>
+<span class="sd">        Number of rows to skip at beginning of *file* (default 0)</span>
 
 <span class="sd">    **Returns**</span>
 
@@ -495,13 +468,15 @@
 <span class="sd">    **Parameters**</span>
 
 <span class="sd">    data : array-like, shape = [n_samples, 2] or [n_samples, 3]</span>
-<span class="sd">        Input array of phase, magnitude, and optional error, column-wise.</span>
-<span class="sd">    predictor : object that has `fit` and `predict` methods, optional</span>
+<span class="sd">        Photometry array containing columns *phase*, *magnitude*, and</span>
+<span class="sd">        (optional) *error*.</span>
+<span class="sd">    predictor : object that has &quot;fit&quot; and &quot;predict&quot; methods, optional</span>
 <span class="sd">        Object which fits the light curve obtained from *data* after rephasing.</span>
 <span class="sd">    sigma : number</span>
 <span class="sd">        Outlier cutoff criteria.</span>
 <span class="sd">    method : function, optional</span>
-<span class="sd">        Function to score residuals for outlier detection.</span>
+<span class="sd">        Function to score residuals for outlier detection</span>
+<span class="sd">        (default :func:`plotypus.utils.mad`).</span>
 
 <span class="sd">    **Returns**</span>
 
@@ -533,10 +508,10 @@
 <span class="sd">    period : number</span>
 <span class="sd">        Period to phase time by.</span>
 <span class="sd">    data : array-like, shape = [n_samples, 2] or [n_samples, 3]</span>
-<span class="sd">        Input array of time, magnitude, and optional error, column-wise.</span>
-<span class="sd">        Time should be unphased.</span>
+<span class="sd">        Photometry array containing columns *time*, *magnitude*, and</span>
+<span class="sd">        (optional) *error*. *time* should be unphased.</span>
 <span class="sd">    output : str, optional</span>
-<span class="sd">        Directory to save plot in (default &#39;.&#39;).</span>
+<span class="sd">        Directory to save plot to (default &#39;.&#39;).</span>
 <span class="sd">    legend : boolean, optional</span>
 <span class="sd">        Whether or not to display legend on plot (default False).</span>
 <span class="sd">    color : boolean, optional</span>
