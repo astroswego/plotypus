@@ -213,9 +213,14 @@
         <span class="n">design_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">design_matrix</span><span class="p">(</span><span class="n">phase</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">degree</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">design_matrix</span><span class="p">[</span><span class="n">order</span><span class="o">.</span><span class="n">argsort</span><span class="p">()]</span>
 </div>
-<div class="viewcode-block" id="Fourier.get_params"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<div class="viewcode-block" id="Fourier.get_params"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Get parameters for this preprocessor.</span>
+
+<span class="sd">        **Parameters**</span>
+
+<span class="sd">        deep : boolean, optional</span>
+<span class="sd">            Only here for scikit-learn compliance. Ignore it (default False).</span>
 
 <span class="sd">        **Returns**</span>
 

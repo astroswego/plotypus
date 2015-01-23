@@ -64,7 +64,21 @@
     </div>
 
       <div class="sphinxsidebar">
-        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+        <div class="sphinxsidebarwrapper">
+  <h3><a href="../index.html">Table Of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">CLI Intermediate Guide</a><ul>
+<li><a class="reference internal" href="#parallelism">Parallelism</a></li>
+<li><a class="reference internal" href="#selectors-and-regressors">Selectors and Regressors</a><ul>
+<li><a class="reference internal" href="#selectors">Selectors</a></li>
+<li><a class="reference internal" href="#regressors">Regressors</a></li>
+<li><a class="reference internal" href="#outlier-detection">Outlier Detection</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+<h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation index</a><ul>
   </ul></li>
@@ -99,10 +113,227 @@
 <h1>CLI Intermediate Guide<a class="headerlink" href="#cli-intermediate-guide" title="Permalink to this headline">¶</a></h1>
 <div class="admonition note">
 <p class="first admonition-title">Note</p>
-<p class="last">This guide assumes you have completed the
-<a class="reference external" href="cli-beginner.rst">Beginner&#8217;s Guide</a>, and have the directory and files
-created during that guide. If not, either go back and create that directory,
-or try to follow along with your own data files.</p>
+<p class="last">This guide assumes you have already completed the
+<a class="reference external" href="cli-beginner.rst">Beginner&#8217;s Guide</a>.</p>
+</div>
+<p>Now that you know how to fit and plot light curves, it is time you learn to
+set some of the fitting parameters. First, create an empty directory, named
+<em>plotypus-intermediate-tutorial</em>, and enter it:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; mkdir plotypus-tutorial
+&gt;&gt; cd plotypus-tutorial
+</pre></div>
+</div>
+<p>To demonstrate the utility of different parameters, you will need a more
+diverse set of light curves. We have provided a sample of OGLE-III stars
+<a class="reference external" href="samples/ogle-sample1.tar.gz">here</a> <a class="reference internal" href="#ussp" id="id1">[USSP]</a>. Download and extract the files
+with:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; curl -O https://astroswego.github.io/plotypus/user_guide/samples/ogle-sample1.tar.gz
+&gt;&gt; tar -xvzf ogle-sample1.tar.gz
+</pre></div>
+</div>
+<p>Now your directory should look like this:</p>
+<div class="highlight-python"><div class="highlight"><pre>plotypus-intermediate-tutorial/
+├── ogle-sample1
+│   ├── OGLE-BLG-RRLYR-02924.dat
+│   ├── OGLE-LMC-CEP-0674.dat
+│   └── OGLE-SMC-CEP-0668.dat
+└── ogle-sample1.tar.gz
+</pre></div>
+</div>
+<p>Let us begin by finding the period of each star, and saving it to a file.
+RR Lyrae have much shorter periods than Cepheids, so we are going to want to
+search over a different range for that one. First, we are going to process the
+two Cepheids:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; ls -d -1 ogle-sample1/*CEP* | plotypus --min-period 4.0 --max-period 9.0 &gt; output.dat
+</pre></div>
+</div>
+<p>Now we are going to append the RR Lyrae data to that table:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i ogle-sample1/OGLE-BLG-RRLYR-02924.dat --min-period 0.2 --max-period 1.0 | tail -n 1 &gt;&gt; output.dat
+</pre></div>
+</div>
+<p>Take a look inside <em>output.dat</em>, it should be a table with 3 entries. We now
+want to extract the names and periods, so that we can supply them to plotypus
+on future runs. Run:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; tail -n +2 output.dat | cut -f 1,2 --output-delimiter=&quot;  &quot; &gt; periods.dat
+</pre></div>
+</div>
+<div class="section" id="parallelism">
+<h2>Parallelism<a class="headerlink" href="#parallelism" title="Permalink to this headline">¶</a></h2>
+<p>Everything we have done up to here has ran sequentially, processing the first
+star, <em>then</em> the second, <em>then</em> the third, etc. Wouldn&#8217;t it be great if you
+could make use of your multi-core processor (assuming you have one)? Well, you
+can. Just provide the <tt class="docutils literal"><span class="pre">--star-processes</span> <span class="pre">N</span></tt> option, where <tt class="docutils literal"><span class="pre">N</span></tt> is the number
+of processes you want to use. Try to keep <tt class="docutils literal"><span class="pre">N</span></tt> no larger than your computer&#8217;s
+total number of cores, because making <tt class="docutils literal"><span class="pre">N</span></tt> too large will just slow your
+machine down. Let&#8217;s try processing the 3 stars with 3 processes, using the
+periods we just obtained:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i ogle-sample1/ -o plots/ --periods periods.dat --star-processes 3
+</pre></div>
+</div>
+<p>Compare how long that took to using only one process as before:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i ogle-sample1/ -o plots/ --periods periods.dat
+</pre></div>
+</div>
+<p>Now imagine the difference that would make when processing thousands of stars,
+using a computer with many cores. We are going to stick with 3 for the rest of
+this tutorial, since there are only 3 stars.</p>
+</div>
+<div class="section" id="selectors-and-regressors">
+<h2>Selectors and Regressors<a class="headerlink" href="#selectors-and-regressors" title="Permalink to this headline">¶</a></h2>
+<p>Now we are going to introduce you to selectors and regressors. When fitting a
+light curve, after the period is found, the observations are transformed from
+temporal-space to phase-space. They are then transformed into Fourier-space,
+which describes them as an <img class="math" src="../_images/math/d7eb855fcc21a72b7b56063e27fbccdf966cbac8.png" alt="n^\text{th}"/> degree
+<a class="reference external" href="https://en.wikipedia.org/wiki/Fourier_series">Fourier series</a>, by means of
+<a class="reference external" href="https://en.wikipedia.org/wiki/Regression_analysis">regression analysis</a>.
+However, the choice of degree <img class="math" src="../_images/math/413f8a8e40062a9090d9d50b88bc7b551b314c26.png" alt="n"/> is non-trivial. A perfect fitting
+function would have degree <img class="math" src="../_images/math/e1c96a53df2215a2d8c3cd30e8131f3fa1dc6f2c.png" alt="n = \infty"/>, but that is not possible for
+real world data. We want to choose <img class="math" src="../_images/math/413f8a8e40062a9090d9d50b88bc7b551b314c26.png" alt="n"/> large enough to describe the data,
+but keep it as small as possible. This is where selectors come in.</p>
+<div class="section" id="selectors">
+<h3>Selectors<a class="headerlink" href="#selectors" title="Permalink to this headline">¶</a></h3>
+<p>A selector used in astronomy for many years now is Baart&#8217;s criteria. See
+<a class="reference internal" href="../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.baart_criteria" title="plotypus.preprocessing.Fourier.baart_criteria"><tt class="xref py py-func docutils literal"><span class="pre">plotypus.preprocessing.Fourier.baart_criteria()</span></tt></a> for details. In order
+to tell plotypus to use this selector, include the <tt class="docutils literal"><span class="pre">--selector</span> <span class="pre">Baart</span></tt> option
+when calling it. We are also going to tell plotypus to restrict its search
+between degrees <tt class="docutils literal"><span class="pre">2</span></tt> and <tt class="docutils literal"><span class="pre">20</span></tt>, which happens to be the default behaviour.
+Let&#8217;s try it for the 3 stars:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i ogle-sample1/ -o baart-plots/ --periods periods.dat --star-processes 3 --fourier-degree 2 20 --selector Baart &gt; baart-output.dat
+</pre></div>
+</div>
+<p>You can take a look through the output table, and plots if you&#8217;d like.</p>
+<p>A selector used often in fields outside astronomy is
+<a class="reference external" href="https://en.wikipedia.org/wiki/Hyperparameter_optimization#Grid_search">grid search</a>,
+which does a much more exhaustive search of the parameters. In order to tell
+plotypus to use this instead of Baart, include the <tt class="docutils literal"><span class="pre">--selector</span> <span class="pre">GridSearch</span></tt>
+option when calling it, although it is the option used by default:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i ogle-sample1/ -o gridsearch-plots/ --periods periods.dat --star-processes 3 --fourier-degree 2 20 --selector GridSearch &gt; gridsearch-output.dat
+</pre></div>
+</div>
+<p>The plots should look almost identical. Let&#8217;s take a look at the Fourier
+degrees they both selected, along with the <img class="math" src="../_images/math/4f58a3b2897df3c0b9d53a442ae896516ecdeaa0.png" alt="R^2"/> of the fits:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; cut -f 1,7,9 baart-output.dat
+&gt;&gt; cut -f 1,7,9 gridsearch-output.dat
+</pre></div>
+</div>
+<p>You should notice a difference here for sure.</p>
+</div>
+<div class="section" id="regressors">
+<h3>Regressors<a class="headerlink" href="#regressors" title="Permalink to this headline">¶</a></h3>
+<p>Now that you have tried different methods of selecting the fit degree, it is
+time to try different methods for creating the fit itself. A Fourier series
+takes the form</p>
+<div class="math">
+<p><img src="../_images/math/2f15697196d7cf3f080242af1998823d75ced454.png" alt="m(t) = A_0 + \sum_{k=1}^n A_k \cos(k \omega t + \Phi_k)"/></p>
+</div><p>Regression seeks to solve for coefficients <img class="math" src="../_images/math/c9e9254d45de72eef6b8590f34da425223fffdc5.png" alt="A_0"/>, <img class="math" src="../_images/math/235b6ce68c7bc30e5f202ccb7b5909ed58b97f8e.png" alt="A_k"/>, and
+<img class="math" src="../_images/math/86e98df74c8b0d84b178de13599ed02c689f4bb8.png" alt="\Phi_k"/>. Linear regression is the simplest form of regression, but since
+this series is non-linear with respect to those coefficients, we use some
+trigonometry to manipulate the series into the form</p>
+<div class="math">
+<p><img src="../_images/math/e642ef4d4b68ca8e79da96ac3ca86cfa5cd7d3b0.png" alt="m(t) = A_0 + \sum_{k=1}^n [ a_k \sin(k \omega t) + b_k \cos(k \omega t) ]"/></p>
+</div><p>Now we can use linear regression to solve for <img class="math" src="../_images/math/c9e9254d45de72eef6b8590f34da425223fffdc5.png" alt="A_0"/>, <img class="math" src="../_images/math/9d840749229798e17d09190c9e5c6ef663fc6a91.png" alt="a_k"/>, and
+<img class="math" src="../_images/math/60f83b5a089da399e1341e8e9b28f52804e3f64e.png" alt="b_k"/>. Linear regression, in general, seeks to find the vector
+<img class="math" src="../_images/math/6457eeb9f51dbab8b484606b55f9d91c07d301f8.png" alt="\hat{b}"/> which minimizes the error in the equation</p>
+<div class="math">
+<p><img src="../_images/math/439c3349a31e2ac8d8d2b628a7fb20a13cd11aee.png" alt="\mathbf{X} \hat{b} = \hat{y}"/></p>
+</div><p>So we must first formulate the Fourier series into the design matrix
+<img class="math" src="../_images/math/7a9b78bdb36f2fbd5ca087212e58fc74dde40e86.png" alt="\mathbf{X}"/> (see <a class="reference internal" href="../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.design_matrix" title="plotypus.preprocessing.Fourier.design_matrix"><tt class="xref py py-func docutils literal"><span class="pre">plotypus.preprocessing.Fourier.design_matrix()</span></tt></a>)
+and arrange the magnitudes into the vector <img class="math" src="../_images/math/4edbd88750539c2610a7bbfcf79c33cf1ae7a36c.png" alt="\hat{y}"/>. This is all done
+internally in plotypus, so you don&#8217;t have to worry about it. What you <em>do</em> have
+to think about, however, is <em>how</em> it solves for <img class="math" src="../_images/math/6457eeb9f51dbab8b484606b55f9d91c07d301f8.png" alt="\hat{b}"/>. There are many
+methods for solving such an equation, and plotypus currently comes with two.</p>
+<p>The simplest and most straight forward method is
+ordinary least squares, or
+<a class="reference external" href="https://en.wikipedia.org/wiki/Ordinary_least_squares">OLS</a> for short.
+This method finds the vector <img class="math" src="../_images/math/6457eeb9f51dbab8b484606b55f9d91c07d301f8.png" alt="\hat{b}"/> which minimizes</p>
+<div class="math">
+<p><img src="../_images/math/963d09c7ced92b967e6b87caec5066b1b1747698.png" alt="||\mathbf{X} \hat{b} - \hat{y}||_2,"/></p>
+</div><p>where <img class="math" src="../_images/math/a62040ecae824155d62038cbac0467cd74730112.png" alt="||x||_2"/> denotes the <img class="math" src="../_images/math/0467e0003559a763cbcd16dcd0bf3c33f9c65901.png" alt="L_2"/>-norm. To tell plotypus to use
+this method, simply provide the <tt class="docutils literal"><span class="pre">--regressor</span> <span class="pre">OLS</span></tt> option. We are going to
+combine it with Baart&#8217;s criteria as the selector, as that is a combination
+commonly used in astronomy:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i ogle-sample1/ -o baart-ols-plots/ --periods periods.dat --star-processes 3 --fourier-degree 2 20 --selector Baart --regressor OLS &gt; baart-ols-output.dat
+</pre></div>
+</div>
+<p>Another regression method, used commonly in machine learning and statistics,
+is the least absolute shrinkage and selection operator, or
+<a class="reference external" href="https://en.wikipedia.org/wiki/Least_squares#Lasso_method">LASSO</a> for short.
+In addition to seeking to minimize the error, LASSO seeks to minimize the sum
+of the components of <img class="math" src="../_images/math/6457eeb9f51dbab8b484606b55f9d91c07d301f8.png" alt="\hat{b}"/>, even driving some of them to zero.
+Since two values are being minimized, they must each be assigned a certain
+weight, and thus LASSO seeks to minimize</p>
+<div class="math">
+<p><img src="../_images/math/773622e19f647b3259499293a1f971addb683444.png" alt="||\mathbf{X} \hat{b} - \hat{y}||_2 + \lambda ||\hat{b}||_1"/></p>
+</div><p>where <img class="math" src="../_images/math/787d9ae33d4eba3e4b3044e09351e63c372bb3ca.png" alt="||x||_1"/> denotes the <img class="math" src="../_images/math/65f8557b9ff594c169de957e599ef5a77b180cdc.png" alt="L_1"/>-norm. <img class="math" src="../_images/math/1ab0134b6e0837594649c75a2ed83cfd85a2d03d.png" alt="\lambda"/> is yet
+another value which must be chosen, and can be done so in many ways including
+<a class="reference external" href="https://en.wikipedia.org/wiki/Cross-validation_%28statistics%29">cross validation</a> and
+<a class="reference external" href="https://en.wikipedia.org/wiki/Least-angle_regression">least-angle regression</a>, the latter of which
+is used in plotypus. To tell plotypus to use this method, provide the option
+<tt class="docutils literal"><span class="pre">--regressor</span> <span class="pre">Lasso</span></tt>. We are going to combine this with grid search:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i ogle-sample1/ -o gridsearch-lasso-plots/ --periods periods.dat --star-processes 3 --fourier-degree 2 20 --selector GridSearch --regressor Lasso &gt; gridsearch-lasso-output.dat
+</pre></div>
+</div>
+</div>
+<div class="section" id="outlier-detection">
+<h3>Outlier Detection<a class="headerlink" href="#outlier-detection" title="Permalink to this headline">¶</a></h3>
+<p>The stars we have processed so far have all had very well behaved data, as far
+as variable stars go. Now consider a less well behaved star, with lots of
+outlier points. We don&#8217;t want those outliers harming our results. One star of
+particular interest from the OGLE-III catalog is
+<a class="reference external" href="samples/OGLE-LMC-CEP-0227.dat">OGLE-LMC-CEP-0227</a> <a class="reference internal" href="#ussp" id="id2">[USSP]</a>,
+a Cepheid which is part of an
+<a class="reference external" href="https://en.wikipedia.org/wiki/Binary_star#Eclipsing_binaries">eclipsing binary system</a>.
+Download the photometry:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; curl -O https://astroswego.github.io/plotypus/user_guide/samples/OGLE-LMC-CEP-0227.dat
+</pre></div>
+</div>
+<p>Now try fitting it with both methods we&#8217;ve used, allowing them both to find
+the period (we&#8217;ll constrain it between 3 and 4 days to save time). For the
+sake of demonstration, we are going to add the parameter <tt class="docutils literal"><span class="pre">--sigma</span> <span class="pre">9999</span></tt>,
+which will ensure that nothing is marked as an outlier:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i OGLE-LMC-CEP-0227.dat -o baart-ols-plots/ --min-period 3.0 --max-period 4.0 --selector Baart --regressor OLS --sigma 9999 &gt; 0227-baart-ols.dat
+&gt;&gt; plotypus -i OGLE-LMC-CEP-0227.dat -o gridsearch-lasso-plots/ --min-period 3.0 --max-period 4.0 --selector GridSearch --regressor Lasso --sigma 9999 &gt; 0227-gridsearch-lasso.dat
+</pre></div>
+</div>
+<p>Now take a look at the plots generated in the <em>baart-ols-plots</em> and
+<em>gridsearch-lasso-plots</em> directories, both named <em>OGLE-LMC-CEP-0227.png</em>. They
+should look something like this:</p>
+<img alt="../_images/OGLE-LMC-CEP-0227-without-sigma.png" src="../_images/OGLE-LMC-CEP-0227-without-sigma.png" />
+<p>Those outliers caused by its companion star are really problematic. Let&#8217;s try
+that again, but this time with a lower sigma. The default is 20, so we&#8217;ll go
+with that:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i OGLE-LMC-CEP-0227.dat -o baart-ols-plots/ --min-period 3.0 --max-period 4.0 --selector Baart --regressor OLS --sigma 20 &gt; 0227-baart-ols.dat
+&gt;&gt; plotypus -i OGLE-LMC-CEP-0227.dat -o gridsearch-lasso-plots/ --min-period 3.0 --max-period 4.0 --selector GridSearch --regressor Lasso --sigma 20 &gt; 0227-gridsearch-lasso.dat
+</pre></div>
+</div>
+<p>This time it should come out much better. Notice the outliers have been colored
+green instead of blue:</p>
+<img alt="../_images/OGLE-LMC-CEP-0227-mad.png" src="../_images/OGLE-LMC-CEP-0227-mad.png" />
+<p>In addition to providing a cutoff <em>sigma</em>, you can also provide the method by
+which sigma-clipping is performed. The default method is
+<a class="reference external" href="https://en.wikipedia.org/wiki/Median_absolute_deviation">median absolute deviation</a>, which can be
+given explicitly with the <tt class="docutils literal"><span class="pre">--sigma-clipping</span> <span class="pre">mad</span></tt> option. The alternative is
+to use
+<a class="reference external" href="https://en.wikipedia.org/wiki/Standard_deviation">standard deviation</a>
+with the <tt class="docutils literal"><span class="pre">--sigma-clipping</span> <span class="pre">std</span></tt> option. You will want to use a much smaller
+<em>sigma</em> value for this, compared to before. Let&#8217;s give it a try:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i OGLE-LMC-CEP-0227.dat -o gridsearch-lasso-plots/ --min-period 3.0 --max-period 4.0 --selector GridSearch --regressor Lasso --sigma 2 --sigma-clipping std &gt; 0227-gridsearch-lasso.dat
+</pre></div>
+</div>
+<p>It&#8217;s not terrible, but notice there are many outliers which have not been
+marked as such:</p>
+<img alt="../_images/OGLE-LMC-CEP-0227-std.png" src="../_images/OGLE-LMC-CEP-0227-std.png" />
+<p><strong>Citations</strong></p>
+<table class="docutils citation" frame="void" id="ussp" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label">[USSP]</td><td><em>(<a class="fn-backref" href="#id1">1</a>, <a class="fn-backref" href="#id2">2</a>)</em> Udalski, A. ; Szymanski, M. K. ; Soszynski, I. ; Poleski, R., 2008,
+&#8220;The Optical Gravitational Lensing Experiment.
+Final Reductions of the OGLE-III Data&#8221;,
+Acta Astronomica, vol. 58, pp. 69-87</td></tr>
+</tbody>
+</table>
+</div>
 </div>
 </div>
 
