@@ -23,7 +23,6 @@
     <script type="text/javascript" src="../_static/jquery.js"></script>
     <script type="text/javascript" src="../_static/underscore.js"></script>
     <script type="text/javascript" src="../_static/doctools.js"></script>
-    <script type="text/javascript" src="http://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script>
     <link rel="top" title="plotypus 0.2.5.dev0 documentation" href="../index.html" />
    
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
@@ -106,31 +105,31 @@
 <p>Transforms observed data from phase-space to Fourier-space.</p>
 <p>In order to represent a light curve as a Fourier series of the form</p>
 <div class="math">
-\[m(t) = A_0 + \sum_{k=1}^n (a_k \sin(k \omega t) + b_k \cos(k \omega t)),\]</div>
-<p>phased time observations are transformed into a design matrix
-<span class="math">\(\mathbf{X}\)</span> by <a class="reference internal" href="#plotypus.preprocessing.Fourier.design_matrix" title="plotypus.preprocessing.Fourier.design_matrix"><tt class="xref py py-func docutils literal"><span class="pre">Fourier.design_matrix()</span></tt></a>, such that linear
+<p><img src="../_images/math/76d81dd477f2c9bca885ab468d5c06c326ec9a2a.png" alt="m(t) = A_0 + \sum_{k=1}^n (a_k \sin(k \omega t) + b_k \cos(k \omega t)),"/></p>
+</div><p>phased time observations are transformed into a design matrix
+<img class="math" src="../_images/math/7a9b78bdb36f2fbd5ca087212e58fc74dde40e86.png" alt="\mathbf{X}"/> by <a class="reference internal" href="#plotypus.preprocessing.Fourier.design_matrix" title="plotypus.preprocessing.Fourier.design_matrix"><tt class="xref py py-func docutils literal"><span class="pre">Fourier.design_matrix()</span></tt></a>, such that linear
 regression can be used to solve for coefficients</p>
 <div class="math">
-\[\begin{split}\hat{b} = \begin{bmatrix}
+<p><img src="../_images/math/4fd7cf69c626f261ff118df6d1812ce3b60a3011.png" alt="\hat{b} = \begin{bmatrix}
             A_0    \\
             a_1    \\
             b_1    \\
             \vdots \\
             a_n    \\
             b_n
-          \end{bmatrix}\end{split}\]</div>
-<p>in the matrix equation</p>
+          \end{bmatrix}"/></p>
+</div><p>in the matrix equation</p>
 <div class="math">
-\[\mathbf{X} \hat{b} = \hat{y}\]</div>
-<p>where <span class="math">\(\vec{y}\)</span> is the vector of observed magnitudes</p>
+<p><img src="../_images/math/439c3349a31e2ac8d8d2b628a7fb20a13cd11aee.png" alt="\mathbf{X} \hat{b} = \hat{y}"/></p>
+</div><p>where <img class="math" src="../_images/math/9d5c04e54679fcffa27fea6e29fe90f73209e4de.png" alt="\vec{y}"/> is the vector of observed magnitudes</p>
 <div class="math">
-\[\begin{split}\hat{y} = \begin{bmatrix}
+<p><img src="../_images/math/8bd12f695fcd248585560aeeac906d06e2be0840.png" alt="\hat{y} = \begin{bmatrix}
             m_0    \\
             m_1    \\
             \vdots \\
             m_n
-          \end{bmatrix}\end{split}\]</div>
-<p>If <em>degree_range</em> is not None, <em>degree</em> is selected via
+          \end{bmatrix}"/></p>
+</div><p>If <em>degree_range</em> is not None, <em>degree</em> is selected via
 <a class="reference internal" href="#plotypus.preprocessing.Fourier.baart_criteria" title="plotypus.preprocessing.Fourier.baart_criteria"><tt class="xref py py-func docutils literal"><span class="pre">baart_criteria()</span></tt></a>. Otherwise the provided <em>degree</em> is used.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
@@ -169,8 +168,8 @@ A&amp;A, Vol. 170, p. 59-69</td></tr>
 <dd><p>Returns the autocorrelation cutoff of <em>X</em> for <a class="reference internal" href="#plotypus.preprocessing.Fourier.baart_criteria" title="plotypus.preprocessing.Fourier.baart_criteria"><tt class="xref py py-func docutils literal"><span class="pre">baart_criteria()</span></tt></a>,
 as given by</p>
 <div class="math">
-\[\frac{1}{\sqrt{2 (\operatorname{card}(\mathbf{X}) - 1)}}\]</div>
-<p><strong>Parameters</strong></p>
+<p><img src="../_images/math/188506d4f92bb24b78d667c75f8b79e70ccdc0ee.png" alt="\frac{1}{\sqrt{2 (\operatorname{card}(\mathbf{X}) - 1)}}"/></p>
+</div><p><strong>Parameters</strong></p>
 <dl class="docutils">
 <dt>X <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 1]</span></dt>
 <dd>Column vector of phases</dd>
@@ -181,9 +180,9 @@ as given by</p>
 <dl class="staticmethod">
 <dt id="plotypus.preprocessing.Fourier.design_matrix">
 <em class="property">static </em><tt class="descname">design_matrix</tt><big>(</big><em>phases</em>, <em>degree</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.design_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.design_matrix" title="Permalink to this definition">¶</a></dt>
-<dd><p>Constructs an <span class="math">\(N \times 2n+1\)</span> matrix of the form:</p>
+<dd><p>Constructs an <img class="math" src="../_images/math/6b8f363f302382c8a1ff5a0f12be3305dc11c25d.png" alt="N \times 2n+1"/> matrix of the form:</p>
 <div class="math">
-\[\begin{split}\begin{bmatrix}
+<p><img src="../_images/math/1cd2d57d7bdf8d06648b5a4abfd97b7cc965d240.png" alt="\begin{bmatrix}
   1
 &amp; \sin(1 \cdot 2\pi \cdot \phi_0)
 &amp; \cos(1 \cdot 2\pi \cdot \phi_0)
@@ -204,9 +203,9 @@ as given by</p>
 &amp; \ldots
 &amp; \sin(n \cdot 2\pi \cdot \phi_N)
 &amp; \cos(n \cdot 2\pi \cdot \phi_N)
-\end{bmatrix}\end{split}\]</div>
-<p>where <span class="math">\(n =\)</span> <em>degree</em>, <span class="math">\(N =\)</span> <em>n_samples</em>, and
-<span class="math">\(\phi_i =\)</span> <em>phases[i]</em>.</p>
+\end{bmatrix}"/></p>
+</div><p>where <img class="math" src="../_images/math/f53e4106b4fac6475d5a39804d7faec0ff3779c3.png" alt="n ="/> <em>degree</em>, <img class="math" src="../_images/math/418de2a459f0fd36e410213e458626cb9c0ab34a.png" alt="N ="/> <em>n_samples</em>, and
+<img class="math" src="../_images/math/5a4d54f930b9b067a2f691d2e1134fc244da2312.png" alt="\phi_i ="/> <em>phases[i]</em>.</p>
 <p>phases : array-like, shape = [n_samples]</p>
 </dd></dl>
 
@@ -229,23 +228,23 @@ is not None, otherwise does nothing.</p>
 <dl class="staticmethod">
 <dt id="plotypus.preprocessing.Fourier.fourier_ratios">
 <em class="property">static </em><tt class="descname">fourier_ratios</tt><big>(</big><em>phase_shifted_coeffs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.fourier_ratios"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.fourier_ratios" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the <span class="math">\(R_{j1}\)</span> and <span class="math">\(\phi_{j1}\)</span> values for the given
+<dd><p>Returns the <img class="math" src="../_images/math/d5bb1704d3ce6074b5566426f3357c182cb9a4e0.png" alt="R_{j1}"/> and <img class="math" src="../_images/math/d24d63012ea86787d7e82497867ee9388171bb9a.png" alt="\phi_{j1}"/> values for the given
 phase-shifted coefficients.</p>
 <div class="math">
-\[R_{j1} = A_j / A_1\]</div>
-<div class="math">
-\[\phi_{j1} = \phi_j - j \phi_1\]</div>
-<p><strong>Parameters</strong></p>
+<p><img src="../_images/math/b2f4c2779420107c848d8dccc82f73fd937d8f33.png" alt="R_{j1} = A_j / A_1"/></p>
+</div><div class="math">
+<p><img src="../_images/math/5815029b0635099adfb72f64fad6f644af665466.png" alt="\phi_{j1} = \phi_j - j \phi_1"/></p>
+</div><p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>phase_shifted_coeffs <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<span class="math">\(2n+1\)</span>]</span></dt>
+<dt>phase_shifted_coeffs <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<img class="math" src="../_images/math/555a757d6d006f9dbbf1c4f6e016b6e7f9808a33.png" alt="2n+1"/>]</span></dt>
 <dd>Fourier sine or cosine series coefficients.
-<span class="math">\([ A_0, A_1, \Phi_1, \ldots, A_n, \Phi_n ]\)</span>.</dd>
+<img class="math" src="../_images/math/0d525c565a388826ead09f536c931646a56b3bb5.png" alt="[ A_0, A_1, \Phi_1, \ldots, A_n, \Phi_n ]"/>.</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<span class="math">\(2n+1\)</span>]</span></dt>
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<img class="math" src="../_images/math/555a757d6d006f9dbbf1c4f6e016b6e7f9808a33.png" alt="2n+1"/>]</span></dt>
 <dd>Fourier ratios
-<span class="math">\([ R_{21}, \phi_{21}, \ldots, R_{n1}, \phi_{n1} ]\)</span>.</dd>
+<img class="math" src="../_images/math/15cb0c05f9d9d2b7585e3751a1b4e0c04c91ef07.png" alt="[ R_{21}, \phi_{21}, \ldots, R_{n1}, \phi_{n1} ]"/>.</dd>
 </dl>
 </dd></dl>
 
@@ -267,19 +266,19 @@ phase-shifted coefficients.</p>
 phase-shifted form, as either a sine or cosine series.</p>
 <p>Amplitude form:</p>
 <div class="math">
-\[m(t) = A_0 + \sum_{k=1}^n (a_k \sin(k \omega t)
-                         + b_k \cos(k \omega t))\]</div>
-<p>Sine form:</p>
+<p><img src="../_images/math/526814cb69d44d11fabee5103f1d4393ff1c3272.png" alt="m(t) = A_0 + \sum_{k=1}^n (a_k \sin(k \omega t)
+                         + b_k \cos(k \omega t))"/></p>
+</div><p>Sine form:</p>
 <div class="math">
-\[m(t) = A_0 + \sum_{k=1}^n A_k \sin(k \omega t + \Phi_k)\]</div>
-<p>Cosine form:</p>
+<p><img src="../_images/math/89954d9437252ee5aba7fa3080f4ba717f6fd56e.png" alt="m(t) = A_0 + \sum_{k=1}^n A_k \sin(k \omega t + \Phi_k)"/></p>
+</div><p>Cosine form:</p>
 <div class="math">
-\[m(t) = A_0 + \sum_{k=1}^n A_k \cos(k \omega t + \Phi_k)\]</div>
-<p><strong>Parameters</strong></p>
+<p><img src="../_images/math/2f15697196d7cf3f080242af1998823d75ced454.png" alt="m(t) = A_0 + \sum_{k=1}^n A_k \cos(k \omega t + \Phi_k)"/></p>
+</div><p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>amplitude_coefficients <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<span class="math">\(2n+1\)</span>]</span></dt>
+<dt>amplitude_coefficients <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<img class="math" src="../_images/math/555a757d6d006f9dbbf1c4f6e016b6e7f9808a33.png" alt="2n+1"/>]</span></dt>
 <dd>Array of coefficients
-<span class="math">\([ A_0, a_1, b_1, \ldots a_n, b_n ]\)</span>.</dd>
+<img class="math" src="../_images/math/124aef2cd3f74de17229992bb1f13736166811b6.png" alt="[ A_0, a_1, b_1, \ldots a_n, b_n ]"/>.</dd>
 <dt>form <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
 <dd>Form of output coefficients, must be one of &#8216;sin&#8217; or &#8216;cos&#8217;
 (default &#8216;cos&#8217;).</dd>
@@ -288,9 +287,9 @@ phase-shifted form, as either a sine or cosine series.</p>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<span class="math">\(2n+1\)</span>]</span></dt>
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<img class="math" src="../_images/math/555a757d6d006f9dbbf1c4f6e016b6e7f9808a33.png" alt="2n+1"/>]</span></dt>
 <dd>Array of coefficients
-<span class="math">\([ A_0, A_1, \Phi_1, \ldots, A_n, \Phi_n ]\)</span>.</dd>
+<img class="math" src="../_images/math/0d525c565a388826ead09f536c931646a56b3bb5.png" alt="[ A_0, A_1, \Phi_1, \ldots, A_n, \Phi_n ]"/>.</dd>
 </dl>
 </dd></dl>
 
