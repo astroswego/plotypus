@@ -19,9 +19,10 @@ For the sake of this tutorial, create an empty folder named *plotypus-tutorial*,
 
 Now, before you can use the tool, you will need some variable star photometry.
 We have provided a small sample of photometry from the OGLE-III catalog,
-`here <samples/ogle-sample0.tar.gz>`_ [USSP]_. Download and extract the data::
+`here </plotypus/_static/samples/ogle-sample0.tar.gz>`_ [USSP]_.
+Download and extract the data::
 
-   >> curl -O https://astroswego.github.io/plotypus/user_guide/samples/ogle-sample0.tar.gz
+   >> curl -O https://astroswego.github.io/plotypus/_static/samples/ogle-sample0.tar.gz
    >> tar -xvzf ogle-sample0.tar.gz
 
 Now your directory should look like this::
