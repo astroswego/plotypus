@@ -375,18 +375,15 @@ class Fourier():
 
 
         n_coeff = phase_shifted_coeffs.size
-        # there are 2*order + 1 coefficients: A_0, A_1, Phi_1, A_2, Phi_2, ...
-        order = (n_coeff - 1) / 2
+        # n_coeff = 2*degree + 1 => degree = (n_coeff-1)/2
+        degree = (n_coeff - 1) / 2
 
         amplitudes = phase_shifted_coeffs[1::2]
         phases = phase_shifted_coeffs[2::2]
 
-        # the number of ratios is 3 less than the number of coefficients
-        # because the 0th coefficient is not used, and there are ratios of
-        # two
-        # TODO: finish writing this comment I apparently forgot about back when
-        #       I understood its purpose
-        ratios = numpy.empty(phase_shifted_coeffs.size-3, dtype=float)
+        # there are degree-1 amplitude ratios, and degree-1 phase deltas,
+        # so altogether there are 2*(degree-1) values
+        ratios = numpy.empty(2*(degree-1), dtype=float)
         amplitude_ratios = ratios[::2]
         phase_deltas = ratios[1::2]
 
@@ -395,7 +392,8 @@ class Fourier():
             amplitude_ratios[:] = amplitudes[1:]
             amplitude_ratios   /= amplitudes[0]
 
-        i = numpy.arange(2, order+1)
+        # indices for phase deltas
+        i = numpy.arange(2, degree+1)
         phase_deltas[:] = phases[1:]
         phase_deltas   -= i*phases[0]
         # constrain phase_deltas between 0 and 2*pi
