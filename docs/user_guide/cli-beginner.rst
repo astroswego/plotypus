@@ -19,9 +19,10 @@ For the sake of this tutorial, create an empty folder named *plotypus-tutorial*,
 
 Now, before you can use the tool, you will need some variable star photometry.
 We have provided a small sample of photometry from the OGLE-III catalog,
-`here <samples/ogle-sample0.tar.gz>`_ [USSP]_. Download and extract the data::
+`here </plotypus/_static/samples/ogle-sample0.tar.gz>`_ [USSP]_.
+Download and extract the data::
 
-   >> curl -O https://astroswego.github.io/plotypus/user_guide/samples/ogle-sample0.tar.gz
+   >> curl -O https://astroswego.github.io/plotypus/_static/samples/ogle-sample0.tar.gz
    >> tar -xvzf ogle-sample0.tar.gz
 
 Now your directory should look like this::
@@ -41,8 +42,9 @@ so::
    >> plotypus -i ogle-sample0/OGLE-LMC-CEP-0002.dat --min-period 3.0 --max-period 6.0
 
 A table should be printed to your terminal, containing various light curve
-parameters. You can omit the `--min-period` and `--max-period` switches, but
-it will take much longer to run. Now try running it on the entire directory::
+parameters. You can omit the ``--min-period`` and ``--max-period`` switches,
+but it will take much longer to run.
+Now try running it on the entire directory::
 
    >> plotypus -i ogle-sample0/ --min-period 3.0 --max-period 6.0
 
@@ -89,7 +91,7 @@ two things.
 
    >> plotypus -i @names.dat --periods periods.dat
 
-2. Pipe the file to plotypus via standard input, and omit the ``-i`` switch::
+2. Pipe the file to plotypus via standard input, and omit the ``-i`` option::
 
    >> cat names.dat | plotypus --periods periods.dat
 
@@ -98,7 +100,7 @@ as input.
 
 Now let's generate some plots (it isn't called **plot**\ypus for nothing).
 Run plotypus in any of the ways you did before, but this time add the ``-o``
-switch, and provide an output directory. We will do like this::
+switch, and provide an output directory. We will do it like this::
 
    >> plotypus -i @names.dat -o plots/ --periods periods.dat
 
@@ -118,7 +120,7 @@ plots have been created. Your directory should look like this::
         └── OGLE-LMC-CEP-0005.png
 
 Using your image viewing software of choice, take a look at the two plots you
-just created.
+just created. They should look something like this:
 
 .. image:: images/OGLE-LMC-CEP-0002.png
 

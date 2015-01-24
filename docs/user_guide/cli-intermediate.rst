@@ -10,15 +10,15 @@ Now that you know how to fit and plot light curves, it is time you learn to
 set some of the fitting parameters. First, create an empty directory, named
 *plotypus-intermediate-tutorial*, and enter it::
 
-   >> mkdir plotypus-tutorial
-   >> cd plotypus-tutorial
+   >> mkdir plotypus-intermediate-tutorial
+   >> cd plotypus-intermediate-tutorial
 
 To demonstrate the utility of different parameters, you will need a more
 diverse set of light curves. We have provided a sample of OGLE-III stars
-`here <samples/ogle-sample1.tar.gz>`_ [USSP]_. Download and extract the files
-with::
+`here </plotypus/_static/samples/ogle-sample1.tar.gz>`_ [USSP]_.
+Download and extract the files with::
 
-   >> curl -O https://astroswego.github.io/plotypus/user_guide/samples/ogle-sample1.tar.gz
+   >> curl -O https://astroswego.github.io/plotypus/_static/samples/ogle-sample1.tar.gz
    >> tar -xvzf ogle-sample1.tar.gz
 
 Now your directory should look like this::
@@ -195,13 +195,13 @@ The stars we have processed so far have all had very well behaved data, as far
 as variable stars go. Now consider a less well behaved star, with lots of
 outlier points. We don't want those outliers harming our results. One star of
 particular interest from the OGLE-III catalog is
-`OGLE-LMC-CEP-0227 <samples/OGLE-LMC-CEP-0227.dat>`_ [USSP]_,
+`OGLE-LMC-CEP-0227 </plotypus/_static/samples/OGLE-LMC-CEP-0227.dat>`_ [USSP]_,
 a Cepheid which is part of an
 `eclipsing binary system
 <https://en.wikipedia.org/wiki/Binary_star#Eclipsing_binaries>`_.
 Download the photometry::
 
-  >> curl -O https://astroswego.github.io/plotypus/user_guide/samples/OGLE-LMC-CEP-0227.dat
+  >> curl -O https://astroswego.github.io/plotypus/_static/samples/OGLE-LMC-CEP-0227.dat
 
 Now try fitting it with both methods we've used, allowing them both to find
 the period (we'll constrain it between 3 and 4 days to save time). For the

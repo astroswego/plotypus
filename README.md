@@ -1,25 +1,21 @@
 # plotypus
 
-A Python library and command line utility for manipulating and plotting stellar
-lightcurves. Full documentation available [here](https://astroswego.github.io/plotypus/).
+plotypus is a [Python](http://www.python.org) library and command line tool for modelling and plotting the [light curves](https://en.wikipedia.org/wiki/Light_curve) of [intrinsic variable stars](https://en.wikipedia.org/wiki/Variable_star#Intrinsic_variable_stars). Complete documentation available [here](https://astroswego.github.io/plotypus/).
 
-## authors
+## Installation
+
+See [installation guide](https://astroswego.github.io/plotypus/user_guide/install.html).
+
+## Documentation
+
+Take a look through the [API](https://astroswego.github.io/plotypus/api/index.html), the [User’s Guide](https://astroswego.github.io/plotypus/user_guide/index.html), and the [examples](https://astroswego.github.io/plotypus/examples/index.html).
+
+## Authors
 
 Earl Bellinger
 
 Dan Wysocki
 
-## requirements
+## License
 
-- Python 3.2 or higher
-- numpy
-- matplotlib
-- scikit-learn
-
-## usage
-
-Install using setuptools
-```bash
-$ python setup.py install
-```
-(Note: Depending on how your system is configured, you may need to run this as root)
+plotypus is protected under the Lesser GNU General Public License (LGPLv3).
