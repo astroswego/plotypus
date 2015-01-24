@@ -402,19 +402,3 @@ class Fourier():
         phase_deltas   %= 2*pi
 
         return ratios
-
-# @staticmethod
-# def amplitude_ratios(amplitudes, N):
-#     """Returns an array containing
-#     [ R_{i N} for N < i < n ],
-#     where n is the degree of the fit.
-#     """
-#     return amplitudes[N+1:] / amplitudes[N]
-
-# @staticmethod
-# def phase_deltas(phase_shifts, N):
-#     """Returns an array containing
-#     [ Phi_{i N} for N < i < n ],
-#     where n is the degree of the fit.
-#     """
-#     return phase_shifts[N+1:] - phase_shifts[N]
