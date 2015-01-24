@@ -10,8 +10,8 @@ Now that you know how to fit and plot light curves, it is time you learn to
 set some of the fitting parameters. First, create an empty directory, named
 *plotypus-intermediate-tutorial*, and enter it::
 
-   >> mkdir plotypus-tutorial
-   >> cd plotypus-tutorial
+   >> mkdir plotypus-intermediate-tutorial
+   >> cd plotypus-intermediate-tutorial
 
 To demonstrate the utility of different parameters, you will need a more
 diverse set of light curves. We have provided a sample of OGLE-III stars

@@ -137,8 +137,9 @@ so:</p>
 </pre></div>
 </div>
 <p>A table should be printed to your terminal, containing various light curve
-parameters. You can omit the <cite>&#8211;min-period</cite> and <cite>&#8211;max-period</cite> switches, but
-it will take much longer to run. Now try running it on the entire directory:</p>
+parameters. You can omit the <tt class="docutils literal"><span class="pre">--min-period</span></tt> and <tt class="docutils literal"><span class="pre">--max-period</span></tt> switches,
+but it will take much longer to run.
+Now try running it on the entire directory:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i ogle-sample0/ --min-period 3.0 --max-period 6.0
 </pre></div>
 </div>
@@ -185,7 +186,7 @@ an <tt class="docutils literal"><span class="pre">&#64;</span></tt> symbol:</p>
 </pre></div>
 </div>
 </li>
-<li><p class="first">Pipe the file to plotypus via standard input, and omit the <tt class="docutils literal"><span class="pre">-i</span></tt> switch:</p>
+<li><p class="first">Pipe the file to plotypus via standard input, and omit the <tt class="docutils literal"><span class="pre">-i</span></tt> option:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; cat names.dat | plotypus --periods periods.dat
 </pre></div>
 </div>
@@ -195,7 +196,7 @@ an <tt class="docutils literal"><span class="pre">&#64;</span></tt> symbol:</p>
 as input.</p>
 <p>Now let&#8217;s generate some plots (it isn&#8217;t called <strong>plot</strong>ypus for nothing).
 Run plotypus in any of the ways you did before, but this time add the <tt class="docutils literal"><span class="pre">-o</span></tt>
-switch, and provide an output directory. We will do like this:</p>
+switch, and provide an output directory. We will do it like this:</p>
 <div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i @names.dat -o plots/ --periods periods.dat
 </pre></div>
 </div>
@@ -215,7 +216,7 @@ plots have been created. Your directory should look like this:</p>
 </pre></div>
 </div>
 <p>Using your image viewing software of choice, take a look at the two plots you
-just created.</p>
+just created. They should look something like this:</p>
 <img alt="../_images/OGLE-LMC-CEP-0002.png" src="../_images/OGLE-LMC-CEP-0002.png" />
 <img alt="../_images/OGLE-LMC-CEP-0005.png" src="../_images/OGLE-LMC-CEP-0005.png" />
 <p>That covers all of the basic functionality of plotypus. Continue on to the
