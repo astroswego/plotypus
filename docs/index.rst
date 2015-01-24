@@ -2,7 +2,7 @@ Introduction
 ============
 
 plotypus is a `Python <http://www.python.org>`_ library and command line tool
-for modelling and plotting the `light curves <https://en.wikipedia.org/wiki/Light_curve>`_ of `intrinsic variable stars <https://en.wikipedia.org/wiki/Variable_star#Intrinsic_variable_stars>`_.
+for modelling and plotting the `light curves <https://en.wikipedia.org/wiki/Light_curve>`_ of periodic `intrinsic variable stars <https://en.wikipedia.org/wiki/Variable_star#Intrinsic_variable_stars>`_.
 
 
 Installation

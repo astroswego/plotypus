@@ -1,6 +1,6 @@
 # plotypus
 
-plotypus is a [Python](http://www.python.org) library and command line tool for modelling and plotting the [light curves](https://en.wikipedia.org/wiki/Light_curve) of [intrinsic variable stars](https://en.wikipedia.org/wiki/Variable_star#Intrinsic_variable_stars). Complete documentation available [here](https://astroswego.github.io/plotypus/).
+plotypus is a [Python](http://www.python.org) library and command line tool for modelling and plotting the [light curves](https://en.wikipedia.org/wiki/Light_curve) of periodic [intrinsic variable stars](https://en.wikipedia.org/wiki/Variable_star#Intrinsic_variable_stars). Complete documentation available [here](https://astroswego.github.io/plotypus/).
 
 ## Installation
 
