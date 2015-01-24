@@ -189,7 +189,7 @@ is used in plotypus. To tell plotypus to use this method, provide the option
 
 
 Outlier Detection
-^^^^^^^^^^^^^^^^^
+-----------------
 
 The stars we have processed so far have all had very well behaved data, as far
 as variable stars go. Now consider a less well behaved star, with lots of
