@@ -2,7 +2,7 @@ Introduction
 ============
 
 plotypus is a `Python <http://www.python.org>`_ library and command line tool
-for modelling and plotting the `light curves <https://en.wikipedia.org/wiki/Light_curve>`_ of `intrinsic variable stars <https://en.wikipedia.org/wiki/Variable_star#Intrinsic_variable_stars>`_.
+for modelling and plotting the `light curves <https://en.wikipedia.org/wiki/Light_curve>`_ of periodic `intrinsic variable stars <https://en.wikipedia.org/wiki/Variable_star#Intrinsic_variable_stars>`_.
 
 Certain types of variable stars can be used as `standard candles <https://en.wikipedia.org/wiki/Cosmic_distance_ladder#Standard_candles>`_, and are therefore essential in understanding the structure of the Universe. A property of `classical Cepheid variable stars <https://en.wikipedia.org/wiki/Classical_Cepheid_variable>`_ known as the `period-luminosity relation <https://en.wikipedia.org/wiki/Classical_Cepheid_variable#Period-luminosity_relation>`_ was discovered in 1908 by `Henrietta Swan Leavitt <https://en.wikipedia.org/wiki/Henrietta_Swan_Leavitt>`_. This relation depends on knowing the `period <https://en.wikipedia.org/wiki/Frequency>`_ of oscillation and the mean `magnitude <https://en.wikipedia.org/wiki/Magnitude_%28astronomy%29>`_ of a sample of Cepheids at a similar distance. In order to obtain these two parameters for a given star, its brightness must be observed over a length of time so that a `periodogram <https://en.wikipedia.org/wiki/Periodogram>`_ may be used to find its period, and `regression <https://en.wikipedia.org/wiki/Regression_analysis>`_ to fit a `periodic function <https://en.wikipedia.org/wiki/Periodic_function>`_ to the observations.
 
