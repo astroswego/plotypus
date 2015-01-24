@@ -4,7 +4,7 @@ CLI Intermediate Guide
 .. note::
 
    This guide assumes you have already completed the
-   `Beginner's Guide <cli-beginner.rst>`_.
+   `Beginner's Guide <cli-beginner.html>`_.
 
 Now that you know how to fit and plot light curves, it is time you learn to
 set some of the fitting parameters. First, create an empty directory, named
