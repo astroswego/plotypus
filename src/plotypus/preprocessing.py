@@ -390,8 +390,10 @@ class Fourier():
         amplitude_ratios = ratios[::2]
         phase_deltas = ratios[1::2]
 
-        amplitude_ratios[:] = amplitudes[1:]
-        amplitude_ratios   /= amplitudes[0]
+        # amplitudes may be zero, so suppress division by zero warnings
+        with numpy.errstate(divide="ignore"):
+            amplitude_ratios[:] = amplitudes[1:]
+            amplitude_ratios   /= amplitudes[0]
 
         i = numpy.arange(2, order+1)
         phase_deltas[:] = phases[1:]
