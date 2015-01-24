@@ -91,7 +91,7 @@ def get_lightcurve(data, copy=False, name=None,
                    shift=None,
                    min_phase_cover=0.0, n_phases=100,
                    verbosity=None, **kwargs):
-    """get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring='r2', scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=(), **kwargs)
+    """get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring='r2', scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=None, **kwargs)
 
     Fits a light curve to the given `data` using the specified methods,
     with default behavior defined for all methods.
@@ -195,6 +195,10 @@ def get_lightcurve(data, copy=False, name=None,
     while True:
         signal = get_signal(data)
         if len(signal) <= scoring_cv:
+            verbose_print(
+                "{}: length of signal ({}) less than cv folds ({})".format(
+                    name, len(signal), scoring_cv),
+                operation="coverage", verbosity=verbosity)
             return
 
         # Find the period of the inliers
@@ -297,6 +301,7 @@ def get_lightcurve(data, copy=False, name=None,
 
 
 def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
+                             verbosity=None,
                              **kwargs):
     """get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0, **kwargs)
 
@@ -323,6 +328,8 @@ def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
         masked_data = numpy.ma.array(data=data, mask=None, dtype=float)
         return get_lightcurve(masked_data, *args, **kwargs)
     else:
+        verbose_print("{}: file contains no data points".format(file),
+                      operation="coverage", verbosity=verbosity)
         return
 
 
