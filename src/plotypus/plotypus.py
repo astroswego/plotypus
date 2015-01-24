@@ -82,7 +82,7 @@ def get_args():
         help='matplotlibrc file to use for formatting plots '
              '(default file is in plotypus.resources.matplotlibrc)')
     general_group.add_argument('-v', '--verbosity', type=str, action='append',
-        default=[], choices=['all', 'coverage', 'outlier', 'period'],
+        default=None, choices=['all', 'coverage', 'outlier', 'period'],
         metavar='OPERATION',
         help='specifies an operation to print verbose output for, or '
              '"all" to print all verbose output '
