@@ -27,15 +27,17 @@ def verbose_print(message, *, operation, verbosity):
         The message to print.
     operation : str
         The type of operation being performed.
-    verbosity : [str]
+    verbosity : [str] or None
         The list of operations to print *message* for. If "all" is contained
-        in the list, then all operations are printed.
+        in the list, then all operations are printed. If None, no operation is
+        printed.
 
     **Returns**
 
     None
     """
-    if (operation in verbosity) or ("all" in verbosity):
+    if (verbosity is not None) and ((operation in verbosity) or
+                                    ("all"     in verbosity)):
         print(message, file=stderr)
 
 
