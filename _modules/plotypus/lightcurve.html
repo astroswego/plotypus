@@ -188,7 +188,7 @@
                    <span class="n">shift</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                    <span class="n">min_phase_cover</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">n_phases</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
                    <span class="n">verbosity</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring=&#39;r2&#39;, scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=(), **kwargs)</span>
+    <span class="sd">&quot;&quot;&quot;get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring=&#39;r2&#39;, scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=None, **kwargs)</span>
 
 <span class="sd">    Fits a light curve to the given `data` using the specified methods,</span>
 <span class="sd">    with default behavior defined for all methods.</span>
@@ -292,6 +292,10 @@
     <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
         <span class="n">signal</span> <span class="o">=</span> <span class="n">get_signal</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">scoring_cv</span><span class="p">:</span>
+            <span class="n">verbose_print</span><span class="p">(</span>
+                <span class="s">&quot;{}: length of signal ({}) less than cv folds ({})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">),</span> <span class="n">scoring_cv</span><span class="p">),</span>
+                <span class="n">operation</span><span class="o">=</span><span class="s">&quot;coverage&quot;</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
             <span class="k">return</span>
 
         <span class="c"># Find the period of the inliers</span>
@@ -394,6 +398,7 @@
 
 </div>
 <div class="viewcode-block" id="get_lightcurve_from_file"><a class="viewcode-back" href="../../api/plotypus.lightcurve.html#plotypus.lightcurve.get_lightcurve_from_file">[docs]</a><span class="k">def</span> <span class="nf">get_lightcurve_from_file</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">use_cols</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                             <span class="n">verbosity</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
                              <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0, **kwargs)</span>
 
@@ -420,6 +425,8 @@
         <span class="n">masked_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="k">return</span> <span class="n">get_lightcurve</span><span class="p">(</span><span class="n">masked_data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
+        <span class="n">verbose_print</span><span class="p">(</span><span class="s">&quot;{}: file contains no data points&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">file</span><span class="p">),</span>
+                      <span class="n">operation</span><span class="o">=</span><span class="s">&quot;coverage&quot;</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
         <span class="k">return</span>
 
 

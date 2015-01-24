@@ -472,47 +472,31 @@
 
 
         <span class="n">n_coeff</span> <span class="o">=</span> <span class="n">phase_shifted_coeffs</span><span class="o">.</span><span class="n">size</span>
-        <span class="c"># there are 2*order + 1 coefficients: A_0, A_1, Phi_1, A_2, Phi_2, ...</span>
-        <span class="n">order</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_coeff</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
+        <span class="c"># n_coeff = 2*degree + 1 =&gt; degree = (n_coeff-1)/2</span>
+        <span class="n">degree</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_coeff</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
         <span class="n">amplitudes</span> <span class="o">=</span> <span class="n">phase_shifted_coeffs</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">phases</span> <span class="o">=</span> <span class="n">phase_shifted_coeffs</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
 
-        <span class="c"># the number of ratios is 3 less than the number of coefficients</span>
-        <span class="c"># because the 0th coefficient is not used, and there are ratios of</span>
-        <span class="c"># two</span>
-        <span class="c"># TODO: finish writing this comment I apparently forgot about back when</span>
-        <span class="c">#       I understood its purpose</span>
-        <span class="n">ratios</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">phase_shifted_coeffs</span><span class="o">.</span><span class="n">size</span><span class="o">-</span><span class="mi">3</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="c"># there are degree-1 amplitude ratios, and degree-1 phase deltas,</span>
+        <span class="c"># so altogether there are 2*(degree-1) values</span>
+        <span class="n">ratios</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">degree</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">amplitude_ratios</span> <span class="o">=</span> <span class="n">ratios</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">phase_deltas</span> <span class="o">=</span> <span class="n">ratios</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
 
-        <span class="n">amplitude_ratios</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">amplitudes</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-        <span class="n">amplitude_ratios</span>   <span class="o">/=</span> <span class="n">amplitudes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="c"># amplitudes may be zero, so suppress division by zero warnings</span>
+        <span class="k">with</span> <span class="n">numpy</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s">&quot;ignore&quot;</span><span class="p">):</span>
+            <span class="n">amplitude_ratios</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">amplitudes</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+            <span class="n">amplitude_ratios</span>   <span class="o">/=</span> <span class="n">amplitudes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="n">i</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">order</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c"># indices for phase deltas</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">degree</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">phase_deltas</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">phases</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="n">phase_deltas</span>   <span class="o">-=</span> <span class="n">i</span><span class="o">*</span><span class="n">phases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="c"># constrain phase_deltas between 0 and 2*pi</span>
         <span class="n">phase_deltas</span>   <span class="o">%=</span> <span class="mi">2</span><span class="o">*</span><span class="n">pi</span>
 
-        <span class="k">return</span> <span class="n">ratios</span>
-
-<span class="c"># @staticmethod</span>
-<span class="c"># def amplitude_ratios(amplitudes, N):</span>
-<span class="c">#     &quot;&quot;&quot;Returns an array containing</span>
-<span class="c">#     [ R_{i N} for N &lt; i &lt; n ],</span>
-<span class="c">#     where n is the degree of the fit.</span>
-<span class="c">#     &quot;&quot;&quot;</span>
-<span class="c">#     return amplitudes[N+1:] / amplitudes[N]</span>
-
-<span class="c"># @staticmethod</span>
-<span class="c"># def phase_deltas(phase_shifts, N):</span>
-<span class="c">#     &quot;&quot;&quot;Returns an array containing</span>
-<span class="c">#     [ Phi_{i N} for N &lt; i &lt; n ],</span>
-<span class="c">#     where n is the degree of the fit.</span>
-<span class="c">#     &quot;&quot;&quot;</span>
-<span class="c">#     return phase_shifts[N+1:] - phase_shifts[N]</span></div></div>
+        <span class="k">return</span> <span class="n">ratios</span></div></div>
 </pre></div>
 
           </div>

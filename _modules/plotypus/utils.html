@@ -124,15 +124,17 @@
 <span class="sd">        The message to print.</span>
 <span class="sd">    operation : str</span>
 <span class="sd">        The type of operation being performed.</span>
-<span class="sd">    verbosity : [str]</span>
+<span class="sd">    verbosity : [str] or None</span>
 <span class="sd">        The list of operations to print *message* for. If &quot;all&quot; is contained</span>
-<span class="sd">        in the list, then all operations are printed.</span>
+<span class="sd">        in the list, then all operations are printed. If None, no operation is</span>
+<span class="sd">        printed.</span>
 
 <span class="sd">    **Returns**</span>
 
 <span class="sd">    None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">if</span> <span class="p">(</span><span class="n">operation</span> <span class="ow">in</span> <span class="n">verbosity</span><span class="p">)</span> <span class="ow">or</span> <span class="p">(</span><span class="s">&quot;all&quot;</span> <span class="ow">in</span> <span class="n">verbosity</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">((</span><span class="n">operation</span> <span class="ow">in</span> <span class="n">verbosity</span><span class="p">)</span> <span class="ow">or</span>
+                                    <span class="p">(</span><span class="s">&quot;all&quot;</span>     <span class="ow">in</span> <span class="n">verbosity</span><span class="p">)):</span>
         <span class="k">print</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="nb">file</span><span class="o">=</span><span class="n">stderr</span><span class="p">)</span>
 
 </div>
