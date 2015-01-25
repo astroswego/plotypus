@@ -19,7 +19,7 @@ This is the documentation for version |version|.
 
     <p id="other_versions"></p>
     <script>
-      getSnippet('other_versions', '/plotypus/versions.html');
+      getSnippet('other_versions', '/versions.html');
     </script>
 
 Take a look through the `API <api/index.html>`_, the `User's Guide <user_guide/index.html>`_, and the `examples <examples/index.html>`_.
@@ -43,3 +43,37 @@ Contributing
 We openly welcome outside contributions. If you would like to be a part of our team, feel free to contact us. If you find a bug, or would like to suggest a feature or improvement, please use our `issue tracker <https://github.com/astroswego/plotypus/issues>`_. If you would like to submit a patch, make a `pull request <https://github.com/astroswego/plotypus/pulls>`_.
 
 We are currently looking for a volunteer to make a graphical user interface to plotypus. If you are interested please let us know, and due to the open nature of the project you can even make one without asking.
+
+
+.. raw:: html
+    <script>
+    function getSnippet(id, url) {
+      var req = false;
+      // For Safari, Firefox, and other non-MS browsers
+      if (window.XMLHttpRequest) {
+        try {
+          req = new XMLHttpRequest();
+        } catch (e) {
+          req = false;
+        }
+      } else if (window.ActiveXObject) {
+        // For Internet Explorer on Windows
+        try {
+          req = new ActiveXObject("Msxml2.XMLHTTP");
+        } catch (e) {
+          try {
+            req = new ActiveXObject("Microsoft.XMLHTTP");
+          } catch (e) {
+            req = false;
+          }
+        }
+      }
+      var element = document.getElementById(id);
+      if (req) {
+        // Synchronous request, wait till we have it all
+        req.open('GET', url, false);
+        req.send(null);
+        element.innerHTML = req.responseText;
+      }
+    }
+    </script>
