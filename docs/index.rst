@@ -15,6 +15,13 @@ Documentation
 
 This is the documentation for version |version|.
 
+.. raw:: html
+
+    <p id="other_versions"></p>
+    <script>
+      getSnippet('other_versions', '/versions.html');
+    </script>
+
 Take a look through the `API <api/index.html>`_, the `User's Guide <user_guide/index.html>`_, and the `examples <examples/index.html>`_.
 
 
