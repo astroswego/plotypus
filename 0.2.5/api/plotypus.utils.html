@@ -1,0 +1,243 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>plotypus.utils module &mdash; plotypus: light curve analysis in Python</title>
+    
+    <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="plotypus: light curve analysis in Python" href="../index.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body>
+  
+  
+
+
+<link rel="shortcut icon" href="_static/icon.png">
+
+<!-- The "Fork me on github" ribbon -->
+<img style="float: right; margin-bottom: -40px; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" usemap="#ribbonmap"/>
+<map name="ribbonmap">
+    <area shape="poly" coords="15,0,148,-1,148,135" href="https://github.com/astroswego/plotypus" title="Fork me on GitHub" />
+</map>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.svg" border="0" alt="plotypus"/></a>
+</div>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../contents.html">docs</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation index</a><ul>
+  </ul></li>
+</ul>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/plotypus.utils.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-plotypus.utils">
+<span id="plotypus-utils-module"></span><h1>plotypus.utils module<a class="headerlink" href="#module-plotypus.utils" title="Permalink to this headline">¶</a></h1>
+<dl class="function">
+<dt id="plotypus.utils.verbose_print">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">verbose_print</tt><big>(</big><em>message</em>, <em>*</em>, <em>operation</em>, <em>verbosity</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#verbose_print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.verbose_print" title="Permalink to this definition">¶</a></dt>
+<dd><p>Prints <em>message</em> to stderr only if the given <em>operation</em> is in the list
+<em>verbosity</em>. If &#8220;all&#8221; is in <em>verbosity</em>, all operations are printed.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>message <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The message to print.</dd>
+<dt>operation <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>The type of operation being performed.</dd>
+<dt>verbosity <span class="classifier-delimiter">:</span> <span class="classifier">[str] or None</span></dt>
+<dd>The list of operations to print <em>message</em> for. If &#8220;all&#8221; is contained
+in the list, then all operations are printed. If None, no operation is
+printed.</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<p>None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.pmap">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">pmap</tt><big>(</big><em>func</em>, <em>args</em>, <em>processes=None</em>, <em>callback=do_nothing</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#pmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.pmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parallel equivalent of <tt class="docutils literal"><span class="pre">map(func,</span> <span class="pre">args)</span></tt>, with the additional ability of
+providing keyword arguments to func, and a callback function which is
+applied to each element in the returned list. Unlike map, the output is a
+non-lazy list. If <em>processes</em> is 1, no thread pool is used.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>func <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
+<dd>The function to map.</dd>
+<dt>args <span class="classifier-delimiter">:</span> <span class="classifier">iterable</span></dt>
+<dd>The arguments to map <em>func</em> over.</dd>
+<dt>processes <span class="classifier-delimiter">:</span> <span class="classifier">int or None, optional</span></dt>
+<dd>The number of processes in the thread pool. If only 1, no thread pool
+is used to avoid useless overhead. If None, the number is chosen based
+on your system by <tt class="xref py py-class docutils literal"><span class="pre">multiprocessing.Pool</span></tt> (default None).</dd>
+<dt>callback <span class="classifier-delimiter">:</span> <span class="classifier">function, optional</span></dt>
+<dd>Function to call on the return value of <tt class="docutils literal"><span class="pre">func(arg)</span></tt> for each <em>arg</em>
+in <em>args</em> (default do_nothing).</dd>
+<dt>kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>Extra keyword arguments are unpacked in each call of <em>func</em>.</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>results <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
+<dd>A list equivalent to <tt class="docutils literal"><span class="pre">[func(x,</span> <span class="pre">**kwargs)</span> <span class="pre">for</span> <span class="pre">x</span> <span class="pre">in</span> <span class="pre">args]</span></tt>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.make_sure_path_exists">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">make_sure_path_exists</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#make_sure_path_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.make_sure_path_exists" title="Permalink to this definition">¶</a></dt>
+<dd><p>Creates the supplied <em>path</em> if it does not exist.
+Raises <em>OSError</em> if the <em>path</em> cannot be created.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>path <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Path to create.</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<p>None</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.get_signal">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">get_signal</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#get_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.get_signal" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all of the values in <em>data</em> that are not outliers.</p>
+<p><strong>Parameters</strong></p>
+<p>data : masked array</p>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>signal <span class="classifier-delimiter">:</span> <span class="classifier">array</span></dt>
+<dd>Non-masked values in <em>data</em>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.get_noise">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">get_noise</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#get_noise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.get_noise" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns all identified outliers in <em>data</em>.</p>
+<p><strong>Parameters</strong></p>
+<p>data : masked array</p>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>noise <span class="classifier-delimiter">:</span> <span class="classifier">array</span></dt>
+<dd>Masked values in <em>data</em>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.colvec">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">colvec</tt><big>(</big><em>X</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#colvec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.colvec" title="Permalink to this definition">¶</a></dt>
+<dd><p>Converts a row-vector <em>X</em> into a column-vector.</p>
+<p><strong>Parameters</strong></p>
+<p>X : array-like, shape = [n_samples]</p>
+<p><strong>Returns</strong></p>
+<p>out : array-like, shape = [n_samples, 1]</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.mad">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">mad</tt><big>(</big><em>data</em>, <em>axis=None</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#mad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.mad" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the median absolute deviation of <em>data</em> along a given <em>axis</em>.
+See <a class="reference external" href="https://en.wikipedia.org/wiki/Median_absolute_deviation">link</a> for
+details.</p>
+<p><strong>Parameters</strong></p>
+<p>data : array-like</p>
+<p><strong>Returns</strong></p>
+<p>mad : number or array-like</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.autocorrelation">
+<tt class="descclassname">plotypus.utils.</tt><tt class="descname">autocorrelation</tt><big>(</big><em>X</em>, <em>lag=1</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#autocorrelation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.autocorrelation" title="Permalink to this definition">¶</a></dt>
+<dd><p>Computes the autocorrelation of <em>X</em> with the given <em>lag</em>.
+Autocorrelation is simply
+autocovariance(X) / covariance(X-mean, X-mean),
+where autocovariance is simply
+covariance((X-mean)[:-lag], (X-mean)[lag:]).</p>
+<p>See <a class="reference external" href="https://en.wikipedia.org/wiki/Autocorrelation">link</a> for details.</p>
+<p><strong>Parameters</strong></p>
+<p>X : array-like, shape = [n_samples]</p>
+<dl class="docutils">
+<dt>lag <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
+<dd>Index difference between points being compared (default 1).</dd>
+</dl>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+  </div>
+  
+  </body>
+</html>

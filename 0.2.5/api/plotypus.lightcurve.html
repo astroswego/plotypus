@@ -1,0 +1,391 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>plotypus.lightcurve module &mdash; plotypus: light curve analysis in Python</title>
+    
+    <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2.5',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="plotypus: light curve analysis in Python" href="../index.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body>
+  
+  
+
+
+<link rel="shortcut icon" href="_static/icon.png">
+
+<!-- The "Fork me on github" ribbon -->
+<img style="float: right; margin-bottom: -40px; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" usemap="#ribbonmap"/>
+<map name="ribbonmap">
+    <area shape="poly" coords="15,0,148,-1,148,135" href="https://github.com/astroswego/plotypus" title="Fork me on GitHub" />
+</map>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.svg" border="0" alt="plotypus"/></a>
+</div>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../contents.html">docs</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation index</a><ul>
+  </ul></li>
+</ul>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/api/plotypus.lightcurve.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="module-plotypus.lightcurve">
+<span id="plotypus-lightcurve-module"></span><h1>plotypus.lightcurve module<a class="headerlink" href="#module-plotypus.lightcurve" title="Permalink to this headline">¶</a></h1>
+<p>Light curve fitting and plotting functions.</p>
+<dl class="function">
+<dt id="plotypus.lightcurve.make_predictor">
+<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">make_predictor</tt><big>(</big><em>regressor=LassoLarsIC(fit_intercept=False)</em>, <em>Selector=GridSearchCV</em>, <em>fourier_degree=(2</em>, <em>25)</em>, <em>selector_processes=1</em>, <em>use_baart=False</em>, <em>scoring='r2'</em>, <em>scoring_cv=3</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#make_predictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.make_predictor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a predictor object for use in <a class="reference internal" href="#plotypus.lightcurve.get_lightcurve" title="plotypus.lightcurve.get_lightcurve"><tt class="xref py py-func docutils literal"><span class="pre">get_lightcurve()</span></tt></a>.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>regressor <span class="classifier-delimiter">:</span> <span class="classifier">object with &#8220;fit&#8221; and &#8220;transform&#8221; methods, optional</span></dt>
+<dd>Regression object used for solving Fourier matrix
+(default <tt class="docutils literal"><span class="pre">sklearn.linear_model.LassoLarsIC(fit_intercept=False)</span></tt>).</dd>
+<dt>Selector <span class="classifier-delimiter">:</span> <span class="classifier">class with &#8220;fit&#8221; and &#8220;predict&#8221; methods, optional</span></dt>
+<dd>Model selection class used for finding the best fit
+(default <tt class="xref py py-class docutils literal"><span class="pre">sklearn.grid_search.GridSearchCV</span></tt>).</dd>
+<dt>selector_processes <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span></dt>
+<dd>Number of processes to use for <em>Selector</em> (default 1).</dd>
+<dt>use_baart <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
+<dd>If True, ignores <em>Selector</em> and uses Baart&#8217;s Criteria to find
+the Fourier degree, within the boundaries (default False).</dd>
+<dt>fourier_degree <span class="classifier-delimiter">:</span> <span class="classifier">2-tuple, optional</span></dt>
+<dd>Tuple containing lower and upper bounds on Fourier degree, in that
+order (default (2, 25)).</dd>
+<dt>scoring <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><dl class="first last docutils">
+<dt>Scoring method to use for <em>Selector</em>. This parameter can be:</dt>
+<dd><ul class="first last simple">
+<li>&#8220;r2&#8221;, in which case use <img class="math" src="../_images/math/4f58a3b2897df3c0b9d53a442ae896516ecdeaa0.png" alt="R^2"/> (the default)</li>
+<li>&#8220;mse&#8221;, in which case use mean square error</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>scoring_cv <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span></dt>
+<dd>Number of cross validation folds used in scoring (default 3).</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">object with &#8220;fit&#8221; and &#8220;predict&#8221; methods</span></dt>
+<dd>The created predictor object.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.lightcurve.get_lightcurve">
+<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">get_lightcurve</tt><big>(</big><em>data</em>, <em>copy=False</em>, <em>name=None</em>, <em>predictor=None</em>, <em>periodogram=Lomb_Scargle</em>, <em>sigma_clipping=mad</em>, <em>scoring='r2'</em>, <em>scoring_cv=3</em>, <em>scoring_processes=1</em>, <em>period=None</em>, <em>min_period=0.2</em>, <em>max_period=32</em>, <em>coarse_precision=1e-5</em>, <em>fine_precision=1e-9</em>, <em>period_processes=1</em>, <em>sigma=20</em>, <em>shift=None</em>, <em>min_phase_cover=0.0</em>, <em>n_phases=100</em>, <em>verbosity=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#get_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.get_lightcurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits a light curve to the given <cite>data</cite> using the specified methods,
+with default behavior defined for all methods.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
+<dd>Photometry array with columns <em>time</em>, <em>magnitude</em>, and (optional)
+<em>error</em>. <em>time</em> should be unphased.</dd>
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">string or None, optional</span></dt>
+<dd>Name of star being processed.</dd>
+<dt>predictor <span class="classifier-delimiter">:</span> <span class="classifier">object that has &#8220;fit&#8221; and &#8220;predict&#8221; methods, optional</span></dt>
+<dd>Object which fits the light curve obtained from <em>data</em> after rephasing
+(default <tt class="docutils literal"><span class="pre">make_predictor(scoring=scoring,</span> <span class="pre">scoring_cv=scoring_cv)</span></tt>).</dd>
+<dt>periodogram <span class="classifier-delimiter">:</span> <span class="classifier">function, optional</span></dt>
+<dd>Function which finds one or more <em>period</em>s. If <em>period</em> is already
+provided, the function is not used. Defaults to
+<a class="reference internal" href="plotypus.periodogram.html#plotypus.periodogram.Lomb_Scargle" title="plotypus.periodogram.Lomb_Scargle"><tt class="xref py py-func docutils literal"><span class="pre">plotypus.periodogram.Lomb_Scargle()</span></tt></a></dd>
+<dt>sigma_clipping <span class="classifier-delimiter">:</span> <span class="classifier">function, optional</span></dt>
+<dd>Function which takes an array and assigns sigma scores to each element.
+Defaults to <a class="reference internal" href="plotypus.utils.html#plotypus.utils.mad" title="plotypus.utils.mad"><tt class="xref py py-func docutils literal"><span class="pre">plotypus.utils.mad()</span></tt></a>.</dd>
+<dt>scoring <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd><dl class="first last docutils">
+<dt>Scoring method used by <em>predictor</em>. This parameter can be</dt>
+<dd><ul class="first last simple">
+<li>&#8220;r2&#8221;, in which case use <tt class="xref py py-func docutils literal"><span class="pre">R^2()</span></tt> (the default)</li>
+<li>&#8220;mse&#8221;, in which case use mean square error</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>scoring_cv <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span></dt>
+<dd>Number of cross validation folds used in scoring (default 3).</dd>
+<dt>scoring_processes <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span></dt>
+<dd>Number of processes to use for scoring cross validation (default 1).</dd>
+<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number or None, optional</span></dt>
+<dd><dl class="first last docutils">
+<dt>Period of oscillation used in the fit. This parameter can be:</dt>
+<dd><ul class="first last simple">
+<li>None, in which case the period is obtained with the given
+<em>periodogram</em> function (the default).</li>
+<li>A single positive number, giving the period to phase <em>data</em>.</li>
+</ul>
+</dd>
+</dl>
+</dd>
+<dt>min_period <span class="classifier-delimiter">:</span> <span class="classifier">non-negative number, optional</span></dt>
+<dd>Lower bound on period obtained by <em>periodogram</em> (default 0.2).</dd>
+<dt>max_period <span class="classifier-delimiter">:</span> <span class="classifier">non-negative number, optional</span></dt>
+<dd>Upper bound on period obtained by <em>periodogram</em> (default 32.0).</dd>
+<dt>course_precision <span class="classifier-delimiter">:</span> <span class="classifier">positive number, optional</span></dt>
+<dd>Precision used in first period search sweep (default 1e-5).</dd>
+<dt>fine_precision <span class="classifier-delimiter">:</span> <span class="classifier">positive number, optional</span></dt>
+<dd>Precision used in second period search sweep (default 1e-9).</dd>
+<dt>period_processes <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span></dt>
+<dd>Number of processes to use for period finding (default 1).</dd>
+<dt>sigma <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
+<dd>Upper bound on score obtained by <em>sigma_clipping</em> for a point to be
+considered an inlier.</dd>
+<dt>shift <span class="classifier-delimiter">:</span> <span class="classifier">number or None, optional</span></dt>
+<dd>Phase shift to apply to light curve if provided. Light curve is shifted
+such that max light occurs at <tt class="docutils literal"><span class="pre">phase[0]</span></tt> if None given (default None).</dd>
+<dt>min_phase_cover <span class="classifier-delimiter">:</span> <span class="classifier">number on interval [0, 1], optional</span></dt>
+<dd>Fraction of binned light curve that must contain points in order to
+proceed. If light curve has insufficient coverage, a warning is
+printed if &#8220;outlier&#8221; <em>verbosity</em> is on, and None is returned
+(default 0.0).</dd>
+<dt>n_phases <span class="classifier-delimiter">:</span> <span class="classifier">positive integer</span></dt>
+<dd>Number of equally spaced phases to predict magnitudes at (default 100)</dd>
+<dt>verbosity <span class="classifier-delimiter">:</span> <span class="classifier">list or None, optional</span></dt>
+<dd>Verbosity level. See <a class="reference internal" href="plotypus.utils.html#plotypus.utils.verbose_print" title="plotypus.utils.verbose_print"><tt class="xref py py-func docutils literal"><span class="pre">plotypus.utils.verbose_print()</span></tt></a>.</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd><dl class="first last docutils">
+<dt>Results of the fit in a dictionary. The keys are:</dt>
+<dd><ul class="first last">
+<li><dl class="first docutils">
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">str or None</span></dt>
+<dd><p class="first last">The name of the star.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
+<dd><p class="first last">The star&#8217;s period.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>lightcurve <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_phases]</span></dt>
+<dd><p class="first last">Magnitudes of fitted light curve sampled at sample phases.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>coefficients <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_coeffs]</span></dt>
+<dd><p class="first last">Fitted light curve coefficients.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>dA_0 <span class="classifier-delimiter">:</span> <span class="classifier">non-negative number</span></dt>
+<dd><p class="first last">Error on mean magnitude.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>phased_data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span></dt>
+<dd><p class="first last"><em>data</em> transformed from temporal to phase space.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>model <span class="classifier-delimiter">:</span> <span class="classifier">predictor object</span></dt>
+<dd><p class="first last">The predictor used to fit the light curve.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>R2 <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
+<dd><p class="first last">The <img class="math" src="../_images/math/4f58a3b2897df3c0b9d53a442ae896516ecdeaa0.png" alt="R^2"/> score of the fit.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>MSE <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
+<dd><p class="first last">The mean square error of the fit.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>degree <span class="classifier-delimiter">:</span> <span class="classifier">positive integer</span></dt>
+<dd><p class="first last">The degree of the Fourier fit.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>shift <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
+<dd><p class="first last">The phase shift applied.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>coverage <span class="classifier-delimiter">:</span> <span class="classifier">number on interval [0, 1]</span></dt>
+<dd><p class="first last">The light curve coverage.</p>
+</dd>
+</dl>
+</li>
+</ul>
+</dd>
+</dl>
+</dd>
+</dl>
+<p><strong>See also</strong></p>
+<p><a class="reference internal" href="#plotypus.lightcurve.get_lightcurve_from_file" title="plotypus.lightcurve.get_lightcurve_from_file"><tt class="xref py py-func docutils literal"><span class="pre">get_lightcurve_from_file()</span></tt></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.lightcurve.get_lightcurve_from_file">
+<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">get_lightcurve_from_file</tt><big>(</big><em>file</em>, <em>*args</em>, <em>use_cols=None</em>, <em>skiprows=0</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#get_lightcurve_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.get_lightcurve_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Fits a light curve to the data contained in <em>file</em> using
+<a class="reference internal" href="#plotypus.lightcurve.get_lightcurve" title="plotypus.lightcurve.get_lightcurve"><tt class="xref py py-func docutils literal"><span class="pre">get_lightcurve()</span></tt></a>.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>file <span class="classifier-delimiter">:</span> <span class="classifier">str or file</span></dt>
+<dd>File or filename to load data from.</dd>
+<dt>use_cols <span class="classifier-delimiter">:</span> <span class="classifier">iterable or None, optional</span></dt>
+<dd>Iterable of columns to read from data file, or None to read all columns
+(default None).</dd>
+<dt>skiprows <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
+<dd>Number of rows to skip at beginning of <em>file</em> (default 0)</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
+<dd>See <a class="reference internal" href="#plotypus.lightcurve.get_lightcurve" title="plotypus.lightcurve.get_lightcurve"><tt class="xref py py-func docutils literal"><span class="pre">get_lightcurve()</span></tt></a>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.lightcurve.find_outliers">
+<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">find_outliers</tt><big>(</big><em>data</em>, <em>predictor</em>, <em>sigma</em>, <em>method=mad</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#find_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.find_outliers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns a boolean array indicating the outliers in the given <em>data</em> array.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
+<dd>Photometry array containing columns <em>phase</em>, <em>magnitude</em>, and
+(optional) <em>error</em>.</dd>
+<dt>predictor <span class="classifier-delimiter">:</span> <span class="classifier">object that has &#8220;fit&#8221; and &#8220;predict&#8221; methods, optional</span></dt>
+<dd>Object which fits the light curve obtained from <em>data</em> after rephasing.</dd>
+<dt>sigma <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
+<dd>Outlier cutoff criteria.</dd>
+<dt>method <span class="classifier-delimiter">:</span> <span class="classifier">function, optional</span></dt>
+<dd>Function to score residuals for outlier detection
+(default <a class="reference internal" href="plotypus.utils.html#plotypus.utils.mad" title="plotypus.utils.mad"><tt class="xref py py-func docutils literal"><span class="pre">plotypus.utils.mad()</span></tt></a>).</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = data.shape</span></dt>
+<dd>Boolean array indicating the outliers in the given <em>data</em> array.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.lightcurve.plot_lightcurve">
+<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">plot_lightcurve</tt><big>(</big><em>name</em>, <em>lightcurve</em>, <em>period</em>, <em>data</em>, <em>output='.'</em>, <em>legend=False</em>, <em>color=True</em>, <em>n_phases=100</em>, <em>err_const=0.0004</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#plot_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.plot_lightcurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a plot of the given <em>lightcurve</em> to directory <em>output</em>.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
+<dd>Name of the star. Used in filename and plot title.</dd>
+<dt>lightcurve <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span></dt>
+<dd>Fitted lightcurve.</dd>
+<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
+<dd>Period to phase time by.</dd>
+<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
+<dd>Photometry array containing columns <em>time</em>, <em>magnitude</em>, and
+(optional) <em>error</em>. <em>time</em> should be unphased.</dd>
+<dt>output <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
+<dd>Directory to save plot to (default &#8216;.&#8217;).</dd>
+<dt>legend <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
+<dd>Whether or not to display legend on plot (default False).</dd>
+<dt>color <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
+<dd>Whether or not to display color in plot (default True).</dd>
+<dt>n_phases <span class="classifier-delimiter">:</span> <span class="classifier">integer, optional</span></dt>
+<dd>Number of phase points in fit (default 100).</dd>
+<dt>err_const <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
+<dd>Constant to use in absence of error (default 0.0004).</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<p>None</p>
+</dd></dl>
+
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+  </div>
+  
+  </body>
+</html>
