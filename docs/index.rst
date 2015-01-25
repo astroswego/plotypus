@@ -10,6 +10,12 @@ Installation
 See `installation guide <user_guide/install.html>`_.
 
 
+Download
+--------
+
+Visit the `plotypus downloads page </plotypus/downloads.html>`_.
+
+
 Documentation
 -------------
 
@@ -19,7 +25,7 @@ This is the documentation for version |version|.
 
     <p id="other_versions"></p>
     <script>
-      getSnippet('other_versions', '/versions.html');
+      getSnippet('other_versions', '/plotypus/versions.html');
     </script>
 
 Take a look through the `API <api/index.html>`_, the `User's Guide <user_guide/index.html>`_, and the `examples <examples/index.html>`_.
@@ -43,3 +49,5 @@ Contributing
 We openly welcome outside contributions. If you would like to be a part of our team, feel free to contact us. If you find a bug, or would like to suggest a feature or improvement, please use our `issue tracker <https://github.com/astroswego/plotypus/issues>`_. If you would like to submit a patch, make a `pull request <https://github.com/astroswego/plotypus/pulls>`_.
 
 We are currently looking for a volunteer to make a graphical user interface to plotypus. If you are interested please let us know, and due to the open nature of the project you can even make one without asking.
+
+

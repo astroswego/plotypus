@@ -113,12 +113,15 @@ pygments_style = 'sphinx'
 
 # -- Options for HTML output ----------------------------------------------
 
+#html_index = "index.html"
+
 # The theme to use for HTML and HTML Help pages.  See the documentation for
 # a list of builtin themes.
 import sphinx_readable_theme
 
 html_theme_path = [sphinx_readable_theme.get_html_theme_path()]
 html_theme = 'readable'
+
 
 
 # Theme options are theme-specific and customize the look and feel of a theme
@@ -131,7 +134,7 @@ html_theme = 'readable'
 
 # The name for this set of Sphinx documents.  If None, it defaults to
 # "<project> v<release> documentation".
-#html_title = None
+html_title = "plotypus: light curve analysis in Python"
 
 # A shorter title for the navigation bar.  Default is the same as html_title.
 #html_short_title = None
