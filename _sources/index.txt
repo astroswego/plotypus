@@ -10,6 +10,12 @@ Installation
 See `installation guide <user_guide/install.html>`_.
 
 
+Download
+--------
+
+Visit the `plotypus downloads page </plotypus/downloads.html>`_.
+
+
 Documentation
 -------------
 
