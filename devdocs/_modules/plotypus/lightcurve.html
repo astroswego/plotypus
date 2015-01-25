@@ -1,0 +1,594 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>plotypus.lightcurve &mdash; plotypus 0.2.5.dev0 documentation</title>
+    
+    <link rel="stylesheet" href="../../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../',
+        VERSION:     '0.2.5.dev0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../_static/doctools.js"></script>
+    <link rel="top" title="plotypus 0.2.5.dev0 documentation" href="../../index.html" />
+    <link rel="up" title="Module code" href="../index.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body>
+  
+  
+
+
+<link rel="shortcut icon" href="_static/icon.png">
+
+<!-- The "Fork me on github" ribbon -->
+<img style="float: right; margin-bottom: -40px; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" usemap="#ribbonmap"/>
+<map name="ribbonmap">
+    <area shape="poly" coords="15,0,148,-1,148,135" href="https://github.com/astroswego/plotypus" title="Fork me on GitHub" />
+</map>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../../index.html"><img src="../../_static/logo.svg" border="0" alt="plotypus"/></a>
+</div>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../../index.html">home</a>|&nbsp;</li>
+        <li><a href="../../search.html">search</a>|&nbsp;</li>
+        <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../../contents.html">docs</a> &raquo;</li>
+
+          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="../../index.html">Documentation index</a><ul>
+  <li><a href="../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <h1>Source code for plotypus.lightcurve</h1><div class="highlight"><pre>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Light curve fitting and plotting functions.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="n">numpy</span><span class="o">.</span><span class="n">random</span><span class="o">.</span><span class="n">seed</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">scipy.stats</span> <span class="kn">import</span> <span class="n">sem</span>
+<span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">stderr</span>
+<span class="kn">from</span> <span class="nn">math</span> <span class="kn">import</span> <span class="n">floor</span>
+<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">path</span>
+<span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="p">(</span><span class="n">verbose_print</span><span class="p">,</span> <span class="n">make_sure_path_exists</span><span class="p">,</span>
+                    <span class="n">get_signal</span><span class="p">,</span> <span class="n">get_noise</span><span class="p">,</span> <span class="n">colvec</span><span class="p">,</span> <span class="n">mad</span><span class="p">)</span>
+<span class="kn">from</span> <span class="nn">.periodogram</span> <span class="kn">import</span> <span class="n">find_period</span><span class="p">,</span> <span class="n">Lomb_Scargle</span><span class="p">,</span> <span class="n">rephase</span>
+<span class="kn">from</span> <span class="nn">.preprocessing</span> <span class="kn">import</span> <span class="n">Fourier</span>
+<span class="kn">from</span> <span class="nn">sklearn.cross_validation</span> <span class="kn">import</span> <span class="n">cross_val_score</span>
+<span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LassoLarsIC</span>
+<span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
+<span class="kn">from</span> <span class="nn">sklearn.grid_search</span> <span class="kn">import</span> <span class="n">GridSearchCV</span>
+<span class="kn">from</span> <span class="nn">sklearn.utils</span> <span class="kn">import</span> <span class="n">ConvergenceWarning</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="n">warnings</span><span class="o">.</span><span class="n">filterwarnings</span><span class="p">(</span><span class="s">&quot;ignore&quot;</span><span class="p">,</span> <span class="n">category</span><span class="o">=</span><span class="n">ConvergenceWarning</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">matplotlib</span>
+<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="kn">as</span> <span class="nn">plt</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s">&#39;make_predictor&#39;</span><span class="p">,</span>
+    <span class="s">&#39;get_lightcurve&#39;</span><span class="p">,</span>
+    <span class="s">&#39;get_lightcurve_from_file&#39;</span><span class="p">,</span>
+    <span class="s">&#39;find_outliers&#39;</span><span class="p">,</span>
+    <span class="s">&#39;plot_lightcurve&#39;</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="make_predictor"><a class="viewcode-back" href="../../api/plotypus.lightcurve.html#plotypus.lightcurve.make_predictor">[docs]</a><span class="k">def</span> <span class="nf">make_predictor</span><span class="p">(</span><span class="n">regressor</span><span class="o">=</span><span class="n">LassoLarsIC</span><span class="p">(</span><span class="n">fit_intercept</span><span class="o">=</span><span class="bp">False</span><span class="p">),</span>
+                   <span class="n">Selector</span><span class="o">=</span><span class="n">GridSearchCV</span><span class="p">,</span> <span class="n">fourier_degree</span><span class="o">=</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="mi">25</span><span class="p">),</span>
+                   <span class="n">selector_processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                   <span class="n">use_baart</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="s">&#39;r2&#39;</span><span class="p">,</span> <span class="n">scoring_cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span>
+                   <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;make_predictor(regressor=LassoLarsIC(fit_intercept=False), Selector=GridSearchCV, fourier_degree=(2, 25), selector_processes=1, use_baart=False, scoring=&#39;r2&#39;, scoring_cv=3, **kwargs)</span>
+
+<span class="sd">    Makes a predictor object for use in :func:`get_lightcurve`.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    regressor : object with &quot;fit&quot; and &quot;transform&quot; methods, optional</span>
+<span class="sd">        Regression object used for solving Fourier matrix</span>
+<span class="sd">        (default ``sklearn.linear_model.LassoLarsIC(fit_intercept=False)``).</span>
+<span class="sd">    Selector : class with &quot;fit&quot; and &quot;predict&quot; methods, optional</span>
+<span class="sd">        Model selection class used for finding the best fit</span>
+<span class="sd">        (default :class:`sklearn.grid_search.GridSearchCV`).</span>
+<span class="sd">    selector_processes : positive integer, optional</span>
+<span class="sd">        Number of processes to use for *Selector* (default 1).</span>
+<span class="sd">    use_baart : boolean, optional</span>
+<span class="sd">        If True, ignores *Selector* and uses Baart&#39;s Criteria to find</span>
+<span class="sd">        the Fourier degree, within the boundaries (default False).</span>
+<span class="sd">    fourier_degree : 2-tuple, optional</span>
+<span class="sd">        Tuple containing lower and upper bounds on Fourier degree, in that</span>
+<span class="sd">        order (default (2, 25)).</span>
+<span class="sd">    scoring : str, optional</span>
+<span class="sd">        Scoring method to use for *Selector*. This parameter can be:</span>
+<span class="sd">            * &quot;r2&quot;, in which case use :math:`R^2` (the default)</span>
+<span class="sd">            * &quot;mse&quot;, in which case use mean square error</span>
+<span class="sd">    scoring_cv : positive integer, optional</span>
+<span class="sd">        Number of cross validation folds used in scoring (default 3).</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    out : object with &quot;fit&quot; and &quot;predict&quot; methods</span>
+<span class="sd">        The created predictor object.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">fourier</span> <span class="o">=</span> <span class="n">Fourier</span><span class="p">(</span><span class="n">degree_range</span><span class="o">=</span><span class="n">fourier_degree</span><span class="p">,</span> <span class="n">regressor</span><span class="o">=</span><span class="n">regressor</span><span class="p">)</span> \
+              <span class="k">if</span> <span class="n">use_baart</span> <span class="k">else</span> <span class="n">Fourier</span><span class="p">()</span>
+    <span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s">&#39;Fourier&#39;</span><span class="p">,</span> <span class="n">fourier</span><span class="p">),</span> <span class="p">(</span><span class="s">&#39;Regressor&#39;</span><span class="p">,</span> <span class="n">regressor</span><span class="p">)])</span>
+    <span class="k">if</span> <span class="n">use_baart</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">pipeline</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="s">&#39;Fourier__degree&#39;</span><span class="p">:</span> <span class="nb">list</span><span class="p">(</span><span class="nb">range</span><span class="p">(</span><span class="n">fourier_degree</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                <span class="n">fourier_degree</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">+</span><span class="mi">1</span><span class="p">))}</span>
+        <span class="k">return</span> <span class="n">Selector</span><span class="p">(</span><span class="n">pipeline</span><span class="p">,</span> <span class="n">params</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scoring</span><span class="p">,</span> <span class="n">cv</span><span class="o">=</span><span class="n">scoring_cv</span><span class="p">,</span>
+                        <span class="n">n_jobs</span><span class="o">=</span><span class="n">selector_processes</span><span class="p">)</span>
+
+</div>
+<div class="viewcode-block" id="get_lightcurve"><a class="viewcode-back" href="../../api/plotypus.lightcurve.html#plotypus.lightcurve.get_lightcurve">[docs]</a><span class="k">def</span> <span class="nf">get_lightcurve</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                   <span class="n">predictor</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">periodogram</span><span class="o">=</span><span class="n">Lomb_Scargle</span><span class="p">,</span>
+                   <span class="n">sigma_clipping</span><span class="o">=</span><span class="n">mad</span><span class="p">,</span>
+                   <span class="n">scoring</span><span class="o">=</span><span class="s">&#39;r2&#39;</span><span class="p">,</span> <span class="n">scoring_cv</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">scoring_processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                   <span class="n">period</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">min_period</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">max_period</span><span class="o">=</span><span class="mi">32</span><span class="p">,</span>
+                   <span class="n">coarse_precision</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">fine_precision</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span>
+                   <span class="n">period_processes</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                   <span class="n">sigma</span><span class="o">=</span><span class="mi">20</span><span class="p">,</span>
+                   <span class="n">shift</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                   <span class="n">min_phase_cover</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">n_phases</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                   <span class="n">verbosity</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring=&#39;r2&#39;, scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=None, **kwargs)</span>
+
+<span class="sd">    Fits a light curve to the given `data` using the specified methods,</span>
+<span class="sd">    with default behavior defined for all methods.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    data : array-like, shape = [n_samples, 2] or [n_samples, 3]</span>
+<span class="sd">        Photometry array with columns *time*, *magnitude*, and (optional)</span>
+<span class="sd">        *error*. *time* should be unphased.</span>
+<span class="sd">    name : string or None, optional</span>
+<span class="sd">        Name of star being processed.</span>
+<span class="sd">    predictor : object that has &quot;fit&quot; and &quot;predict&quot; methods, optional</span>
+<span class="sd">        Object which fits the light curve obtained from *data* after rephasing</span>
+<span class="sd">        (default ``make_predictor(scoring=scoring, scoring_cv=scoring_cv)``).</span>
+<span class="sd">    periodogram : function, optional</span>
+<span class="sd">        Function which finds one or more *period*\s. If *period* is already</span>
+<span class="sd">        provided, the function is not used. Defaults to</span>
+<span class="sd">        :func:`plotypus.periodogram.Lomb_Scargle`</span>
+<span class="sd">    sigma_clipping : function, optional</span>
+<span class="sd">        Function which takes an array and assigns sigma scores to each element.</span>
+<span class="sd">        Defaults to :func:`plotypus.utils.mad`.</span>
+<span class="sd">    scoring : str, optional</span>
+<span class="sd">        Scoring method used by *predictor*. This parameter can be</span>
+<span class="sd">            * &quot;r2&quot;, in which case use :func:`R^2` (the default)</span>
+<span class="sd">            * &quot;mse&quot;, in which case use mean square error</span>
+<span class="sd">    scoring_cv : positive integer, optional</span>
+<span class="sd">        Number of cross validation folds used in scoring (default 3).</span>
+<span class="sd">    scoring_processes : positive integer, optional</span>
+<span class="sd">        Number of processes to use for scoring cross validation (default 1).</span>
+<span class="sd">    period : number or None, optional</span>
+<span class="sd">        Period of oscillation used in the fit. This parameter can be:</span>
+<span class="sd">            * None, in which case the period is obtained with the given</span>
+<span class="sd">              *periodogram* function (the default).</span>
+<span class="sd">            * A single positive number, giving the period to phase *data*.</span>
+<span class="sd">    min_period : non-negative number, optional</span>
+<span class="sd">        Lower bound on period obtained by *periodogram* (default 0.2).</span>
+<span class="sd">    max_period : non-negative number, optional</span>
+<span class="sd">        Upper bound on period obtained by *periodogram* (default 32.0).</span>
+<span class="sd">    course_precision : positive number, optional</span>
+<span class="sd">        Precision used in first period search sweep (default 1e-5).</span>
+<span class="sd">    fine_precision : positive number, optional</span>
+<span class="sd">        Precision used in second period search sweep (default 1e-9).</span>
+<span class="sd">    period_processes : positive integer, optional</span>
+<span class="sd">        Number of processes to use for period finding (default 1).</span>
+<span class="sd">    sigma : number, optional</span>
+<span class="sd">        Upper bound on score obtained by *sigma_clipping* for a point to be</span>
+<span class="sd">        considered an inlier.</span>
+<span class="sd">    shift : number or None, optional</span>
+<span class="sd">        Phase shift to apply to light curve if provided. Light curve is shifted</span>
+<span class="sd">        such that max light occurs at ``phase[0]`` if None given (default None).</span>
+<span class="sd">    min_phase_cover : number on interval [0, 1], optional</span>
+<span class="sd">        Fraction of binned light curve that must contain points in order to</span>
+<span class="sd">        proceed. If light curve has insufficient coverage, a warning is</span>
+<span class="sd">        printed if &quot;outlier&quot; *verbosity* is on, and None is returned</span>
+<span class="sd">        (default 0.0).</span>
+<span class="sd">    n_phases : positive integer</span>
+<span class="sd">        Number of equally spaced phases to predict magnitudes at (default 100)</span>
+<span class="sd">    verbosity : list or None, optional</span>
+<span class="sd">        Verbosity level. See :func:`plotypus.utils.verbose_print`.</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    out : dict</span>
+<span class="sd">        Results of the fit in a dictionary. The keys are:</span>
+<span class="sd">            * name : str or None</span>
+<span class="sd">                The name of the star.</span>
+<span class="sd">            * period : number</span>
+<span class="sd">                The star&#39;s period.</span>
+<span class="sd">            * lightcurve : array-like, shape = [n_phases]</span>
+<span class="sd">                Magnitudes of fitted light curve sampled at sample phases.</span>
+<span class="sd">            * coefficients : array-like, shape = [n_coeffs]</span>
+<span class="sd">                Fitted light curve coefficients.</span>
+<span class="sd">            * dA_0 : non-negative number</span>
+<span class="sd">                Error on mean magnitude.</span>
+<span class="sd">            * phased_data : array-like, shape = [n_samples]</span>
+<span class="sd">                *data* transformed from temporal to phase space.</span>
+<span class="sd">            * model : predictor object</span>
+<span class="sd">                The predictor used to fit the light curve.</span>
+<span class="sd">            * R2 : number</span>
+<span class="sd">                The :math:`R^2` score of the fit.</span>
+<span class="sd">            * MSE : number</span>
+<span class="sd">                The mean square error of the fit.</span>
+<span class="sd">            * degree : positive integer</span>
+<span class="sd">                The degree of the Fourier fit.</span>
+<span class="sd">            * shift : number</span>
+<span class="sd">                The phase shift applied.</span>
+<span class="sd">            * coverage : number on interval [0, 1]</span>
+<span class="sd">                The light curve coverage.</span>
+
+<span class="sd">    **See also**</span>
+
+<span class="sd">    :func:`get_lightcurve_from_file`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">)</span>
+    <span class="n">phases</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_phases</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+<span class="c"># TODO ###</span>
+<span class="c"># Replace dA_0 with error matrix dA</span>
+    <span class="k">if</span> <span class="n">predictor</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">predictor</span> <span class="o">=</span> <span class="n">make_predictor</span><span class="p">(</span><span class="n">scoring</span><span class="o">=</span><span class="n">scoring</span><span class="p">,</span> <span class="n">scoring_cv</span><span class="o">=</span><span class="n">scoring_cv</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="bp">True</span><span class="p">:</span>
+        <span class="n">signal</span> <span class="o">=</span> <span class="n">get_signal</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">scoring_cv</span><span class="p">:</span>
+            <span class="n">verbose_print</span><span class="p">(</span>
+                <span class="s">&quot;{}: length of signal ({}) less than cv folds ({})&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                    <span class="n">name</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">signal</span><span class="p">),</span> <span class="n">scoring_cv</span><span class="p">),</span>
+                <span class="n">operation</span><span class="o">=</span><span class="s">&quot;coverage&quot;</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c"># Find the period of the inliers</span>
+        <span class="k">if</span> <span class="n">period</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
+            <span class="n">_period</span> <span class="o">=</span> <span class="n">period</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">verbose_print</span><span class="p">(</span><span class="s">&quot;{}: finding period&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">),</span>
+                          <span class="n">operation</span><span class="o">=</span><span class="s">&quot;period&quot;</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
+            <span class="n">_period</span> <span class="o">=</span> <span class="n">find_period</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span>
+                                  <span class="n">min_period</span><span class="p">,</span> <span class="n">max_period</span><span class="p">,</span>
+                                  <span class="n">coarse_precision</span><span class="p">,</span> <span class="n">fine_precision</span><span class="p">,</span>
+                                  <span class="n">periodogram</span><span class="p">,</span> <span class="n">period_processes</span><span class="p">)</span>
+
+        <span class="n">verbose_print</span><span class="p">(</span><span class="s">&quot;{}: using period {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">_period</span><span class="p">),</span>
+                      <span class="n">operation</span><span class="o">=</span><span class="s">&quot;period&quot;</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
+        <span class="n">phase</span><span class="p">,</span> <span class="n">mag</span><span class="p">,</span> <span class="o">*</span><span class="n">err</span> <span class="o">=</span> <span class="n">rephase</span><span class="p">(</span><span class="n">signal</span><span class="p">,</span> <span class="n">_period</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+<span class="c"># TODO ###</span>
+<span class="c"># Generalize number of bins to function parameter ``coverage_bins``, which</span>
+<span class="c"># defaults to 100, the current hard-coded behavior</span>
+        <span class="c"># Determine whether there is sufficient phase coverage</span>
+        <span class="n">coverage</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">100</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">phase</span><span class="p">:</span>
+            <span class="n">coverage</span><span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="n">floor</span><span class="p">(</span><span class="n">p</span><span class="o">*</span><span class="mi">100</span><span class="p">))]</span> <span class="o">=</span> <span class="mi">1</span>
+        <span class="n">coverage</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">coverage</span><span class="p">)</span><span class="o">/</span><span class="mi">100</span>
+        <span class="k">if</span> <span class="n">coverage</span> <span class="o">&lt;</span> <span class="n">min_phase_cover</span><span class="p">:</span>
+            <span class="n">verbose_print</span><span class="p">(</span><span class="s">&quot;{}: {} {}&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">coverage</span><span class="p">,</span> <span class="n">min_phase_cover</span><span class="p">),</span>
+                          <span class="n">operation</span><span class="o">=</span><span class="s">&quot;coverage&quot;</span><span class="p">,</span>
+                          <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
+            <span class="n">verbose_print</span><span class="p">(</span><span class="s">&quot;Insufficient phase coverage&quot;</span><span class="p">,</span>
+                          <span class="n">operation</span><span class="o">=</span><span class="s">&quot;outlier&quot;</span><span class="p">,</span>
+                          <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="c"># Predict light curve</span>
+        <span class="k">with</span> <span class="n">warnings</span><span class="o">.</span><span class="n">catch_warnings</span><span class="p">(</span><span class="n">record</span><span class="o">=</span><span class="bp">True</span><span class="p">)</span> <span class="k">as</span> <span class="n">w</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">predictor</span> <span class="o">=</span> <span class="n">predictor</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">colvec</span><span class="p">(</span><span class="n">phase</span><span class="p">),</span> <span class="n">mag</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Warning</span><span class="p">:</span>
+                <span class="c"># not sure if this should be only in verbose mode</span>
+                <span class="k">print</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">w</span><span class="p">,</span> <span class="nb">file</span><span class="o">=</span><span class="n">stderr</span><span class="p">)</span>
+                <span class="k">return</span>
+
+        <span class="c"># Reject outliers and repeat the process if there are any</span>
+        <span class="k">if</span> <span class="n">sigma</span><span class="p">:</span>
+            <span class="n">outliers</span> <span class="o">=</span> <span class="n">find_outliers</span><span class="p">(</span><span class="n">rephase</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">_period</span><span class="p">),</span> <span class="n">predictor</span><span class="p">,</span>
+                                     <span class="n">sigma</span><span class="p">,</span> <span class="n">sigma_clipping</span><span class="p">)</span>
+            <span class="n">num_outliers</span> <span class="o">=</span> <span class="nb">sum</span><span class="p">(</span><span class="n">outliers</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">num_outliers</span> <span class="o">==</span> <span class="mi">0</span> <span class="ow">or</span> \
+               <span class="nb">set</span><span class="o">.</span><span class="n">issubset</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">outliers</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">]),</span>
+                            <span class="nb">set</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">nonzero</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">])[</span><span class="mi">0</span><span class="p">])):</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">outliers</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="n">num_outliers</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">verbose_print</span><span class="p">(</span><span class="s">&quot;{}: {} outliers&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="nb">sum</span><span class="p">(</span><span class="n">outliers</span><span class="p">)[</span><span class="mi">0</span><span class="p">]),</span>
+                              <span class="n">operation</span><span class="o">=</span><span class="s">&quot;outlier&quot;</span><span class="p">,</span>
+                              <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
+            <span class="n">data</span><span class="o">.</span><span class="n">mask</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">mask_or</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">,</span> <span class="n">outliers</span><span class="p">)</span>
+
+    <span class="c"># Build light curve and optionally shift to max light</span>
+    <span class="n">lightcurve</span> <span class="o">=</span> <span class="n">predictor</span><span class="o">.</span><span class="n">predict</span><span class="p">([[</span><span class="n">i</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">phases</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">shift</span> <span class="ow">is</span> <span class="bp">None</span><span class="p">:</span>
+        <span class="n">arg_max_light</span> <span class="o">=</span> <span class="n">lightcurve</span><span class="o">.</span><span class="n">argmin</span><span class="p">()</span>
+        <span class="n">lightcurve</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">concatenate</span><span class="p">((</span><span class="n">lightcurve</span><span class="p">[</span><span class="n">arg_max_light</span><span class="p">:],</span>
+                                        <span class="n">lightcurve</span><span class="p">[:</span><span class="n">arg_max_light</span><span class="p">]))</span>
+        <span class="n">shift</span> <span class="o">=</span> <span class="n">arg_max_light</span><span class="o">/</span><span class="nb">len</span><span class="p">(</span><span class="n">phases</span><span class="p">)</span>
+
+    <span class="n">data</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">rephase</span><span class="p">(</span><span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="p">,</span> <span class="n">_period</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c"># Grab the coefficients from the model</span>
+    <span class="n">coefficients</span> <span class="o">=</span> <span class="n">predictor</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s">&#39;Regressor&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">coef_</span> \
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">predictor</span><span class="p">,</span> <span class="n">Pipeline</span><span class="p">)</span> \
+        <span class="k">else</span> <span class="n">predictor</span><span class="o">.</span><span class="n">best_estimator_</span><span class="o">.</span><span class="n">named_steps</span><span class="p">[</span><span class="s">&#39;Regressor&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">coef_</span><span class="p">,</span>
+
+    <span class="c"># compute R^2 and MSE if they haven&#39;t already been</span>
+    <span class="c"># (one or zero have been computed, depending on the predictor)</span>
+    <span class="n">estimator</span> <span class="o">=</span> <span class="n">predictor</span><span class="o">.</span><span class="n">best_estimator_</span> \
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">predictor</span><span class="p">,</span> <span class="s">&#39;best_estimator_&#39;</span><span class="p">)</span> \
+        <span class="k">else</span> <span class="n">predictor</span>
+
+    <span class="n">get_score</span> <span class="o">=</span> <span class="k">lambda</span> <span class="n">scoring</span><span class="p">:</span> <span class="n">predictor</span><span class="o">.</span><span class="n">best_score_</span> \
+        <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">predictor</span><span class="p">,</span> <span class="s">&#39;best_score_&#39;</span><span class="p">)</span> \
+        <span class="ow">and</span> <span class="n">predictor</span><span class="o">.</span><span class="n">scoring</span> <span class="o">==</span> <span class="n">scoring</span> \
+        <span class="k">else</span> <span class="n">cross_val_score</span><span class="p">(</span><span class="n">estimator</span><span class="p">,</span> <span class="n">colvec</span><span class="p">(</span><span class="n">phase</span><span class="p">),</span> <span class="n">mag</span><span class="p">,</span>
+                             <span class="n">cv</span><span class="o">=</span><span class="n">scoring_cv</span><span class="p">,</span> <span class="n">scoring</span><span class="o">=</span><span class="n">scoring</span><span class="p">,</span>
+                             <span class="n">n_jobs</span><span class="o">=</span><span class="n">scoring_processes</span><span class="p">)</span><span class="o">.</span><span class="n">mean</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="p">{</span><span class="s">&#39;name&#39;</span><span class="p">:</span>         <span class="n">name</span><span class="p">,</span>
+            <span class="s">&#39;period&#39;</span><span class="p">:</span>       <span class="n">_period</span><span class="p">,</span>
+            <span class="s">&#39;lightcurve&#39;</span><span class="p">:</span>   <span class="n">lightcurve</span><span class="p">,</span>
+            <span class="s">&#39;coefficients&#39;</span><span class="p">:</span> <span class="n">coefficients</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="s">&#39;dA_0&#39;</span><span class="p">:</span>         <span class="n">sem</span><span class="p">(</span><span class="n">lightcurve</span><span class="p">),</span>
+            <span class="s">&#39;phased_data&#39;</span><span class="p">:</span>  <span class="n">data</span><span class="p">,</span>
+            <span class="s">&#39;model&#39;</span><span class="p">:</span>        <span class="n">predictor</span><span class="p">,</span>
+            <span class="s">&#39;R2&#39;</span><span class="p">:</span>           <span class="n">get_score</span><span class="p">(</span><span class="s">&#39;r2&#39;</span><span class="p">),</span>
+            <span class="s">&#39;MSE&#39;</span><span class="p">:</span>          <span class="nb">abs</span><span class="p">(</span><span class="n">get_score</span><span class="p">(</span><span class="s">&#39;mean_squared_error&#39;</span><span class="p">)),</span>
+            <span class="s">&#39;degree&#39;</span><span class="p">:</span>       <span class="n">estimator</span><span class="o">.</span><span class="n">get_params</span><span class="p">()[</span><span class="s">&#39;Fourier__degree&#39;</span><span class="p">],</span>
+            <span class="s">&#39;shift&#39;</span><span class="p">:</span>        <span class="n">shift</span><span class="p">,</span>
+            <span class="s">&#39;coverage&#39;</span><span class="p">:</span>     <span class="n">coverage</span><span class="p">}</span>
+
+</div>
+<div class="viewcode-block" id="get_lightcurve_from_file"><a class="viewcode-back" href="../../api/plotypus.lightcurve.html#plotypus.lightcurve.get_lightcurve_from_file">[docs]</a><span class="k">def</span> <span class="nf">get_lightcurve_from_file</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="n">use_cols</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                             <span class="n">verbosity</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                             <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0, **kwargs)</span>
+
+<span class="sd">    Fits a light curve to the data contained in *file* using</span>
+<span class="sd">    :func:`get_lightcurve`.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    file : str or file</span>
+<span class="sd">        File or filename to load data from.</span>
+<span class="sd">    use_cols : iterable or None, optional</span>
+<span class="sd">        Iterable of columns to read from data file, or None to read all columns</span>
+<span class="sd">        (default None).</span>
+<span class="sd">    skiprows : number, optional</span>
+<span class="sd">        Number of rows to skip at beginning of *file* (default 0)</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    out : dict</span>
+<span class="sd">        See :func:`get_lightcurve`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">loadtxt</span><span class="p">(</span><span class="nb">file</span><span class="p">,</span> <span class="n">skiprows</span><span class="o">=</span><span class="n">skiprows</span><span class="p">,</span> <span class="n">usecols</span><span class="o">=</span><span class="n">use_cols</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="n">masked_data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">,</span> <span class="n">mask</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">get_lightcurve</span><span class="p">(</span><span class="n">masked_data</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">verbose_print</span><span class="p">(</span><span class="s">&quot;{}: file contains no data points&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">file</span><span class="p">),</span>
+                      <span class="n">operation</span><span class="o">=</span><span class="s">&quot;coverage&quot;</span><span class="p">,</span> <span class="n">verbosity</span><span class="o">=</span><span class="n">verbosity</span><span class="p">)</span>
+        <span class="k">return</span>
+
+
+
+<span class="c">## These functions were used briefly and then not maintained.</span>
+<span class="c">## Will make comebacks of some form in a later release.</span>
+<span class="c">##</span>
+<span class="c"># def get_lightcurves_from_file(filename, directories, *args, **kwargs):</span>
+<span class="c">#     return [get_lightcurve_from_file(path.join(d, filename), *args, **kwargs)</span>
+<span class="c">#             for d in directories]</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c"># def single_periods(data, period, min_points=10, copy=False, *args, **kwargs):</span>
+<span class="c">#     data = numpy.ma.array(data, copy=copy)</span>
+<span class="c">#     time, mag, *err = data.T</span>
+<span class="c">#</span>
+<span class="c">#     tstart, tfinal = numpy.min(time), numpy.max(time)</span>
+<span class="c">#     periods = numpy.arange(tstart, tfinal+period, period)</span>
+<span class="c">#     data_range = (</span>
+<span class="c">#         data[numpy.logical_and(time&gt;pstart, time&lt;=pend),:]</span>
+<span class="c">#         for pstart, pend in zip(periods[:-1], periods[1:])</span>
+<span class="c">#     )</span>
+<span class="c">#</span>
+<span class="c">#     return (</span>
+<span class="c">#         get_lightcurve(d, period=period, *args, **kwargs)</span>
+<span class="c">#         for d in data_range</span>
+<span class="c">#         if d.shape[0] &gt; min_points</span>
+<span class="c">#     )</span>
+<span class="c">#</span>
+<span class="c">#</span>
+<span class="c"># def single_periods_from_file(filename, *args, use_cols=(0, 1, 2), skiprows=0,</span>
+<span class="c">#                              **kwargs):</span>
+<span class="c">#     data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols,</span>
+<span class="c">#                                              skiprows=skiprows),</span>
+<span class="c">#                           mask=None, dtype=float)</span>
+<span class="c">#     return single_periods(data, *args, **kwargs)</span>
+
+</div>
+<div class="viewcode-block" id="find_outliers"><a class="viewcode-back" href="../../api/plotypus.lightcurve.html#plotypus.lightcurve.find_outliers">[docs]</a><span class="k">def</span> <span class="nf">find_outliers</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">predictor</span><span class="p">,</span> <span class="n">sigma</span><span class="p">,</span>
+                  <span class="n">method</span><span class="o">=</span><span class="n">mad</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;find_outliers(data, predictor, sigma, method=mad)</span>
+
+<span class="sd">    Returns a boolean array indicating the outliers in the given *data* array.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    data : array-like, shape = [n_samples, 2] or [n_samples, 3]</span>
+<span class="sd">        Photometry array containing columns *phase*, *magnitude*, and</span>
+<span class="sd">        (optional) *error*.</span>
+<span class="sd">    predictor : object that has &quot;fit&quot; and &quot;predict&quot; methods, optional</span>
+<span class="sd">        Object which fits the light curve obtained from *data* after rephasing.</span>
+<span class="sd">    sigma : number</span>
+<span class="sd">        Outlier cutoff criteria.</span>
+<span class="sd">    method : function, optional</span>
+<span class="sd">        Function to score residuals for outlier detection</span>
+<span class="sd">        (default :func:`plotypus.utils.mad`).</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    out : array-like, shape = data.shape</span>
+<span class="sd">        Boolean array indicating the outliers in the given *data* array.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">phase</span><span class="p">,</span> <span class="n">mag</span><span class="p">,</span> <span class="o">*</span><span class="n">err</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">T</span>
+    <span class="n">residuals</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">absolute</span><span class="p">(</span><span class="n">predictor</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">colvec</span><span class="p">(</span><span class="n">phase</span><span class="p">))</span> <span class="o">-</span> <span class="n">mag</span><span class="p">)</span>
+    <span class="n">outliers</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">logical_and</span><span class="p">((</span><span class="n">residuals</span> <span class="o">&gt;</span> <span class="n">err</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="bp">True</span><span class="p">,</span>
+                                 <span class="n">residuals</span> <span class="o">&gt;</span> <span class="n">sigma</span> <span class="o">*</span> <span class="n">method</span><span class="p">(</span><span class="n">residuals</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">numpy</span><span class="o">.</span><span class="n">tile</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">(</span><span class="n">outliers</span><span class="p">),</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+</div>
+<div class="viewcode-block" id="plot_lightcurve"><a class="viewcode-back" href="../../api/plotypus.lightcurve.html#plotypus.lightcurve.plot_lightcurve">[docs]</a><span class="k">def</span> <span class="nf">plot_lightcurve</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">lightcurve</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="s">&#39;.&#39;</span><span class="p">,</span> <span class="n">legend</span><span class="o">=</span><span class="bp">False</span><span class="p">,</span>
+                    <span class="n">color</span><span class="o">=</span><span class="bp">True</span><span class="p">,</span> <span class="n">n_phases</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span>
+                    <span class="n">err_const</span><span class="o">=</span><span class="mf">0.0004</span><span class="p">,</span>
+                    <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;plot_lightcurve(name, lightcurve, period, data, output=&#39;.&#39;, legend=False, color=True, n_phases=100, err_const=0.0004, **kwargs)</span>
+
+<span class="sd">    Save a plot of the given *lightcurve* to directory *output*.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    name : str</span>
+<span class="sd">        Name of the star. Used in filename and plot title.</span>
+<span class="sd">    lightcurve : array-like, shape = [n_samples]</span>
+<span class="sd">        Fitted lightcurve.</span>
+<span class="sd">    period : number</span>
+<span class="sd">        Period to phase time by.</span>
+<span class="sd">    data : array-like, shape = [n_samples, 2] or [n_samples, 3]</span>
+<span class="sd">        Photometry array containing columns *time*, *magnitude*, and</span>
+<span class="sd">        (optional) *error*. *time* should be unphased.</span>
+<span class="sd">    output : str, optional</span>
+<span class="sd">        Directory to save plot to (default &#39;.&#39;).</span>
+<span class="sd">    legend : boolean, optional</span>
+<span class="sd">        Whether or not to display legend on plot (default False).</span>
+<span class="sd">    color : boolean, optional</span>
+<span class="sd">        Whether or not to display color in plot (default True).</span>
+<span class="sd">    n_phases : integer, optional</span>
+<span class="sd">        Number of phase points in fit (default 100).</span>
+<span class="sd">    err_const : number, optional</span>
+<span class="sd">        Constant to use in absence of error (default 0.0004).</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    None</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">phases</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="n">n_phases</span><span class="p">,</span> <span class="n">endpoint</span><span class="o">=</span><span class="bp">False</span><span class="p">)</span>
+    <span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">gca</span><span class="p">()</span>
+    <span class="n">ax</span><span class="o">.</span><span class="n">invert_yaxis</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlim</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span><span class="mi">2</span><span class="p">)</span>
+
+    <span class="c"># Plot points used</span>
+    <span class="n">phase</span><span class="p">,</span> <span class="n">mag</span><span class="p">,</span> <span class="o">*</span><span class="n">err</span> <span class="o">=</span> <span class="n">get_signal</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">error</span> <span class="o">=</span> <span class="n">err</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="n">mag</span><span class="o">*</span><span class="n">err_const</span>
+
+    <span class="n">inliers</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">phase</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">phase</span><span class="p">)),</span>
+                           <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">mag</span><span class="p">,</span> <span class="n">mag</span><span class="p">)),</span>
+                           <span class="n">yerr</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">error</span><span class="p">,</span> <span class="n">error</span><span class="p">)),</span>
+                           <span class="n">ls</span><span class="o">=</span><span class="s">&#39;None&#39;</span><span class="p">,</span>
+                           <span class="n">ms</span><span class="o">=.</span><span class="mo">01</span><span class="p">,</span> <span class="n">mew</span><span class="o">=.</span><span class="mo">01</span><span class="p">,</span> <span class="n">capsize</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+
+    <span class="c"># Plot outliers rejected</span>
+    <span class="n">phase</span><span class="p">,</span> <span class="n">mag</span><span class="p">,</span> <span class="o">*</span><span class="n">err</span> <span class="o">=</span> <span class="n">get_noise</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">T</span>
+
+    <span class="n">error</span> <span class="o">=</span> <span class="n">err</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">if</span> <span class="n">err</span> <span class="k">else</span> <span class="n">mag</span><span class="o">*</span><span class="n">err_const</span>
+
+    <span class="n">outliers</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">errorbar</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">phase</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">phase</span><span class="p">)),</span>
+                            <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">mag</span><span class="p">,</span> <span class="n">mag</span><span class="p">)),</span>
+                            <span class="n">yerr</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">error</span><span class="p">,</span> <span class="n">error</span><span class="p">)),</span>
+                            <span class="n">ls</span><span class="o">=</span><span class="s">&#39;None&#39;</span><span class="p">,</span> <span class="n">marker</span><span class="o">=</span><span class="s">&#39;o&#39;</span> <span class="k">if</span> <span class="n">color</span> <span class="k">else</span> <span class="s">&#39;x&#39;</span><span class="p">,</span>
+                            <span class="n">ms</span><span class="o">=.</span><span class="mo">01</span> <span class="k">if</span> <span class="n">color</span> <span class="k">else</span> <span class="mi">4</span><span class="p">,</span>
+                            <span class="n">mew</span><span class="o">=.</span><span class="mo">01</span> <span class="k">if</span> <span class="n">color</span> <span class="k">else</span> <span class="mi">1</span><span class="p">,</span>
+                            <span class="n">capsize</span><span class="o">=</span><span class="mi">0</span> <span class="k">if</span> <span class="n">color</span> <span class="k">else</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c"># Plot the fitted light curve</span>
+    <span class="n">signal</span><span class="p">,</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">phases</span><span class="p">,</span><span class="mi">1</span><span class="o">+</span><span class="n">phases</span><span class="p">)),</span>
+                       <span class="n">numpy</span><span class="o">.</span><span class="n">hstack</span><span class="p">((</span><span class="n">lightcurve</span><span class="p">,</span> <span class="n">lightcurve</span><span class="p">)),</span>
+                       <span class="n">linewidth</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="n">legend</span><span class="p">:</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">legend</span><span class="p">([</span><span class="n">signal</span><span class="p">,</span> <span class="n">inliers</span><span class="p">,</span> <span class="n">outliers</span><span class="p">],</span>
+                   <span class="p">[</span><span class="s">&quot;Light Curve&quot;</span><span class="p">,</span> <span class="s">&quot;Inliers&quot;</span><span class="p">,</span> <span class="s">&quot;Outliers&quot;</span><span class="p">],</span>
+                   <span class="n">loc</span><span class="o">=</span><span class="s">&#39;best&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="s">&#39;Phase ({0:0.7} day period)&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">period</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="s">&#39;Magnitude&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">(</span><span class="n">pad</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+    <span class="n">make_sure_path_exists</span><span class="p">(</span><span class="n">output</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output</span><span class="p">,</span> <span class="n">name</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">clf</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+  </div>
+  
+  </body>
+</html>

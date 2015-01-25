@@ -1,0 +1,248 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>CLI Beginner’s Guide &mdash; plotypus 0.2.5.dev0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/readable.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '0.2.5.dev0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="plotypus 0.2.5.dev0 documentation" href="../index.html" />
+   
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
+
+  </head>
+  <body>
+  
+  
+
+
+<link rel="shortcut icon" href="_static/icon.png">
+
+<!-- The "Fork me on github" ribbon -->
+<img style="float: right; margin-bottom: -40px; top: 0; right: 0; border: 0;" src="https://s3.amazonaws.com/github/ribbons/forkme_right_orange_ff7600.png" usemap="#ribbonmap"/>
+<map name="ribbonmap">
+    <area shape="poly" coords="15,0,148,-1,148,135" href="https://github.com/astroswego/plotypus" title="Fork me on GitHub" />
+</map>
+
+<div style="background-color: white; text-align: left; padding: 10px 10px 15px 15px">
+<a href="../index.html"><img src="../_static/logo.svg" border="0" alt="plotypus"/></a>
+</div>
+
+
+    <div class="related">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li><a href="../index.html">home</a>|&nbsp;</li>
+        <li><a href="../search.html">search</a>|&nbsp;</li>
+        <li><a href="../examples/index.html">examples</a>|&nbsp;</li>
+        <li><a href="../contents.html">docs</a> &raquo;</li>
+ 
+      </ul>
+    </div>
+
+      <div class="sphinxsidebar">
+        <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation index</a><ul>
+  </ul></li>
+</ul>
+  <h3>This Page</h3>
+  <ul class="this-page-menu">
+    <li><a href="../_sources/user_guide/cli-beginner.txt"
+           rel="nofollow">Show Source</a></li>
+  </ul>
+<div id="searchbox" style="display: none">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    <p class="searchtip" style="font-size: 90%">
+    Enter search terms or a module, class or function name.
+    </p>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body">
+            
+  <div class="section" id="cli-beginner-s-guide">
+<h1>CLI Beginner&#8217;s Guide<a class="headerlink" href="#cli-beginner-s-guide" title="Permalink to this headline">¶</a></h1>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">This guide assumes you already have plotypus <a class="reference external" href="install.html">installed</a>,
+and that you are using a BASH shell on a UNIX-like operating system.</p>
+</div>
+<p>The plotypus package comes with a command line tool of the same name, which
+should be installed to your path. To see a list of available options, run:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus --help
+</pre></div>
+</div>
+<p>For the sake of this tutorial, create an empty folder named <em>plotypus-tutorial</em>, and enter that directory:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; mkdir plotypus-tutorial
+&gt;&gt; cd plotypus-tutorial
+</pre></div>
+</div>
+<p>Now, before you can use the tool, you will need some variable star photometry.
+We have provided a small sample of photometry from the OGLE-III catalog,
+<a class="reference external" href="/plotypus/_static/samples/ogle-sample0.tar.gz">here</a> <a class="reference internal" href="cli-intermediate.html#ussp" id="id1">[USSP]</a>.
+Download and extract the data:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; curl -O https://astroswego.github.io/plotypus/_static/samples/ogle-sample0.tar.gz
+&gt;&gt; tar -xvzf ogle-sample0.tar.gz
+</pre></div>
+</div>
+<p>Now your directory should look like this:</p>
+<div class="highlight-python"><div class="highlight"><pre>plotypus-tutorial/
+├── ogle-sample0
+│   ├── OGLE-LMC-CEP-0002.dat
+│   └── OGLE-LMC-CEP-0005.dat
+└── ogle-sample0.tar.gz
+</pre></div>
+</div>
+<p>We are going to use plotypus to find the period of <em>OGLE-LMC-CEP-0002</em>, and
+then fit a light curve to it. Finding periods is time consuming, and since we
+already know the periods of these stars, we are going to constrain the range
+of periods searched between <em>3.0</em> and <em>6.0</em> days. Try calling plotypus like
+so:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i ogle-sample0/OGLE-LMC-CEP-0002.dat --min-period 3.0 --max-period 6.0
+</pre></div>
+</div>
+<p>A table should be printed to your terminal, containing various light curve
+parameters. You can omit the <tt class="docutils literal"><span class="pre">--min-period</span></tt> and <tt class="docutils literal"><span class="pre">--max-period</span></tt> switches,
+but it will take much longer to run.
+Now try running it on the entire directory:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i ogle-sample0/ --min-period 3.0 --max-period 6.0
+</pre></div>
+</div>
+<p>This time you should see a table like before, but with two entries. Let&#8217;s run
+this same command again, but this time, redirect the results to a file.</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i ogle-sample0/ --min-period 3.0 --max-period 6.0 &gt; output.dat
+</pre></div>
+</div>
+<p>Notice that the first and second columns contain the name and period of the
+stars? Why don&#8217;t we extract those columns, and save them to a file, so that we
+don&#8217;t have to wait for the period to be found every time.</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; cut -f 1,2 --output-delimiter=&quot;  &quot; output.dat | tail -n +2 &gt; periods.dat
+</pre></div>
+</div>
+<p>Now we can run plotypus as before, but instead of providing a period range,
+we will provide the periods file:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i ogle-sample0 --periods periods.dat
+</pre></div>
+</div>
+<p>Much faster than before, right? We&#8217;ll use the periods file for the rest of the
+tutorial.</p>
+<p>Now you&#8217;ve seen how to process a single file, or an entire directory of files,
+but what if you had a list of specific files? Fret not, because plotypus can
+read this as input too. The file must contain, on each line, the relative or
+absolute path to a desired file. Let&#8217;s make a file which lists all the files in
+the <em>ogle-sample0</em> directory. For relative paths you can run:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; ls -d -1 ogle-sample0/* &gt; names.dat
+</pre></div>
+</div>
+<p>or for absolute paths:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; ls -d -1 $PWD/ogle-sample0/* &gt; names.dat
+</pre></div>
+</div>
+<p>Take a peek inside <em>names.txt</em>:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; cat names.txt
+</pre></div>
+</div>
+<p>To tell plotypus to process the files named in this list, you can do one of
+two things.</p>
+<ol class="arabic">
+<li><p class="first">Provide the file with the <tt class="docutils literal"><span class="pre">-i</span></tt> switch as before, but prefix the file with
+an <tt class="docutils literal"><span class="pre">&#64;</span></tt> symbol:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i @names.dat --periods periods.dat
+</pre></div>
+</div>
+</li>
+<li><p class="first">Pipe the file to plotypus via standard input, and omit the <tt class="docutils literal"><span class="pre">-i</span></tt> option:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; cat names.dat | plotypus --periods periods.dat
+</pre></div>
+</div>
+</li>
+</ol>
+<p>You should see the same exact output as when you gave plotypus the directory
+as input.</p>
+<p>Now let&#8217;s generate some plots (it isn&#8217;t called <strong>plot</strong>ypus for nothing).
+Run plotypus in any of the ways you did before, but this time add the <tt class="docutils literal"><span class="pre">-o</span></tt>
+switch, and provide an output directory. We will do it like this:</p>
+<div class="highlight-python"><div class="highlight"><pre>&gt;&gt; plotypus -i @names.dat -o plots/ --periods periods.dat
+</pre></div>
+</div>
+<p>You will see the same table output as before, but now a new directory and some
+plots have been created. Your directory should look like this:</p>
+<div class="highlight-python"><div class="highlight"><pre>plotypus-tutorial/
+├── names.dat
+├── ogle-sample0
+│   ├── OGLE-LMC-CEP-0002.dat
+│   └── OGLE-LMC-CEP-0005.dat
+├── ogle-sample0.tar.gz
+├── output.dat
+├── periods.dat
+└── plots
+    ├── OGLE-LMC-CEP-0002.png
+    └── OGLE-LMC-CEP-0005.png
+</pre></div>
+</div>
+<p>Using your image viewing software of choice, take a look at the two plots you
+just created. They should look something like this:</p>
+<img alt="../_images/OGLE-LMC-CEP-0002.png" src="../_images/OGLE-LMC-CEP-0002.png" />
+<img alt="../_images/OGLE-LMC-CEP-0005.png" src="../_images/OGLE-LMC-CEP-0005.png" />
+<p>That covers all of the basic functionality of plotypus. Continue on to the
+<a class="reference external" href="cli-intermediate.html">Intermediate Guide</a>.</p>
+<p><strong>Citations</strong></p>
+<table class="docutils citation" frame="void" id="ussp" rules="none">
+<colgroup><col class="label" /><col /></colgroup>
+<tbody valign="top">
+<tr><td class="label"><a class="fn-backref" href="#id1">[USSP]</a></td><td>Udalski, A. ; Szymanski, M. K. ; Soszynski, I. ; Poleski, R., 2008,
+&#8220;The Optical Gravitational Lensing Experiment.
+Final Reductions of the OGLE-III Data&#8221;,
+Acta Astronomica, vol. 58, pp. 69-87</td></tr>
+</tbody>
+</table>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+  <div class="footer">
+    &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+  </div>
+  
+  </body>
+</html>

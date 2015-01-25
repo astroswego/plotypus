@@ -15,8 +15,7 @@ Documentation
 
 This is the documentation for version |version|.
 
-.. raw:: html
-
+.. rawhtml::
     <p id="other_versions"></p>
     <script>
       getSnippet('other_versions', '/versions.html');
