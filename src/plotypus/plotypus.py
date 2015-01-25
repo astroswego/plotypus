@@ -17,6 +17,9 @@ from plotypus.preprocessing import Fourier
 from plotypus.utils import mad, pmap, verbose_print
 from plotypus.resources import matplotlibrc
 
+import pkg_resources  # part of setuptools
+__version__ = pkg_resources.require("plotypus")[0].version
+
 
 def get_args():
     parser = ArgumentParser()
@@ -26,6 +29,9 @@ def get_args():
     fourier_group  = parser.add_argument_group('Fourier')
     outlier_group  = parser.add_argument_group('Outlier Detection')
     lasso_group    = parser.add_argument_group('Lasso')
+
+    parser.add_argument('--version', action='version',
+        version='%(prog)s {version}'.format(version=__version__))
 
     general_group.add_argument('-i', '--input', type=str,
         default=None,
