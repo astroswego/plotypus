@@ -14,7 +14,7 @@
     <script type="text/javascript">
       var DOCUMENTATION_OPTIONS = {
         URL_ROOT:    '../../',
-        VERSION:     '0.2.5.dev0',
+        VERSION:     '0.2.5',
         COLLAPSE_INDEX: false,
         FILE_SUFFIX: '.html',
         HAS_SOURCE:  true
@@ -23,7 +23,6 @@
     <script type="text/javascript" src="../../_static/jquery.js"></script>
     <script type="text/javascript" src="../../_static/underscore.js"></script>
     <script type="text/javascript" src="../../_static/doctools.js"></script>
-    <script type="text/javascript" src="../../_static/scripts/utils.js"></script>
     <link rel="top" title="plotypus: light curve analysis in Python" href="../../index.html" />
     <link rel="up" title="Module code" href="../index.html" />
    
@@ -115,6 +114,9 @@
 <span class="kn">from</span> <span class="nn">plotypus.utils</span> <span class="kn">import</span> <span class="n">mad</span><span class="p">,</span> <span class="n">pmap</span><span class="p">,</span> <span class="n">verbose_print</span>
 <span class="kn">from</span> <span class="nn">plotypus.resources</span> <span class="kn">import</span> <span class="n">matplotlibrc</span>
 
+<span class="kn">import</span> <span class="nn">pkg_resources</span>  <span class="c"># part of setuptools</span>
+<span class="n">__version__</span> <span class="o">=</span> <span class="n">pkg_resources</span><span class="o">.</span><span class="n">require</span><span class="p">(</span><span class="s">&quot;plotypus&quot;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">version</span>
+
 
 <div class="viewcode-block" id="get_args"><a class="viewcode-back" href="../../api/plotypus.plotypus.html#plotypus.plotypus.get_args">[docs]</a><span class="k">def</span> <span class="nf">get_args</span><span class="p">():</span>
     <span class="n">parser</span> <span class="o">=</span> <span class="n">ArgumentParser</span><span class="p">()</span>
@@ -124,6 +126,9 @@
     <span class="n">fourier_group</span>  <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s">&#39;Fourier&#39;</span><span class="p">)</span>
     <span class="n">outlier_group</span>  <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s">&#39;Outlier Detection&#39;</span><span class="p">)</span>
     <span class="n">lasso_group</span>    <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_argument_group</span><span class="p">(</span><span class="s">&#39;Lasso&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;--version&#39;</span><span class="p">,</span> <span class="n">action</span><span class="o">=</span><span class="s">&#39;version&#39;</span><span class="p">,</span>
+        <span class="n">version</span><span class="o">=</span><span class="s">&#39;</span><span class="si">%(prog)s</span><span class="s"> {version}&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">version</span><span class="o">=</span><span class="n">__version__</span><span class="p">))</span>
 
     <span class="n">general_group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s">&#39;-i&#39;</span><span class="p">,</span> <span class="s">&#39;--input&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
         <span class="n">default</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
