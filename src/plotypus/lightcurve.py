@@ -476,7 +476,23 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
     plt.xlabel('Phase ({0:0.7} day period)'.format(period))
     plt.ylabel('Magnitude')
 
-    plt.title(name)
+    # http://stackoverflow.com/questions/2627135/how-do-i-sanitize-latex-input
+    sanitized_name = name
+    for a, b in (('{', '\\{'),
+                 ('{', '\\}'),
+                 ('$', '\\$'),
+                 ('&', '\\&'),
+                 ('#', '\\#'),
+                 ('^', '\\textasciicircum{}'),
+                 ('_', '\\textunderscore{}'),
+                 ('~', '\\~'),
+                 ('%', '\\%'),
+                 ('<', '\\textless{}'),
+                 ('>', '\\textgreater{}'),
+                 ('|', '\\textbar{}')):
+        sanitized_name = sanitized_name.replace(a, b)
+    
+    plt.title(sanitized_name)
     plt.tight_layout(pad=0.1)
     make_sure_path_exists(output)
     plt.savefig(path.join(output, name))
