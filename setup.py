@@ -59,10 +59,11 @@ def setup_package():
             'variable star'
         ],
         classifiers=[f for f in CLASSIFIERS.split('\n') if f],
-        requires=[
-            'numpy (>= 1.8.0)',
-            'matplotlib (>= 1.4.0)',
-            'scikit (>= 0.14.0)'
+        install_requires=[
+            'numpy>=1.8.0',
+            'scipy>=0.14.0',
+            'matplotlib>=1.4.0',
+            'scikit-learn>=0.14.0'
         ]
     )
 
