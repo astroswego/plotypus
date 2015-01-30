@@ -60,9 +60,9 @@ def setup_package():
         ],
         classifiers=[f for f in CLASSIFIERS.split('\n') if f],
         install_requires=[
-            'numpy>=1.8.0',
-            'scipy>=0.14.0',
-            'matplotlib>=1.4.0',
+            'numpy>=1.6.0',
+            'scipy>=0.9.0',
+            'matplotlib>=1.3.0',
             'scikit-learn>=0.14.0'
         ]
     )
