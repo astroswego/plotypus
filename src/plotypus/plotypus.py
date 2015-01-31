@@ -54,6 +54,8 @@ def get_args():
         default='\t',
         help='column separator string in output table '
              '(default = TAB)')
+    general_group.add_argument('--sanitize-latex', action='store_true',
+        help='enable to sanitize star names for LaTeX formatting')
     general_group.add_argument('--legend', action='store_true',
         help='whether legends should be put on the output plots '
              '(default = False)')
