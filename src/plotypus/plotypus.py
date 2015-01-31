@@ -48,6 +48,8 @@ def get_args():
     general_group.add_argument('-f', '--format', type=str,
         default='%.5f',
         help='format specifier for output table')
+    general_group.add_argument('--sanitize-latex', action='store_true',
+        help='enable to sanitize star names for LaTeX formatting')
     general_group.add_argument('--legend', action='store_true',
         help='whether legends should be put on the output plots '
              '(default = False)')

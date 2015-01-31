@@ -8,6 +8,7 @@ from scipy.stats import sem
 from sys import stderr
 from math import floor
 from os import path
+import plotypus.utils
 from .utils import (verbose_print, make_sure_path_exists,
                     get_signal, get_noise, colvec, mad)
 from .periodogram import find_period, Lomb_Scargle, rephase
@@ -400,7 +401,8 @@ def find_outliers(data, predictor, sigma,
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
 
-def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
+def plot_lightcurve(name, lightcurve, period, data,
+                    output='.', legend=False, sanitize_latex=False,
                     color=True, n_phases=100,
                     err_const=0.0004,
                     **kwargs):
@@ -476,23 +478,7 @@ def plot_lightcurve(name, lightcurve, period, data, output='.', legend=False,
     plt.xlabel('Phase ({0:0.7} day period)'.format(period))
     plt.ylabel('Magnitude')
 
-    # http://stackoverflow.com/questions/2627135/how-do-i-sanitize-latex-input
-    sanitized_name = name
-    for a, b in (('{', '\\{'),
-                 ('{', '\\}'),
-                 ('$', '\\$'),
-                 ('&', '\\&'),
-                 ('#', '\\#'),
-                 ('^', '\\textasciicircum{}'),
-                 ('_', '\\textunderscore{}'),
-                 ('~', '\\~'),
-                 ('%', '\\%'),
-                 ('<', '\\textless{}'),
-                 ('>', '\\textgreater{}'),
-                 ('|', '\\textbar{}')):
-        sanitized_name = sanitized_name.replace(a, b)
-    
-    plt.title(sanitized_name)
+    plt.title(utils.sanitize_latex(name) if sanitize_latex else name)
     plt.tight_layout(pad=0.1)
     make_sure_path_exists(output)
     plt.savefig(path.join(output, name))
