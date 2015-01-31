@@ -3,6 +3,7 @@ from numpy import std
 from sys import exit, stdin, stderr
 from os import path, listdir
 from argparse import ArgumentError, ArgumentParser, SUPPRESS
+from pandas import read_table
 from sklearn.linear_model import LassoLarsIC, LinearRegression
 from sklearn.grid_search import GridSearchCV
 from matplotlib import rc_params_from_file
@@ -24,6 +25,7 @@ __version__ = pkg_resources.require("plotypus")[0].version
 def get_args():
     parser = ArgumentParser()
     general_group  = parser.add_argument_group('General')
+    param_group    = parser.add_argument_group('Star Parameters')
     parallel_group = parser.add_argument_group('Parallel')
     period_group   = parser.add_argument_group('Periodogram')
     fourier_group  = parser.add_argument_group('Fourier')
@@ -42,12 +44,16 @@ def get_args():
         help='location of plots, or nothing if no plots are to be generated '
              '(default = None)')
     general_group.add_argument('-n', '--star-name', type=str,
-        default=SUPPRESS,
+        default=None,
         help='name of star '
              '(default = name of input file)')
     general_group.add_argument('-f', '--format', type=str,
         default='%.5f',
         help='format specifier for output table')
+    general_group.add_argument('--output-sep', type=str,
+        default='\t',
+        help='column separator string in output table '
+             '(default = TAB)')
     general_group.add_argument('--legend', action='store_true',
         help='whether legends should be put on the output plots '
              '(default = False)')
@@ -70,10 +76,11 @@ def get_args():
         default=SUPPRESS, metavar='N',
         help='number of folds in the scoring cross validation '
              '(default = 3)')
-    general_group.add_argument('--shifts', type=str,
+    general_group.add_argument('--shift', type=float,
         default=None,
         help='phase shift to apply to each light curve, or shift to max '
-             'light if none given')
+             'light if None given '
+             '(default = None)')
     general_group.add_argument('--phase-points', type=int,
         default=100, metavar='N',
         help='number of phase points to output '
@@ -93,6 +100,23 @@ def get_args():
         help='specifies an operation to print verbose output for, or '
              '"all" to print all verbose output '
              '(default = None)')
+    param_group.add_argument('--parameters', type=str,
+        default=None, metavar='FILE',
+        help='file containing table of parameters such as period and shift '
+             '(default = None)')
+    param_group.add_argument('--param-sep', type=str,
+        default="\t",
+        help='string or regex to use as column separator when reading '
+             'parameters file '
+             '(default = TAB)')
+    param_group.add_argument('--period-label', type=str,
+        default='Period', metavar='LABEL',
+        help='title of period column in parameters file '
+             '(default = Period)')
+    param_group.add_argument('--shift-label', type=str,
+        default='Shift', metavar='LABEL',
+        help='title of shift column in parameters file '
+             '(default = Shift)')
     parallel_group.add_argument('--star-processes', type=int,
         default=1, metavar='N',
         help='number of stars to process in parallel '
@@ -109,10 +133,9 @@ def get_args():
         default=1, metavar='N',
         help='number of periods to process in parallel '
              '(default = 1)')
-    period_group.add_argument('--periods', type=str,
+    period_group.add_argument('--period', type=float,
         default=None,
-        help='file of star names and associated periods, or a single period '
-             'to use for all stars '
+        help='period to use for all stars '
              '(default = None)')
     period_group.add_argument('--min-period', type=float,
         default=SUPPRESS, metavar='P',
@@ -209,60 +232,29 @@ def get_args():
                                     **vars(args))
     args.phases = numpy.arange(0, 1, 1/args.phase_points)
 
-    if args.periods is not None:
-        try:
-            float(args.periods)
-        except ValueError:
-            verbose_print("Parsing periods file {}".format(args.periods),
-                          operation="period", verbosity=args.verbosity)
-            with open(args.periods, 'r') as f:
-                args.periods = {name: float(period) for (name, period)
-                                in (line.strip().split() for line
-                                    in f if ' ' in line)}
-                if args.periods == {}:
-                    verbose_print("No periods found",
-                                  operation="period",
-                                  verbosity=args.verbosity)
-    if args.shifts is not None:
-        if args.shifts.startswith('@'):
-            filename = args.shifts[1:]
-            verbose_print("Parsing shifts file {}".format(filename),
-                          operation="shift", verbosity=args.verbosity)
-            with open(filename, 'r') as f:
-                args.shifts = {name: float(shift) for (name, shift)
-                              in (line.strip().split() for line
-                                  in f if ' ' in line)}
-                if args.shifts == {}:
-                    verbose_print("No shifts found",
-                                  operation="shift",
-                                  verbosity=args.verbosity)
-        else:
-            try:
-                float(args.shifts)
-            except ValueError as e:
-                print("error: "
-                      "shifts must be number or a filename prefixed with '@'",
-                      file=stderr)
-                exit(1)
+    if args.parameters is not None:
+        args.parameters = read_table(args.parameters, args.param_sep,
+                                     index_col=0, engine='python')
 
     return args
 
 
 def main():
-    ops = get_args()
+    args = get_args()
 
-    min_degree, max_degree = ops.fourier_degree
-    filenames = list(map(lambda x: x.strip(), _get_files(ops.input)))
+    min_degree, max_degree = args.fourier_degree
+    filenames = list(map(lambda x: x.strip(), _get_files(args.input)))
     filepaths = map(lambda filename:
                     filename if path.isfile(filename)
-                             else path.join(ops.input, filename),
+                             else path.join(args.input, filename),
                     filenames)
 
     # a dict containing all options which can be pickled, because
     # all parameters to pmap must be picklable
-    picklable_ops = {k: vars(ops)[k]
-                     for k in vars(ops)
-                     if k not in {'input'}}
+    picklable_args = {k: vars(args)[k]
+                      for k in vars(args)
+                      if k not in {'input'}}
+    sep = args.output_sep
     # print file header
     print(*['Name',
             'Period',
@@ -275,54 +267,57 @@ def main():
             'Degree',
             'A_0',
             'dA_0',
-            '\t'.join(map('A_{0}\tPhi_{0}'.format, range(1, max_degree+1))),
-            '\t'.join(map('R_{0}1\tphi_{0}1'.format, range(2, max_degree+1))),
-            '\t'.join(map('Phase{}'.format, range(ops.phase_points)))],
-        sep='\t')
+            sep.join(map(('A_{0}' + sep + 'Phi_{0}').format,
+                         range(1, max_degree+1))),
+            sep.join(map(('R_{0}1' + sep + 'phi_{0}1').format,
+                         range(2, max_degree+1))),
+            sep.join(map('Phase{}'.format, range(args.phase_points)))],
+        sep=sep)
 
-    printer = lambda result: _print_star(result, max_degree, ops.series_form,
-                                         ops.format) \
+    printer = lambda result: _print_star(result, max_degree, args.series_form,
+                                         args.format, sep) \
                              if result is not None else None
     pmap(process_star, filepaths, callback=printer,
-         processes=ops.star_processes, **picklable_ops)
+         processes=args.star_processes, **picklable_args)
 
 
-def process_star(filename, output, periods={}, shifts={}, **ops):
+def process_star(filename, output, *, extension, star_name, period, shift,
+                 parameters, period_label, shift_label, **kwargs):
     """Processes a star's lightcurve, prints its coefficients, and saves
     its plotted lightcurve to a file. Returns the result of get_lightcurve.
     """
-    if 'star_name' not in ops:
-        _name = path.basename(filename)
-        extension = ops['extension']
-        if _name.endswith(extension):
-            name = _name[:-len(extension)]
+    if star_name is None:
+        basename = path.basename(filename)
+        if basename.endswith(extension):
+            star_name = basename[:-len(extension)]
         else:
             # file has wrong extension
             return
-    else:
-        name = ops['star_name']
-    try:
-        _period = float(periods)
-    except TypeError:
-        _period = periods.get(name) if periods is not None else None
-    try:
-        _shift = float(shifts)
-    except TypeError:
-        _shift = shifts.get(name) if shifts is not None else None
-    
+    if parameters is not None:
+        if period is None:
+            try:
+                period = parameters.loc[star_name, period_label]
+            except KeyError:
+                pass
+            if shift is None:
+                try:
+                    shift = parameters.loc[star_name, shift_label]
+                except KeyError:
+                    pass
 
-    result = get_lightcurve_from_file(filename, name=name,
-                                      period=_period, shift=_shift,
-                                      **ops)
+    result = get_lightcurve_from_file(filename, name=star_name,
+                                      period=period, shift=shift,
+                                      **kwargs)
     if result is None:
         return
     if output is not None:
-        plot_lightcurve(name, result['lightcurve'], result['period'],
-                        result['phased_data'], output=output, **ops)
+        plot_lightcurve(star_name, result['lightcurve'], result['period'],
+                        result['phased_data'], output=output, **kwargs)
+
     return result
 
 
-def _print_star(result, max_degree, form, fmt):
+def _print_star(result, max_degree, form, fmt, sep):
     if result is None:
         return
 
@@ -360,7 +355,7 @@ def _print_star(result, max_degree, form, fmt):
                    format_all(_coefs),         coef_zeros,
                    format_all(fourier_ratios), ratio_zeros,
                    format_all(result['lightcurve'])]),
-        sep='\t')
+        sep=sep)
 
 
 def _get_files(input):
