@@ -1,6 +1,6 @@
 import numpy
 from numpy import std
-from sys import exit, stdin, stderr
+from sys import exit, stdin, stdout, stderr
 from os import path, listdir
 from argparse import ArgumentError, ArgumentParser, SUPPRESS
 from pandas import read_table
@@ -107,10 +107,10 @@ def get_args():
         help='file containing table of parameters such as period and shift '
              '(default = None)')
     param_group.add_argument('--param-sep', type=str,
-        default="\t",
+        default="\\s+",
         help='string or regex to use as column separator when reading '
              'parameters file '
-             '(default = TAB)')
+             '(default = any whitespace)')
     param_group.add_argument('--period-label', type=str,
         default='Period', metavar='LABEL',
         help='title of period column in parameters file '
@@ -298,12 +298,12 @@ def process_star(filename, output, *, extension, star_name, period, shift,
     if parameters is not None:
         if period is None:
             try:
-                period = parameters.loc[star_name, period_label]
+                period = parameters[period_label][star_name]
             except KeyError:
                 pass
             if shift is None:
                 try:
-                    shift = parameters.loc[star_name, shift_label]
+                    shift = parameters.loc[shift_label][star_name]
                 except KeyError:
                     pass
 
