@@ -90,7 +90,7 @@ def get_lightcurve(data, copy=False, name=None,
                    period_processes=1,
                    sigma=20,
                    shift=None,
-                   min_phase_cover=0.0, n_phases=100,
+                   min_phase_cover=0.0, min_observations=1, n_phases=100,
                    verbosity=None, **kwargs):
     """get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring='r2', scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=None, **kwargs)
 
@@ -201,7 +201,13 @@ def get_lightcurve(data, copy=False, name=None,
                     name, len(signal), scoring_cv),
                 operation="coverage", verbosity=verbosity)
             return
-
+        elif len(signal) < min_observations:
+            verbose_print(
+                "{}: length of signal ({}) "
+                "less than min_observations ({})".format(
+                    name, len(signal), min_observations),
+                operation="coverage", verbosity=verbosity)
+            return
         # Find the period of the inliers
         if period is not None:
             _period = period
@@ -327,7 +333,8 @@ def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
     data = numpy.loadtxt(file, skiprows=skiprows, usecols=use_cols)
     if len(data) != 0:
         masked_data = numpy.ma.array(data=data, mask=None, dtype=float)
-        return get_lightcurve(masked_data, *args, **kwargs)
+        return get_lightcurve(masked_data, *args,
+                              verbosity=verbosity, **kwargs)
     else:
         verbose_print("{}: file contains no data points".format(file),
                       operation="coverage", verbosity=verbosity)

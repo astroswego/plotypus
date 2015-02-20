@@ -4,7 +4,8 @@ from sys import exit, stdin, stdout, stderr
 from os import path, listdir
 from argparse import ArgumentError, ArgumentParser, SUPPRESS
 from pandas import read_table
-from sklearn.linear_model import LassoLarsIC, LinearRegression
+from sklearn.linear_model import (LassoCV, LassoLarsCV, LassoLarsIC,
+                                  LinearRegression)
 from sklearn.grid_search import GridSearchCV
 from matplotlib import rc_params_from_file
 from functools import partial
@@ -91,6 +92,10 @@ def get_args():
         default=SUPPRESS, metavar='COVER',
         help='minimum fraction of phases that must have points '
              '(default = 0)')
+    general_group.add_argument('--min-observations', type=int,
+        default=1, metavar='N',
+        help='minimum number of observation needed to avoid skipping a star '
+             '(default = 1)')
     general_group.add_argument('--matplotlibrc', type=str,
         default=matplotlibrc,
         metavar='RC',
@@ -165,8 +170,8 @@ def get_args():
         help='range of degrees of fourier fits to use '
              '(default = 2 20)')
     fourier_group.add_argument('-r', '--regressor',
-        choices=['Lasso', 'OLS'],
-        default='Lasso',
+        choices=['LassoCV', 'LassoLarsCV', 'LassoLarsIC', 'OLS'],
+        default='LassoLarsIC',
         help='type of regressor to use '
              '(default = "Lasso")')
     fourier_group.add_argument('--selector',
@@ -191,6 +196,10 @@ def get_args():
         default=1000, metavar='N',
         help='maximum number of iterations in the Lasso '
              '(default = 1000)')
+    lasso_group.add_argument('--lasso-cv', type=int,
+        default=None, metavar='N',
+        help='number of folds used in LassoCV '
+             '(default = 3)')
 
     args = parser.parse_args()
 
@@ -200,7 +209,13 @@ def get_args():
         plotypus.lightcurve.matplotlib.rcParams = rcParams
 
     regressor_choices = {
-        "Lasso"               : LassoLarsIC(max_iter=args.max_iter,
+        "LassoCV"             : LassoCV(max_iter=args.max_iter,
+                                        cv=args.lasso_cv,
+                                        fit_intercept=False),
+        "LassoLarsCV"         : LassoLarsCV(max_iter=args.max_iter,
+                                            cv=args.lasso_cv,
+                                            fit_intercept=False),
+        "LassoLarsIC"         : LassoLarsIC(max_iter=args.max_iter,
                                             fit_intercept=False),
         "OLS"                 : LinearRegression(fit_intercept=False)
     }
