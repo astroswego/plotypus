@@ -165,8 +165,8 @@ def get_args():
         help='range of degrees of fourier fits to use '
              '(default = 2 20)')
     fourier_group.add_argument('-r', '--regressor',
-        choices=['Lasso', 'OLS'],
-        default='Lasso',
+        choices=['LassoCV', 'LassoLarsCV', 'LassoLarsIC', 'OLS'],
+        default='LassoLarsIC',
         help='type of regressor to use '
              '(default = "Lasso")')
     fourier_group.add_argument('--selector',
@@ -191,6 +191,10 @@ def get_args():
         default=1000, metavar='N',
         help='maximum number of iterations in the Lasso '
              '(default = 1000)')
+    lasso_group.add_argument('--lasso-cv', type=int,
+        default=None, metavar='N',
+        help='number of folds used in LassoCV '
+             '(default = 3)')
 
     args = parser.parse_args()
 
@@ -200,7 +204,13 @@ def get_args():
         plotypus.lightcurve.matplotlib.rcParams = rcParams
 
     regressor_choices = {
-        "Lasso"               : LassoLarsIC(max_iter=args.max_iter,
+        "LassoCV"             : LassoCV(max_iter=args.max_iter,
+                                        cv=args.lasso_cv,
+                                        fit_intercept=False),
+        "LassoLarsCV"         : LassoLarsCV(max_iter=args.max_iter,
+                                            cv=args.lasso_cv,
+                                            fit_intercept=False),
+        "LassoLarsIC"         : LassoLarsIC(max_iter=args.max_iter,
                                             fit_intercept=False),
         "OLS"                 : LinearRegression(fit_intercept=False)
     }
