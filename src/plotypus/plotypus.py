@@ -4,7 +4,8 @@ from sys import exit, stdin, stdout, stderr
 from os import path, listdir
 from argparse import ArgumentError, ArgumentParser, SUPPRESS
 from pandas import read_table
-from sklearn.linear_model import LassoLarsIC, LinearRegression
+from sklearn.linear_model import (LassoCV, LassoLarsCV, LassoLarsIC,
+                                  LinearRegression)
 from sklearn.grid_search import GridSearchCV
 from matplotlib import rc_params_from_file
 from functools import partial
