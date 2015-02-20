@@ -92,6 +92,10 @@ def get_args():
         default=SUPPRESS, metavar='COVER',
         help='minimum fraction of phases that must have points '
              '(default = 0)')
+    general_group.add_argument('--min-observations', type=int,
+        default=1, metavar='N',
+        help='minimum number of observation needed to avoid skipping a star '
+             '(default = 1)')
     general_group.add_argument('--matplotlibrc', type=str,
         default=matplotlibrc,
         metavar='RC',
