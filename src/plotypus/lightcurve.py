@@ -195,7 +195,7 @@ def get_lightcurve(data, copy=False, name=None,
 
     while True:
         signal = get_signal(data)
-        print(len(signal), min_observations)
+        print(len(signal), min_observations, file=stderr)
         if len(signal) <= scoring_cv:
             verbose_print(
                 "{}: length of signal ({}) less than cv folds ({})".format(
