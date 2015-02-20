@@ -281,7 +281,8 @@ def main():
             'Outliers',
             'R^2',
             'MSE',
-            'Degree',
+            'MaxDegree',
+            'Params',
             'A_0',
             'dA_0',
             sep.join(map(('A_{0}' + sep + 'Phi_{0}').format,
@@ -366,7 +367,8 @@ def _print_star(result, max_degree, form, fmt, sep):
                    map(str,
                        [result['period'], result['shift'], result['coverage'],
                         inliers, outliers,
-                        result['R2'],     result['MSE'],   result['degree']]),
+                        result['R2'],     result['MSE'],
+                        result['max_degree'], result['n_params']]),
                    # coefficients and fourier ratios with trailing zeros
                    # formatted defined by the user-provided fmt string
                    format_all(_coefs),         coef_zeros,
