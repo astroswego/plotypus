@@ -293,9 +293,6 @@ def get_lightcurve(data, copy=False, name=None,
                              cv=scoring_cv, scoring=scoring,
                              n_jobs=scoring_processes).mean()
 
-    max_degree = numpy.trim_zeros(coefficients[0][1::2], 'b').size
-    n_params   = numpy.count_nonzero(coefficients[0][1::2])
-
     return {'name':         name,
             'period':       _period,
             'lightcurve':   lightcurve,
@@ -305,8 +302,7 @@ def get_lightcurve(data, copy=False, name=None,
             'model':        predictor,
             'R2':           get_score('r2'),
             'MSE':          abs(get_score('mean_squared_error')),
-            'max_degree':   max_degree,
-            'n_params':     n_params,
+            'degree':       estimator.get_params()['Fourier__degree'],
             'shift':        shift,
             'coverage':     coverage}
 
