@@ -281,7 +281,8 @@ def main():
             'Outliers',
             'R^2',
             'MSE',
-            'Degree',
+            'MaxDegree',
+            'Params',
             'A_0',
             'dA_0',
             sep.join(map(('A_{0}' + sep + 'Phi_{0}').format,
@@ -359,6 +360,9 @@ def _print_star(result, max_degree, form, fmt, sep):
     coef_zeros  = repeat('0', times=(2*max_degree + 1 - len(coefs)))
     ratio_zeros = repeat('0', times=(2*(max_degree - 1) - len(fourier_ratios)))
 
+    max_degree = numpy.trim_zeros(coefs[1::2], 'b').size
+    n_params   = numpy.count_nonzero(coefs[1::2])
+    
     # print the entry for the star with tabs as separators
     # and itertools.chain to separate the different results into a
     # continuous list which is then unpacked
@@ -366,7 +370,8 @@ def _print_star(result, max_degree, form, fmt, sep):
                    map(str,
                        [result['period'], result['shift'], result['coverage'],
                         inliers, outliers,
-                        result['R2'],     result['MSE'],   result['degree']]),
+                        result['R2'],     result['MSE'],
+                        max_degree,       n_params]),
                    # coefficients and fourier ratios with trailing zeros
                    # formatted defined by the user-provided fmt string
                    format_all(_coefs),         coef_zeros,
