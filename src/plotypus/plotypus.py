@@ -202,6 +202,10 @@ def get_args():
         default=None, metavar='N',
         help='number of folds used in LassoCV '
              '(default = 3)')
+    lasso_group.add_argument('--lasso-n-lambdas', type=int,
+        default=1000, metavar='N',
+        help='number of points along the regularization path '
+             '(default = 1000)')
 
     args = parser.parse_args()
 
@@ -213,9 +217,11 @@ def get_args():
     regressor_choices = {
         "LassoCV"             : LassoCV(max_iter=args.max_iter,
                                         cv=args.lasso_cv,
+                                        n_alphas=args.lasso_n_lambdas,
                                         fit_intercept=False),
         "LassoLarsCV"         : LassoLarsCV(max_iter=args.max_iter,
                                             cv=args.lasso_cv,
+                                            max_n_alphas=args.lasso_n_lambdas,
                                             fit_intercept=False),
         "LassoLarsIC"         : LassoLarsIC(max_iter=args.max_iter,
                                             fit_intercept=False),
