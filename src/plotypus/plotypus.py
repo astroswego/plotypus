@@ -55,6 +55,8 @@ def get_args():
         default='\t',
         help='column separator string in output table '
              '(default = TAB)')
+    general_group.add_argument('--no-header', action='store_true',
+        help='suppress header row in table output')
     general_group.add_argument('--sanitize-latex', action='store_true',
         help='enable to sanitize star names for LaTeX formatting')
     general_group.add_argument('--legend', action='store_true',
@@ -272,25 +274,28 @@ def main():
                       for k in vars(args)
                       if k not in {'input'}}
     sep = args.output_sep
-    # print file header
-    print(*['Name',
-            'Period',
-            'Shift',
-            'Coverage',
-            'Inliers',
-            'Outliers',
-            'R^2',
-            'MSE',
-            'MaxDegree',
-            'Params',
-            'A_0',
-            'dA_0',
-            sep.join(map(('A_{0}' + sep + 'Phi_{0}').format,
-                         range(1, max_degree+1))),
-            sep.join(map(('R_{0}1' + sep + 'phi_{0}1').format,
-                         range(2, max_degree+1))),
-            sep.join(map('Phase{}'.format, range(args.phase_points)))],
-        sep=sep)
+
+    if not args.no_header:
+        # print file header
+        print(*['Name',
+                'Period',
+                'Shift',
+                'Coverage',
+                'Inliers',
+                'Outliers',
+                'R^2',
+                'MSE',
+                'MaxDegree',
+                'Params',
+                'A_0',
+                'dA_0',
+                sep.join(map(('A_{0}' + sep + 'Phi_{0}').format,
+                             range(1, max_degree+1))),
+                sep.join(map(('R_{0}1' + sep + 'phi_{0}1').format,
+                             range(2, max_degree+1))),
+                             sep.join(map('Phase{}'.format,
+                                          range(args.phase_points)))],
+              sep=sep)
 
     printer = lambda result: _print_star(result, max_degree, args.series_form,
                                          args.format, sep) \
