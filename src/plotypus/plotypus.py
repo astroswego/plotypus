@@ -218,12 +218,15 @@ def get_args():
         "LassoCV"             : LassoCV(max_iter=args.max_iter,
                                         cv=args.lasso_cv,
                                         n_alphas=args.lasso_n_lambdas,
+                                        normalize=True,
                                         fit_intercept=False),
         "LassoLarsCV"         : LassoLarsCV(max_iter=args.max_iter,
                                             cv=args.lasso_cv,
                                             max_n_alphas=args.lasso_n_lambdas,
+                                            normalize=True,
                                             fit_intercept=False),
         "LassoLarsIC"         : LassoLarsIC(max_iter=args.max_iter,
+                                            normalize=True,
                                             fit_intercept=False),
         "OLS"                 : LinearRegression(fit_intercept=False)
     }
