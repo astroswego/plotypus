@@ -140,7 +140,7 @@ def CE(period, data, xbins=10, ybins=5):
         # array containing the sums of each column in the bins array
         column_sums = np.sum(divided_bins, axis=1) #changed 0 by 1
         # array is repeated row-wise, so that it can be sliced by arg_positive
-        column_sums = np.repeat(np.reshape(column_sums, (x_bins,1)), ybins, axis=1)
+        column_sums = np.repeat(np.reshape(column_sums, (xbins,1)), ybins, axis=1)
         #column_sums = np.repeat(np.reshape(column_sums, (1,-1)), xbins, axis=0)
 
 
