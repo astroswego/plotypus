@@ -411,9 +411,9 @@ def find_outliers(data, predictor, sigma,
 def plot_lightcurve(name, lightcurve, period, data,
                     output='.', legend=False, sanitize_latex=False,
                     color=True, n_phases=100,
-                    err_const=0.0004,
+                    err_const=0.005,
                     **kwargs):
-    """plot_lightcurve(name, lightcurve, period, data, output='.', legend=False, color=True, n_phases=100, err_const=0.0004, **kwargs)
+    """plot_lightcurve(name, lightcurve, period, data, output='.', legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
 
     Save a plot of the given *lightcurve* to directory *output*.
 
@@ -437,7 +437,7 @@ def plot_lightcurve(name, lightcurve, period, data,
     n_phases : integer, optional
         Number of phase points in fit (default 100).
     err_const : number, optional
-        Constant to use in absence of error (default 0.0004).
+        Constant to use in absence of error (default 0.005).
 
     **Returns**
 
