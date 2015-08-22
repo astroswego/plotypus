@@ -5,7 +5,7 @@ from os import path, listdir
 from argparse import ArgumentError, ArgumentParser, SUPPRESS
 from pandas import read_table
 from sklearn.linear_model import (LassoCV, LassoLarsCV, LassoLarsIC,
-                                  LinearRegression)
+                                  LinearRegression, RidgeCV, ElasticNetCV)
 from sklearn.grid_search import GridSearchCV
 from matplotlib import rc_params_from_file
 from functools import partial
@@ -25,13 +25,13 @@ __version__ = pkg_resources.require("plotypus")[0].version
 
 def get_args():
     parser = ArgumentParser()
-    general_group  = parser.add_argument_group('General')
-    param_group    = parser.add_argument_group('Star Parameters')
-    parallel_group = parser.add_argument_group('Parallel')
-    period_group   = parser.add_argument_group('Periodogram')
-    fourier_group  = parser.add_argument_group('Fourier')
-    outlier_group  = parser.add_argument_group('Outlier Detection')
-    lasso_group    = parser.add_argument_group('Lasso')
+    general_group    = parser.add_argument_group('General')
+    param_group      = parser.add_argument_group('Star Parameters')
+    parallel_group   = parser.add_argument_group('Parallel')
+    period_group     = parser.add_argument_group('Periodogram')
+    fourier_group    = parser.add_argument_group('Fourier')
+    outlier_group    = parser.add_argument_group('Outlier Detection')
+    regression_group = parser.add_argument_group('Regression')
 
     parser.add_argument('--version', action='version',
         version='%(prog)s {version}'.format(version=__version__))
@@ -172,7 +172,7 @@ def get_args():
         help='range of degrees of fourier fits to use '
              '(default = 2 20)')
     fourier_group.add_argument('-r', '--regressor',
-        choices=['LassoCV', 'LassoLarsCV', 'LassoLarsIC', 'OLS'],
+        choices=['LassoCV', 'LassoLarsCV', 'LassoLarsIC', 'OLS', 'RidgeCV', 'ElasticNetCV'],
         default='LassoLarsIC',
         help='type of regressor to use '
              '(default = "Lasso")')
@@ -194,13 +194,13 @@ def get_args():
         choices=["std", "mad"], default="mad",
         help='sigma clipping metric to use '
              '(default = "mad")')
-    lasso_group.add_argument('--max-iter', type=int,
+    regression_group.add_argument('--max-iter', type=int,
         default=1000, metavar='N',
-        help='maximum number of iterations in the Lasso '
+        help='maximum number of iterations in the regularization path '
              '(default = 1000)')
-    lasso_group.add_argument('--lasso-cv', type=int,
+    regression_group.add_argument('--regression-cv', type=int,
         default=None, metavar='N',
-        help='number of folds used in LassoCV '
+        help='number of folds used in regression cross validation '
              '(default = 3)')
 
     args = parser.parse_args()
@@ -212,14 +212,19 @@ def get_args():
 
     regressor_choices = {
         "LassoCV"             : LassoCV(max_iter=args.max_iter,
-                                        cv=args.lasso_cv,
+                                        cv=args.regression_cv,
                                         fit_intercept=False),
         "LassoLarsCV"         : LassoLarsCV(max_iter=args.max_iter,
-                                            cv=args.lasso_cv,
+                                            cv=args.regression_cv,
                                             fit_intercept=False),
         "LassoLarsIC"         : LassoLarsIC(max_iter=args.max_iter,
                                             fit_intercept=False),
-        "OLS"                 : LinearRegression(fit_intercept=False)
+        "OLS"                 : LinearRegression(fit_intercept=False),
+        "RidgeCV"             : RidgeCV(cv=args.regression_cv,
+                                        fit_intercept=False),
+        "ElasticNetCV"        : ElasticNetCV(max_iter=args.max_iter,
+                                             cv=args.regression_cv,
+                                             fit_intercept=False)
     }
     selector_choices = {
         "Baart"               : None,
