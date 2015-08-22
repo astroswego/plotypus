@@ -31,7 +31,7 @@ def get_args():
     period_group     = parser.add_argument_group('Periodogram')
     fourier_group    = parser.add_argument_group('Fourier')
     outlier_group    = parser.add_argument_group('Outlier Detection')
-    regression_group = parser.add_argument_group('Regression')
+#    regression_group = parser.add_argument_group('Regression')
 
     parser.add_argument('--version', action='version',
         version='%(prog)s {version}'.format(version=__version__))
@@ -79,7 +79,7 @@ def get_args():
              '(default = "R2")')
     general_group.add_argument('--scoring-cv', type=int,
         default=SUPPRESS, metavar='N',
-        help='number of folds in the scoring cross validation '
+        help='number of folds in the scoring regularization_cv validation '
              '(default = 3)')
     general_group.add_argument('--shift', type=float,
         default=None,
@@ -184,8 +184,16 @@ def get_args():
     fourier_group.add_argument('--series-form', type=str,
         default='cos', choices=['sin', 'cos'],
         help='form of Fourier series to use in coefficient output, '
-             'does not effect the fit '
+             'does not affect the fit '
              '(default = "cos")')
+    fourier_group.add_argument('--max-iter', type=int,
+        default=1000, metavar='N',
+        help='maximum number of iterations in the regularization path '
+             '(default = 1000)')
+    fourier_group.add_argument('--regularization-cv', type=int,
+        default=None, metavar='N',
+        help='number of folds used in regularization regularization_cv validation '
+             '(default = 3)')
     outlier_group.add_argument('--sigma', type=float,
         default=SUPPRESS,
         help='rejection criterion for outliers '
@@ -194,14 +202,6 @@ def get_args():
         choices=["std", "mad"], default="mad",
         help='sigma clipping metric to use '
              '(default = "mad")')
-    regression_group.add_argument('--max-iter', type=int,
-        default=1000, metavar='N',
-        help='maximum number of iterations in the regularization path '
-             '(default = 1000)')
-    regression_group.add_argument('--regression-cv', type=int,
-        default=None, metavar='N',
-        help='number of folds used in regression cross validation '
-             '(default = 3)')
 
     args = parser.parse_args()
 
@@ -212,18 +212,18 @@ def get_args():
 
     regressor_choices = {
         "LassoCV"             : LassoCV(max_iter=args.max_iter,
-                                        cv=args.regression_cv,
+                                        cv=args.regularization_cv,
                                         fit_intercept=False),
         "LassoLarsCV"         : LassoLarsCV(max_iter=args.max_iter,
-                                            cv=args.regression_cv,
+                                            cv=args.regularization_cv,
                                             fit_intercept=False),
         "LassoLarsIC"         : LassoLarsIC(max_iter=args.max_iter,
                                             fit_intercept=False),
         "OLS"                 : LinearRegression(fit_intercept=False),
-        "RidgeCV"             : RidgeCV(cv=args.regression_cv,
+        "RidgeCV"             : RidgeCV(cv=args.regularization_cv,
                                         fit_intercept=False),
         "ElasticNetCV"        : ElasticNetCV(max_iter=args.max_iter,
-                                             cv=args.regression_cv,
+                                             cv=args.regularization_cv,
                                              fit_intercept=False)
     }
     selector_choices = {
