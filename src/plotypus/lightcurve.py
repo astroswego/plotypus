@@ -28,7 +28,9 @@ __all__ = [
     'get_lightcurve',
     'get_lightcurve_from_file',
     'find_outliers',
-    'plot_lightcurve'
+    'plot_lightcurve',
+    'plot_lightcurve_mpl',
+    'plot_lightcurve_tikz'
 ]
 
 
@@ -408,14 +410,43 @@ def find_outliers(data, predictor, sigma,
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
 
-def plot_lightcurve(name, lightcurve, period, data,
-                    output='.', legend=False, sanitize_latex=False,
-                    color=True, n_phases=100,
-                    err_const=0.005,
-                    **kwargs):
+def plot_lightcurve(*args, engine='mpl', **kwargs):
+    """plot_lightcurve(*args, engine='mpl', **kwargs)
+
+    **Parameters**
+
+    engine : str, optional
+        Engine to use for plotting, choices are "mpl" and "tikz"
+        (default "mpl")
+
+    kwargs :
+        See :func:`plot_lightcurve_mpl` and :func:`plot_lightcurve_tikz`,
+        depending on *engine* specified.
+
+    **Returns**
+
+    plot : object
+        Plot object. Type depends on *engine* used. "mpl" engine returns a
+        `matplotlib.pyplot.Figure` object, and "tikz" engine returns a `str`.
+    """
+    if engine == "mpl":
+        return(plot_lightcurve_mpl(*args, **kwargs))
+    elif engine == "tikz":
+        return(plot_lightcurve_tikz(*args, **kwargs))
+    else:
+        raise KeyError("engine '{}' does not exist".format(engine))
+
+
+def plot_lightcurve_mpl(name, lightcurve, period, data,
+                        output='.', legend=False, sanitize_latex=False,
+                        color=True, n_phases=100,
+                        err_const=0.005,
+                        **kwargs):
     """plot_lightcurve(name, lightcurve, period, data, output='.', legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
 
-    Save a plot of the given *lightcurve* to directory *output*.
+    Save a plot of the given *lightcurve* to directory *output*, and return the
+    resulting plot object. Type of object and output format depend on *engine*
+    provided.
 
     **Parameters**
 
@@ -441,7 +472,8 @@ def plot_lightcurve(name, lightcurve, period, data,
 
     **Returns**
 
-    None
+    plot : matplotlib.pyplot.Figure
+        Matplotlib Figure object which contains the plot.
     """
     phases = numpy.linspace(0, 1, n_phases, endpoint=False)
     ax = plt.gca()
@@ -490,3 +522,43 @@ def plot_lightcurve(name, lightcurve, period, data,
     make_sure_path_exists(output)
     plt.savefig(path.join(output, name))
     plt.clf()
+
+def plot_lightcurve_tikz(name, lightcurve, period, data,
+                        output='.', legend=False, sanitize_latex=False,
+                        color=True, n_phases=100,
+                        err_const=0.005,
+                        **kwargs):
+    """plot_lightcurve(name, lightcurve, period, data, output='.', legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
+
+    Save a plot of the given *lightcurve* to directory *output*, and return the
+    resulting plot object. Type of object and output format depend on *engine*
+    provided.
+
+    **Parameters**
+
+    name : str
+        Name of the star. Used in filename and plot title.
+    lightcurve : array-like, shape = [n_samples]
+        Fitted lightcurve.
+    period : number
+        Period to phase time by.
+    data : array-like, shape = [n_samples, 2] or [n_samples, 3]
+        Photometry array containing columns *time*, *magnitude*, and
+        (optional) *error*. *time* should be unphased.
+    output : str, optional
+        Directory to save plot to (default '.').
+    legend : boolean, optional
+        Whether or not to display legend on plot (default False).
+    color : boolean, optional
+        Whether or not to display color in plot (default True).
+    n_phases : integer, optional
+        Number of phase points in fit (default 100).
+    err_const : number, optional
+        Constant to use in absence of error (default 0.005).
+
+    **Returns**
+
+    plot : matplotlib.pyplot.Figure
+        Matplotlib Figure object which contains the plot.
+    """
+    pass

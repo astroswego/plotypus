@@ -93,6 +93,12 @@ def get_args():
         default=1, metavar='N',
         help='minimum number of observation needed to avoid skipping a star '
              '(default = 1)')
+    general_group.add_argument('--plot-engine', type=str,
+        default='mpl', choices=['mpl', 'tikz'],
+        metavar='ENGINE',
+        help='engine to use for plotting. mpl will output image formats, while '
+             'tikz will output tikz source code for use in LaTeX '
+             '(default = "mpl")')
     general_group.add_argument('--matplotlibrc', type=str,
         default=matplotlibrc,
         metavar='RC',
@@ -337,6 +343,7 @@ def process_star(filename, output_plot_lightcurve,
                  *,
                  extension, star_name, period, shift,
                  parameters, period_label, shift_label,
+                 plot_engine,
                  **kwargs):
     """Processes a star's lightcurve, prints its coefficients, and saves
     its plotted lightcurve to a file. Returns the result of get_lightcurve.
@@ -368,6 +375,7 @@ def process_star(filename, output_plot_lightcurve,
     if output_plot_lightcurve is not None:
         plot_lightcurve(star_name, result['lightcurve'], result['period'],
                         result['phased_data'], output=output_plot_lightcurve,
+                        engine=plot_engine,
                         **kwargs)
 
     return result
@@ -400,7 +408,7 @@ def _print_star(result, max_degree, form, fmt, sep):
 
     max_degree = numpy.trim_zeros(coefs[1::2], 'b').size
     n_params   = numpy.count_nonzero(coefs[1::2])
-    
+
     # print the entry for the star with tabs as separators
     # and itertools.chain to separate the different results into a
     # continuous list which is then unpacked
