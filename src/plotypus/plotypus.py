@@ -26,6 +26,7 @@ __version__ = pkg_resources.require("plotypus")[0].version
 def get_args():
     parser = ArgumentParser()
     general_group    = parser.add_argument_group('General')
+    lightcurve_group = parser.add_argument_group('Light Curve')
     param_group      = parser.add_argument_group('Star Parameters')
     parallel_group   = parser.add_argument_group('Parallel')
     period_group     = parser.add_argument_group('Periodogram')
@@ -36,14 +37,12 @@ def get_args():
     parser.add_argument('--version', action='version',
         version='%(prog)s {version}'.format(version=__version__))
 
+    ## General Group #########################################################
+
     general_group.add_argument('-i', '--input', type=str,
         default=None,
         help='location of stellar observations '
              '(default = stdin)')
-    general_group.add_argument('-o', '--output', type=str,
-        default=None,
-        help='location of plots, or nothing if no plots are to be generated '
-             '(default = None)')
     general_group.add_argument('-n', '--star-name', type=str,
         default=None,
         help='name of star '
@@ -86,10 +85,6 @@ def get_args():
         help='phase shift to apply to each light curve, or shift to max '
              'light if None given '
              '(default = None)')
-    general_group.add_argument('--phase-points', type=int,
-        default=100, metavar='N',
-        help='number of phase points to output '
-             '(default = 100)')
     general_group.add_argument('--min-phase-cover', type=float,
         default=SUPPRESS, metavar='COVER',
         help='minimum fraction of phases that must have points '
@@ -109,6 +104,19 @@ def get_args():
         help='specifies an operation to print verbose output for, or '
              '"all" to print all verbose output '
              '(default = None)')
+
+    ## Light Curve Group #####################################################
+
+    lightcurve_group.add_argument('--output-plot-lightcurve', type=str,
+        default=None,
+        help='(optional) location to save light curve plots')
+    lightcurve_group.add_argument('--phase-points', type=int,
+        default=100, metavar='N',
+        help='number of phase points to output '
+             '(default = 100)')
+
+    ## Parameter Group #######################################################
+
     param_group.add_argument('--parameters', type=str,
         default=None, metavar='FILE',
         help='file containing table of parameters such as period and shift '
@@ -126,6 +134,9 @@ def get_args():
         default='Shift', metavar='LABEL',
         help='title of shift column in parameters file '
              '(default = Shift)')
+
+    ## Parallel Group ########################################################
+
     parallel_group.add_argument('--star-processes', type=int,
         default=1, metavar='N',
         help='number of stars to process in parallel '
@@ -142,6 +153,9 @@ def get_args():
         default=1, metavar='N',
         help='number of periods to process in parallel '
              '(default = 1)')
+
+    ## Period Group ##########################################################
+
     period_group.add_argument('--period', type=float,
         default=None,
         help='period to use for all stars '
@@ -167,6 +181,9 @@ def get_args():
         default="Lomb_Scargle",
         help='method for determining period '
              '(default = Lomb_Scargle)')
+
+    ## Fourier Group #########################################################
+
     fourier_group.add_argument('-d', '--fourier-degree', type=int, nargs=2,
         default=(2, 20), metavar=('MIN', 'MAX'),
         help='range of degrees of fourier fits to use '
@@ -194,6 +211,9 @@ def get_args():
         default=None, metavar='N',
         help='number of folds used in regularization regularization_cv validation '
              '(default = 3)')
+
+    ## Outlier Group #########################################################
+
     outlier_group.add_argument('--sigma', type=float,
         default=SUPPRESS,
         help='rejection criterion for outliers '
@@ -205,9 +225,11 @@ def get_args():
 
     args = parser.parse_args()
 
-    if args.output is not None:
+    # configure Matplotlib only if necessary
+    plot_outputs = [args.output_plot_lightcurve]
+    if any(output is not None for output in plot_outputs):
         rcParams = rc_params_from_file(fname=args.matplotlibrc,
-                                       fail_on_error=args.output)
+                                       fail_on_error=True)
         plotypus.lightcurve.matplotlib.rcParams = rcParams
 
     regressor_choices = {
@@ -265,6 +287,7 @@ def get_args():
 
 def main():
     args = get_args()
+    args_dict = vars(args)
 
     min_degree, max_degree = args.fourier_degree
     filenames = list(map(lambda x: x.strip(), _get_files(args.input)))
@@ -273,11 +296,12 @@ def main():
                              else path.join(args.input, filename),
                     filenames)
 
-    # a dict containing all options which can be pickled, because
+    # create a dict containing all args which can be pickled, because
     # all parameters to pmap must be picklable
-    picklable_args = {k: vars(args)[k]
-                      for k in vars(args)
-                      if k not in {'input'}}
+    non_picklable_args = {"input"}
+    picklable_args = {k: args_dict[k]
+                      for k in args_dict
+                      if k not in non_picklable_args}
     sep = args.output_sep
 
     if not args.no_header:
@@ -309,8 +333,11 @@ def main():
          processes=args.star_processes, **picklable_args)
 
 
-def process_star(filename, output, *, extension, star_name, period, shift,
-                 parameters, period_label, shift_label, **kwargs):
+def process_star(filename, output_plot_lightcurve,
+                 *,
+                 extension, star_name, period, shift,
+                 parameters, period_label, shift_label,
+                 **kwargs):
     """Processes a star's lightcurve, prints its coefficients, and saves
     its plotted lightcurve to a file. Returns the result of get_lightcurve.
     """
@@ -338,9 +365,10 @@ def process_star(filename, output, *, extension, star_name, period, shift,
                                       **kwargs)
     if result is None:
         return
-    if output is not None:
+    if output_plot_lightcurve is not None:
         plot_lightcurve(star_name, result['lightcurve'], result['period'],
-                        result['phased_data'], output=output, **kwargs)
+                        result['phased_data'], output=output_plot_lightcurve,
+                        **kwargs)
 
     return result
 
