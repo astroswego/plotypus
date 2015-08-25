@@ -570,9 +570,9 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
     plot : str
         String containing the TikZ source code for the plot.
     """
-    x_min = round(min(min(lightcurve), min(phased_data[:,1]))-0.05, 2)
+    x_min = round(min(min(lightcurve), min(phased_data[:,1]))-0.05, 2) 
     x_max = round(max(max(lightcurve), max(phased_data[:,1]))+0.05, 2)
-    yticks = ", ".join("{:.2f}".format(x)
+    yticks = ", ".join("{:.2f}".format(x) 
                        for x in numpy.linspace(x_min, x_max, 4))
     tikz = r"""\begin{tikzpicture}
     \begin{axis}[
@@ -599,50 +599,78 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
         solid,
         line width=0.75pt
     ] {
-""" % (period,
-       x_min,
-       x_max,
-       yticks)
-
+""" % (period, x_min, x_max, yticks)
+    
     # Add light curve
     for (k, A) in enumerate(coefficients):
         if k == 0:
             tikz += r"""        %s"""%A
-        elif (A == 0):
+        elif (A == 0): 
             continue
         elif k % 2:
-            tikz += r""" +
-        sin(2*pi*%s*x) * %s""" % (int((k-1)/2+1), A)
+            tikz += r""" + 
+        sin(2*pi*%s*(x+%s)) * %s""" % (int((k-1)/2+1), shift, A)
         else:
-            tikz += r""" +
-        cos(2*pi*%s*x) * %s""" % (int(k/2), A)
-
+            tikz += r""" + 
+        cos(2*pi*%s*(x+%s)) * %s""" % (int(k/2), shift, A)
+    
     # Add points
     tikz += r"""
     };
     \addplot[
         color=black!50!red,
-        mark size=1.3pt,
-        only marks,
-        mark=*,
-        mark options={solid},
-        forget plot
+        mark size=0pt,
+        only marks
     ]
     plot[
         error bars/.cd,
         y dir = both,
-        y explicit
+        y explicit,
+        error mark options={
+            mark size=0pt,
+            line width=1pt
+        }
     ]
     table[
         row sep=crcr,
         y error plus index=2,
         y error minus index=3
     ] {"""
-    for row in phased_data:
+    for row in get_signal(data):
         tikz += r"""
             %s %s %s %s \\
             %s %s %s %s \\""" % (row[0], row[1], row[2]/2, row[2]/2,
                                1+row[0], row[1], row[2]/2, row[2]/2)
+    
+    # Add outliers
+    if (any(get_noise(data))):
+        tikz += r"""
+        };
+        \addplot[
+            color=black,
+            mark size=0pt,
+            only marks
+        ]
+        plot[
+            error bars/.cd,
+            y dir = both,
+            y explicit,
+            error mark options={
+                mark size=0pt,
+                line width=1pt
+            }
+        ]
+        table[
+            row sep=crcr,
+            y error plus index=2,
+            y error minus index=3
+        ] {"""
+        for row in get_noise(data):
+            tikz += r"""
+                %s %s %s %s \\
+                %s %s %s %s \\""" % (row[0], row[1], row[2]/2, row[2]/2,
+                                   1+row[0], row[1], row[2]/2, row[2]/2)
+    
     # Done!
     tikz += r"""
         };
