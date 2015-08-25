@@ -19,7 +19,7 @@ from plotypus.preprocessing import Fourier
 from plotypus.utils import mad, pmap, verbose_print
 from plotypus.resources import matplotlibrc
 
-import pkg_resources  # part of setuptools
+import pkg_resources # part of setuptools
 __version__ = pkg_resources.require("plotypus")[0].version
 
 
@@ -195,7 +195,8 @@ def get_args():
         help='range of degrees of fourier fits to use '
              '(default = 2 20)')
     fourier_group.add_argument('-r', '--regressor',
-        choices=['LassoCV', 'LassoLarsCV', 'LassoLarsIC', 'OLS', 'RidgeCV', 'ElasticNetCV'],
+        choices=['LassoCV', 'LassoLarsCV', 'LassoLarsIC', 'OLS', 'RidgeCV',
+                 'ElasticNetCV'],
         default='LassoLarsIC',
         help='type of regressor to use '
              '(default = "Lasso")')
@@ -215,7 +216,8 @@ def get_args():
              '(default = 1000)')
     fourier_group.add_argument('--regularization-cv', type=int,
         default=None, metavar='N',
-        help='number of folds used in regularization regularization_cv validation '
+        help='number of folds used in regularization regularization_cv '
+             'validation '
              '(default = 3)')
 
     ## Outlier Group #########################################################
@@ -233,7 +235,8 @@ def get_args():
 
     # configure Matplotlib only if necessary
     plot_outputs = [args.output_plot_lightcurve]
-    if any(output is not None for output in plot_outputs):
+    if (args.plot_engine == "mpl" and
+            any(output is not None for output in plot_outputs)):
         rcParams = rc_params_from_file(fname=args.matplotlibrc,
                                        fail_on_error=True)
         plotypus.lightcurve.matplotlib.rcParams = rcParams
@@ -373,10 +376,17 @@ def process_star(filename, output_plot_lightcurve,
     if result is None:
         return
     if output_plot_lightcurve is not None:
-        plot_lightcurve(star_name, result['lightcurve'], result['period'],
-                        result['phased_data'], output=output_plot_lightcurve,
-                        engine=plot_engine,
-                        **kwargs)
+        plot = plot_lightcurve(star_name,
+            result['lightcurve'], result['period'], result['phased_data'],
+            output=output_plot_lightcurve, engine=plot_engine,
+            **kwargs)
+        # allow figure to get garbage collected
+        if plot_engine == "mpl":
+            # Need to use a local import, a top level import had to be avoided,
+            # because the backend must be configured *before* importing pyplot.
+            # Fret not, the import is a no-op after the first call
+            from matplotlib.pyplot import close
+            close(plot)
 
     return result
 

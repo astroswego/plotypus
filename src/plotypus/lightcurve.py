@@ -445,8 +445,7 @@ def plot_lightcurve_mpl(name, lightcurve, period, data,
     """plot_lightcurve(name, lightcurve, period, data, output='.', legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
 
     Save a plot of the given *lightcurve* to directory *output*, and return the
-    resulting plot object. Type of object and output format depend on *engine*
-    provided.
+    resulting plot object.
 
     **Parameters**
 
@@ -476,52 +475,59 @@ def plot_lightcurve_mpl(name, lightcurve, period, data,
         Matplotlib Figure object which contains the plot.
     """
     phases = numpy.linspace(0, 1, n_phases, endpoint=False)
-    ax = plt.gca()
+
+    # initialize Figure and Axes objects
+    fig, ax = plt.subplots()
+
+    # format the x- and y-axis
     ax.invert_yaxis()
-    plt.xlim(0,2)
+    ax.set_xlim(0,2)
 
     # Plot points used
     phase, mag, *err = get_signal(data).T
 
     error = err[0] if err else mag*err_const
 
-    inliers = plt.errorbar(numpy.hstack((phase,1+phase)),
-                           numpy.hstack((mag, mag)),
-                           yerr=numpy.hstack((error, error)),
-                           ls='None',
-                           ms=.01, mew=.01, capsize=0)
+    inliers = ax.errorbar(numpy.hstack((phase,1+phase)),
+                          numpy.hstack((mag, mag)),
+                          yerr=numpy.hstack((error, error)),
+                          ls='None',
+                          ms=.01, mew=.01, capsize=0)
 
     # Plot outliers rejected
     phase, mag, *err = get_noise(data).T
 
     error = err[0] if err else mag*err_const
 
-    outliers = plt.errorbar(numpy.hstack((phase,1+phase)),
-                            numpy.hstack((mag, mag)),
-                            yerr=numpy.hstack((error, error)),
-                            ls='None', marker='o' if color else 'x',
-                            ms=.01 if color else 4,
-                            mew=.01 if color else 1,
-                            capsize=0 if color else 1)
+    outliers = ax.errorbar(numpy.hstack((phase,1+phase)),
+                           numpy.hstack((mag, mag)),
+                           yerr=numpy.hstack((error, error)),
+                           ls='None', marker='o' if color else 'x',
+                           ms=.01 if color else 4,
+                           mew=.01 if color else 1,
+                           capsize=0 if color else 1)
 
     # Plot the fitted light curve
-    signal, = plt.plot(numpy.hstack((phases,1+phases)),
-                       numpy.hstack((lightcurve, lightcurve)),
-                       linewidth=1)
+    signal, = ax.plot(numpy.hstack((phases,1+phases)),
+                      numpy.hstack((lightcurve, lightcurve)),
+                      linewidth=1)
 
     if legend:
-        plt.legend([signal, inliers, outliers],
-                   ["Light Curve", "Inliers", "Outliers"],
-                   loc='best')
+        ax.legend([signal, inliers, outliers],
+                  ["Light Curve", "Inliers", "Outliers"],
+                  loc='best')
 
-    plt.xlabel('Phase ({0:0.7} day period)'.format(period))
-    plt.ylabel('Magnitude')
+    ax.set_xlabel('Phase ({0:0.7} day period)'.format(period))
+    ax.set_ylabel('Magnitude')
 
-    plt.title(utils.sanitize_latex(name) if sanitize_latex else name)
-    plt.tight_layout(pad=0.1)
+    ax.set_title(utils.sanitize_latex(name) if sanitize_latex else name)
+    fig.tight_layout(pad=0.1)
+
     make_sure_path_exists(output)
-    plt.savefig(path.join(output, name))
-    plt.clf()
+    fig.savefig(path.join(output, name))
+
+    return fig
+
 
 def plot_lightcurve_tikz(name, lightcurve, period, data,
                         output='.', legend=False, sanitize_latex=False,
