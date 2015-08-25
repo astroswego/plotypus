@@ -376,10 +376,13 @@ def process_star(filename, output_plot_lightcurve,
     if result is None:
         return
     if output_plot_lightcurve is not None:
-        plot = plot_lightcurve(star_name,
-            result['lightcurve'], result['period'], result['phased_data'],
-            output=output_plot_lightcurve, engine=plot_engine,
-            **kwargs)
+        # cannot unpack two dicts in Python <3.5, so we must join the two dicts
+        # we wish to unpack.
+        combined_kwargs = dict(kwargs)
+        combined_kwargs.update(result)
+        plot = plot_lightcurve(output=output_plot_lightcurve,
+                               engine=plot_engine,
+                               **combined_kwargs)
         # allow figure to get garbage collected
         if plot_engine == "mpl":
             # Need to use a local import, a top level import had to be avoided,
