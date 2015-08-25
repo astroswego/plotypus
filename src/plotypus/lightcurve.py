@@ -588,9 +588,8 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
         ymin=%s,
         ymax=%s,
         ytick={%s},
-        y dir=reverse,
-        axis x line*=bottom,
-        axis y line*=left
+        ylabel={Magnitude},
+        y dir=reverse
     ]
     \addplot[
         domain=0:2,
