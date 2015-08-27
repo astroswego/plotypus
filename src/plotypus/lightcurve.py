@@ -608,10 +608,10 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
             continue
         elif k % 2:
             tikz += r""" + 
-        sin(2*pi*%s*(x+%s)) * %s""" % (int((k-1)/2+1), shift, A)
+        sin(2*pi*%s*(x+%s)) * %s""" % (int((k-1)/2+1), kwargs['shift'], A)
         else:
             tikz += r""" + 
-        cos(2*pi*%s*(x+%s)) * %s""" % (int(k/2), shift, A)
+        cos(2*pi*%s*(x+%s)) * %s""" % (int(k/2), kwargs['shift'], A)
     
     # Add points
     tikz += r"""
@@ -635,14 +635,14 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
         y error plus index=2,
         y error minus index=3
     ] {"""
-    for row in get_signal(data):
+    for row in get_signal(phased_data):
         tikz += r"""
             %s %s %s %s \\
             %s %s %s %s \\""" % (row[0], row[1], row[2]/2, row[2]/2,
                                1+row[0], row[1], row[2]/2, row[2]/2)
     
     # Add outliers
-    if (any(get_noise(data))):
+    if (any(get_noise(phased_data))):
         tikz += r"""
         };
         \addplot[
