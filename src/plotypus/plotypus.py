@@ -19,7 +19,7 @@ from plotypus.preprocessing import Fourier
 from plotypus.utils import mad, pmap, verbose_print
 from plotypus.resources import matplotlibrc
 
-import pkg_resources  # part of setuptools
+import pkg_resources # part of setuptools
 __version__ = pkg_resources.require("plotypus")[0].version
 
 
@@ -93,6 +93,12 @@ def get_args():
         default=1, metavar='N',
         help='minimum number of observation needed to avoid skipping a star '
              '(default = 1)')
+    general_group.add_argument('--plot-engine', type=str,
+        default='mpl', choices=['mpl', 'tikz'],
+        metavar='ENGINE',
+        help='engine to use for plotting. mpl will output image formats, while '
+             'tikz will output tikz source code for use in LaTeX '
+             '(default = "mpl")')
     general_group.add_argument('--matplotlibrc', type=str,
         default=matplotlibrc,
         metavar='RC',
@@ -189,7 +195,8 @@ def get_args():
         help='range of degrees of fourier fits to use '
              '(default = 2 20)')
     fourier_group.add_argument('-r', '--regressor',
-        choices=['LassoCV', 'LassoLarsCV', 'LassoLarsIC', 'OLS', 'RidgeCV', 'ElasticNetCV'],
+        choices=['LassoCV', 'LassoLarsCV', 'LassoLarsIC', 'OLS', 'RidgeCV',
+                 'ElasticNetCV'],
         default='LassoLarsIC',
         help='type of regressor to use '
              '(default = "Lasso")')
@@ -209,7 +216,8 @@ def get_args():
              '(default = 1000)')
     fourier_group.add_argument('--regularization-cv', type=int,
         default=None, metavar='N',
-        help='number of folds used in regularization regularization_cv validation '
+        help='number of folds used in regularization regularization_cv '
+             'validation '
              '(default = 3)')
 
     ## Outlier Group #########################################################
@@ -227,7 +235,8 @@ def get_args():
 
     # configure Matplotlib only if necessary
     plot_outputs = [args.output_plot_lightcurve]
-    if any(output is not None for output in plot_outputs):
+    if (args.plot_engine == "mpl" and
+            any(output is not None for output in plot_outputs)):
         rcParams = rc_params_from_file(fname=args.matplotlibrc,
                                        fail_on_error=True)
         plotypus.lightcurve.matplotlib.rcParams = rcParams
@@ -337,6 +346,7 @@ def process_star(filename, output_plot_lightcurve,
                  *,
                  extension, star_name, period, shift,
                  parameters, period_label, shift_label,
+                 plot_engine,
                  **kwargs):
     """Processes a star's lightcurve, prints its coefficients, and saves
     its plotted lightcurve to a file. Returns the result of get_lightcurve.
@@ -366,9 +376,20 @@ def process_star(filename, output_plot_lightcurve,
     if result is None:
         return
     if output_plot_lightcurve is not None:
-        plot_lightcurve(star_name, result['lightcurve'], result['period'],
-                        result['phased_data'], output=output_plot_lightcurve,
-                        **kwargs)
+        # cannot unpack two dicts in Python <3.5, so we must join the two dicts
+        # we wish to unpack.
+        combined_kwargs = dict(kwargs)
+        combined_kwargs.update(result)
+        plot = plot_lightcurve(output=output_plot_lightcurve,
+                               engine=plot_engine,
+                               **combined_kwargs)
+        # allow figure to get garbage collected
+        if plot_engine == "mpl":
+            # Need to use a local import, a top level import had to be avoided,
+            # because the backend must be configured *before* importing pyplot.
+            # Fret not, the import is a no-op after the first call
+            from matplotlib.pyplot import close
+            close(plot)
 
     return result
 
@@ -400,7 +421,7 @@ def _print_star(result, max_degree, form, fmt, sep):
 
     max_degree = numpy.trim_zeros(coefs[1::2], 'b').size
     n_params   = numpy.count_nonzero(coefs[1::2])
-    
+
     # print the entry for the star with tabs as separators
     # and itertools.chain to separate the different results into a
     # continuous list which is then unpacked

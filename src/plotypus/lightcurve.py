@@ -28,7 +28,9 @@ __all__ = [
     'get_lightcurve',
     'get_lightcurve_from_file',
     'find_outliers',
-    'plot_lightcurve'
+    'plot_lightcurve',
+    'plot_lightcurve_mpl',
+    'plot_lightcurve_tikz'
 ]
 
 
@@ -408,14 +410,46 @@ def find_outliers(data, predictor, sigma,
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
 
-def plot_lightcurve(name, lightcurve, period, data,
-                    output='.', legend=False, sanitize_latex=False,
-                    color=True, n_phases=100,
-                    err_const=0.005,
-                    **kwargs):
-    """plot_lightcurve(name, lightcurve, period, data, output='.', legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
+def _plot_lightcurve_filename():
+    pass
 
-    Save a plot of the given *lightcurve* to directory *output*.
+
+def plot_lightcurve(*args, engine='mpl', **kwargs):
+    """plot_lightcurve(*args, engine='mpl', **kwargs)
+
+    **Parameters**
+
+    engine : str, optional
+        Engine to use for plotting, choices are "mpl" and "tikz"
+        (default "mpl")
+
+    kwargs :
+        See :func:`plot_lightcurve_mpl` and :func:`plot_lightcurve_tikz`,
+        depending on *engine* specified.
+
+    **Returns**
+
+    plot : object
+        Plot object. Type depends on *engine* used. "mpl" engine returns a
+        `matplotlib.pyplot.Figure` object, and "tikz" engine returns a `str`.
+    """
+    if engine == "mpl":
+        return(plot_lightcurve_mpl(*args, **kwargs))
+    elif engine == "tikz":
+        return(plot_lightcurve_tikz(*args, **kwargs))
+    else:
+        raise KeyError("engine '{}' does not exist".format(engine))
+
+
+def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
+                        output='.', legend=False, sanitize_latex=False,
+                        color=True, n_phases=100,
+                        err_const=0.005,
+                        **kwargs):
+    """plot_lightcurve(name, lightcurve, period, phased_data, output='.', legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
+
+    Save a plot of the given *lightcurve* to directory *output*, using
+    matplotlib and return the resulting plot object.
 
     **Parameters**
 
@@ -425,7 +459,7 @@ def plot_lightcurve(name, lightcurve, period, data,
         Fitted lightcurve.
     period : number
         Period to phase time by.
-    data : array-like, shape = [n_samples, 2] or [n_samples, 3]
+    phased_data : array-like, shape = [n_samples, 2] or [n_samples, 3]
         Photometry array containing columns *time*, *magnitude*, and
         (optional) *error*. *time* should be unphased.
     output : str, optional
@@ -441,52 +475,211 @@ def plot_lightcurve(name, lightcurve, period, data,
 
     **Returns**
 
-    None
+    plot : matplotlib.pyplot.Figure
+        Matplotlib Figure object which contains the plot.
     """
     phases = numpy.linspace(0, 1, n_phases, endpoint=False)
-    ax = plt.gca()
+
+    # initialize Figure and Axes objects
+    fig, ax = plt.subplots()
+
+    # format the x- and y-axis
     ax.invert_yaxis()
-    plt.xlim(0,2)
+    ax.set_xlim(0,2)
 
     # Plot points used
-    phase, mag, *err = get_signal(data).T
+    phase, mag, *err = get_signal(phased_data).T
 
     error = err[0] if err else mag*err_const
 
-    inliers = plt.errorbar(numpy.hstack((phase,1+phase)),
-                           numpy.hstack((mag, mag)),
-                           yerr=numpy.hstack((error, error)),
-                           ls='None',
-                           ms=.01, mew=.01, capsize=0)
+    inliers = ax.errorbar(numpy.hstack((phase,1+phase)),
+                          numpy.hstack((mag, mag)),
+                          yerr=numpy.hstack((error, error)),
+                          ls='None',
+                          ms=.01, mew=.01, capsize=0)
 
     # Plot outliers rejected
-    phase, mag, *err = get_noise(data).T
+    phase, mag, *err = get_noise(phased_data).T
 
     error = err[0] if err else mag*err_const
 
-    outliers = plt.errorbar(numpy.hstack((phase,1+phase)),
-                            numpy.hstack((mag, mag)),
-                            yerr=numpy.hstack((error, error)),
-                            ls='None', marker='o' if color else 'x',
-                            ms=.01 if color else 4,
-                            mew=.01 if color else 1,
-                            capsize=0 if color else 1)
+    outliers = ax.errorbar(numpy.hstack((phase,1+phase)),
+                           numpy.hstack((mag, mag)),
+                           yerr=numpy.hstack((error, error)),
+                           ls='None', marker='o' if color else 'x',
+                           ms=.01 if color else 4,
+                           mew=.01 if color else 1,
+                           capsize=0 if color else 1)
 
     # Plot the fitted light curve
-    signal, = plt.plot(numpy.hstack((phases,1+phases)),
-                       numpy.hstack((lightcurve, lightcurve)),
-                       linewidth=1)
+    signal, = ax.plot(numpy.hstack((phases,1+phases)),
+                      numpy.hstack((lightcurve, lightcurve)),
+                      linewidth=1)
 
     if legend:
-        plt.legend([signal, inliers, outliers],
-                   ["Light Curve", "Inliers", "Outliers"],
-                   loc='best')
+        ax.legend([signal, inliers, outliers],
+                  ["Light Curve", "Inliers", "Outliers"],
+                  loc='best')
 
-    plt.xlabel('Phase ({0:0.7} day period)'.format(period))
-    plt.ylabel('Magnitude')
+    ax.set_xlabel('Phase ({0:0.7} day period)'.format(period))
+    ax.set_ylabel('Magnitude')
 
-    plt.title(utils.sanitize_latex(name) if sanitize_latex else name)
-    plt.tight_layout(pad=0.1)
+    ax.set_title(utils.sanitize_latex(name) if sanitize_latex else name)
+    fig.tight_layout(pad=0.1)
+
     make_sure_path_exists(output)
-    plt.savefig(path.join(output, name))
-    plt.clf()
+    fig.savefig(path.join(output, name))
+
+    return fig
+
+
+def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
+                         output='.', legend=False, sanitize_latex=False,
+                         color=True, n_phases=100,
+                         err_const=0.005,
+                         **kwargs):
+    """plot_lightcurve(name, lightcurve, period, phased_data, output='.', legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
+
+    Save TikZ source code for a plot of the given *lightcurve* to directory
+    *output*, and return the string holding the source code.
+
+    **Parameters**
+
+    name : str
+        Name of the star. Used in filename and plot title.
+    lightcurve : array-like, shape = [n_samples]
+        Fitted lightcurve.
+    period : number
+        Period to phase time by.
+    phased_data : array-like, shape = [n_samples, 2] or [n_samples, 3]
+        Photometry array containing columns *time*, *magnitude*, and
+        (optional) *error*. *time* should be unphased.
+    output : str, optional
+        Directory to save plot to (default '.').
+    legend : boolean, optional
+        Whether or not to display legend on plot (default False).
+    color : boolean, optional
+        Whether or not to display color in plot (default True).
+    n_phases : integer, optional
+        Number of phase points in fit (default 100).
+    err_const : number, optional
+        Constant to use in absence of error (default 0.005).
+
+    **Returns**
+
+    plot : str
+        String containing the TikZ source code for the plot.
+    """
+    x_min = round(min(min(lightcurve), min(phased_data[:,1]))-0.05, 2) 
+    x_max = round(max(max(lightcurve), max(phased_data[:,1]))+0.05, 2)
+    yticks = ", ".join("{:.2f}".format(x) 
+                       for x in numpy.linspace(x_min, x_max, 4))
+    tikz = r"""\begin{tikzpicture}
+    \begin{axis}[
+        trig format plots=rad,
+        xlabel near ticks,
+        ylabel near ticks,
+        width=0.95\linewidth,
+        height=0.25\textheight,
+        xmin=0,
+        xmax=2,
+        xtick={0, 0.5, 1, 1.5, 2},
+        xlabel={Phase (%s day period)},
+        ymin=%s,
+        ymax=%s,
+        ytick={%s},
+        ylabel={Magnitude},
+        y dir=reverse
+    ]
+    \addplot[
+        domain=0:2,
+        samples=200,
+        color=black,
+        solid,
+        line width=0.75pt
+    ] {
+""" % (period, x_min, x_max, yticks)
+    
+    # Add light curve
+    for (k, A) in enumerate(coefficients):
+        if k == 0:
+            tikz += r"""        %s"""%A
+        elif (A == 0): 
+            continue
+        elif k % 2:
+            tikz += r""" + 
+        sin(2*pi*%s*(x+%s)) * %s""" % (int((k-1)/2+1), shift, A)
+        else:
+            tikz += r""" + 
+        cos(2*pi*%s*(x+%s)) * %s""" % (int(k/2), shift, A)
+    
+    # Add points
+    tikz += r"""
+    };
+    \addplot[
+        color=black!50!red,
+        mark size=0pt,
+        only marks
+    ]
+    plot[
+        error bars/.cd,
+        y dir = both,
+        y explicit,
+        error mark options={
+            mark size=0pt,
+            line width=1pt
+        }
+    ]
+    table[
+        row sep=crcr,
+        y error plus index=2,
+        y error minus index=3
+    ] {"""
+    for row in get_signal(data):
+        tikz += r"""
+            %s %s %s %s \\
+            %s %s %s %s \\""" % (row[0], row[1], row[2]/2, row[2]/2,
+                               1+row[0], row[1], row[2]/2, row[2]/2)
+    
+    # Add outliers
+    if (any(get_noise(data))):
+        tikz += r"""
+        };
+        \addplot[
+            color=black,
+            mark size=0pt,
+            only marks
+        ]
+        plot[
+            error bars/.cd,
+            y dir = both,
+            y explicit,
+            error mark options={
+                mark size=0pt,
+                line width=1pt
+            }
+        ]
+        table[
+            row sep=crcr,
+            y error plus index=2,
+            y error minus index=3
+        ] {"""
+        for row in get_noise(data):
+            tikz += r"""
+                %s %s %s %s \\
+                %s %s %s %s \\""" % (row[0], row[1], row[2]/2, row[2]/2,
+                                   1+row[0], row[1], row[2]/2, row[2]/2)
+    
+    # Done!
+    tikz += r"""
+        };
+    \end{axis}
+\end{tikzpicture}"""
+
+    # save tikz to a file
+    make_sure_path_exists(output)
+    filename = path.join(output, name)
+    with open(filename, "w") as f:
+        f.write(tikz)
+
+    return tikz
