@@ -678,7 +678,7 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
 
     # save tikz to a file
     make_sure_path_exists(output)
-    filename = path.join(output, name)
+    filename = path.join(output, name+".tikz")
     with open(filename, "w") as f:
         f.write(tikz)
 
