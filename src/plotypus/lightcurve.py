@@ -642,7 +642,7 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
                                1+row[0], row[1], row[2]/2, row[2]/2)
     
     # Add outliers
-    if (any(get_noise(phased_data))):
+    if (len(get_noise(phased_data))>0):
         tikz += r"""
         };
         \addplot[
