@@ -664,7 +664,7 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
             y error plus index=2,
             y error minus index=3
         ] {"""
-        for row in get_noise(data):
+        for row in get_noise(phased_data):
             tikz += r"""
                 %s %s %s %s \\
                 %s %s %s %s \\""" % (row[0], row[1], row[2]/2, row[2]/2,
