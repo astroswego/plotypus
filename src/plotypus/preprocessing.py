@@ -187,7 +187,7 @@ class Fourier():
         .. math::
 
             \frac{1}{\sqrt{2 (\operatorname{card}(\mathbf{X}) - 1)}}
-        
+
 
         **Parameters**
 
@@ -196,7 +196,7 @@ class Fourier():
 
         **Returns**
 
-        
+
         """
         return (2 * (len(X) - 1))**(-1/2)
 
@@ -236,7 +236,7 @@ class Fourier():
         Parameters
         ----------
         phases : array-like, shape = [n_samples]
-            
+
         """
         n_samples = phases.size
         # initialize coefficient matrix

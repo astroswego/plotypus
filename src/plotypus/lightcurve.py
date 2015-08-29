@@ -570,9 +570,9 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
     plot : str
         String containing the TikZ source code for the plot.
     """
-    x_min = round(min(min(lightcurve), min(phased_data[:,1]))-0.05, 2) 
+    x_min = round(min(min(lightcurve), min(phased_data[:,1]))-0.05, 2)
     x_max = round(max(max(lightcurve), max(phased_data[:,1]))+0.05, 2)
-    yticks = ", ".join("{:.2f}".format(x) 
+    yticks = ", ".join("{:.2f}".format(x)
                        for x in numpy.linspace(x_min, x_max, 4))
     tikz = r"""\begin{tikzpicture}
     \begin{axis}[
@@ -599,20 +599,20 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
         line width=0.75pt
     ] {
 """ % (period, x_min, x_max, yticks)
-    
+
     # Add light curve
     for (k, A) in enumerate(coefficients):
         if k == 0:
             tikz += r"""        %s"""%A
-        elif (A == 0): 
+        elif (A == 0):
             continue
         elif k % 2:
-            tikz += r""" + 
+            tikz += r""" +
         sin(2*pi*%s*(x+%s)) * %s""" % (int((k-1)/2+1), kwargs['shift'], A)
         else:
-            tikz += r""" + 
+            tikz += r""" +
         cos(2*pi*%s*(x+%s)) * %s""" % (int(k/2), kwargs['shift'], A)
-    
+
     # Add points
     tikz += r"""
     };
@@ -640,7 +640,7 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
             %s %s %s %s \\
             %s %s %s %s \\""" % (row[0], row[1], row[2]/2, row[2]/2,
                                1+row[0], row[1], row[2]/2, row[2]/2)
-    
+
     # Add outliers
     if (len(get_noise(phased_data))>0):
         tikz += r"""
@@ -669,7 +669,7 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
                 %s %s %s %s \\
                 %s %s %s %s \\""" % (row[0], row[1], row[2]/2, row[2]/2,
                                    1+row[0], row[1], row[2]/2, row[2]/2)
-    
+
     # Done!
     tikz += r"""
         };
@@ -678,7 +678,7 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
 
     # save tikz to a file
     make_sure_path_exists(output)
-    filename = path.join(output, name+".tikz")
+    filename = path.join(output, name + ".tikz")
     with open(filename, "w") as f:
         f.write(tikz)
 
