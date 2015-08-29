@@ -330,9 +330,7 @@ def main():
                 sep.join(map(('A_{0}' + sep + 'Phi_{0}').format,
                              range(1, max_degree+1))),
                 sep.join(map(('R_{0}1' + sep + 'phi_{0}1').format,
-                             range(2, max_degree+1))),
-                             sep.join(map('Phase{}'.format,
-                                          range(args.phase_points)))],
+                             range(2, max_degree+1)))],
               sep=sep)
 
     printer = lambda result: _print_star(result, max_degree, args.series_form,
@@ -434,8 +432,7 @@ def _print_star(result, max_degree, form, fmt, sep):
                    # coefficients and fourier ratios with trailing zeros
                    # formatted defined by the user-provided fmt string
                    format_all(_coefs),         coef_zeros,
-                   format_all(fourier_ratios), ratio_zeros,
-                   format_all(result['lightcurve'])]),
+                   format_all(fourier_ratios), ratio_zeros]),
         sep=sep)
 
 
