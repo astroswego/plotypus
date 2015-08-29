@@ -280,7 +280,7 @@ def get_lightcurve(data, copy=False, name=None,
     # Grab the coefficients from the model
     coefficients = predictor.named_steps['Regressor'].coef_ \
         if isinstance(predictor, Pipeline) \
-        else predictor.best_estimator_.named_steps['Regressor'].coef_,
+        else predictor.best_estimator_.named_steps['Regressor'].coef_
 
     # compute R^2 and MSE if they haven't already been
     # (one or zero have been computed, depending on the predictor)
@@ -298,7 +298,7 @@ def get_lightcurve(data, copy=False, name=None,
     return {'name':         name,
             'period':       _period,
             'lightcurve':   lightcurve,
-            'coefficients': coefficients[0],
+            'coefficients': coefficients,
             'dA_0':         sem(lightcurve),
             'phased_data':  data,
             'model':        predictor,
