@@ -410,10 +410,6 @@ def find_outliers(data, predictor, sigma,
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
 
-def _plot_lightcurve_filename():
-    pass
-
-
 def plot_lightcurve(*args, engine='mpl', **kwargs):
     """plot_lightcurve(*args, engine='mpl', **kwargs)
 
