@@ -12,11 +12,11 @@ from functools import partial
 from itertools import chain, repeat
 import plotypus.lightcurve
 from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
-                                 plot_lightcurve)
+                                 savetxt_lightcurve, plot_lightcurve)
 from plotypus.periodogram import Lomb_Scargle, conditional_entropy
 import plotypus
 from plotypus.preprocessing import Fourier
-from plotypus.utils import mad, pmap, verbose_print
+from plotypus.utils import mad, make_sure_path_exists, pmap, verbose_print
 from plotypus.resources import matplotlibrc
 
 import pkg_resources # part of setuptools
@@ -113,6 +113,9 @@ def get_args():
 
     ## Light Curve Group #####################################################
 
+    lightcurve_group.add_argument('--output-table-lightcurve', type=str,
+        default=None,
+        help='(optional) location to save fitted light curve table')
     lightcurve_group.add_argument('--output-plot-lightcurve', type=str,
         default=None,
         help='(optional) location to save light curve plots')
@@ -340,11 +343,12 @@ def main():
          processes=args.star_processes, **picklable_args)
 
 
-def process_star(filename, output_plot_lightcurve,
+def process_star(filename,
                  *,
                  extension, star_name, period, shift,
                  parameters, period_label, shift_label,
                  plot_engine,
+                 output_table_lightcurve, output_plot_lightcurve,
                  **kwargs):
     """Processes a star's lightcurve, prints its coefficients, and saves
     its plotted lightcurve to a file. Returns the result of get_lightcurve.
@@ -371,8 +375,19 @@ def process_star(filename, output_plot_lightcurve,
     result = get_lightcurve_from_file(filename, name=star_name,
                                       period=period, shift=shift,
                                       **kwargs)
+    # no results for this star, skip
     if result is None:
         return
+
+    # output the phased lightcurve as a table
+    if output_table_lightcurve is not None:
+        make_sure_path_exists(output_table_lightcurve)
+        filename = path.join(output_table_lightcurve,
+                             result["name"]+extension)
+        savetxt_lightcurve(filename, result["lightcurve"],
+                           fmt=kwargs["format"])
+
+    # output the lightcurve as a plot
     if output_plot_lightcurve is not None:
         # cannot unpack two dicts in Python <3.5, so we must join the two dicts
         # we wish to unpack.

@@ -410,6 +410,34 @@ def find_outliers(data, predictor, sigma,
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
 
+def savetxt_lightcurve(filename, phased_magnitudes, fmt):
+    """savetxt_lightcurve(filename, phased_magnitudes, fmt)
+
+    Save a phased lightcurve to a text file.
+
+    **Parameters**
+
+    filename : str
+        File to save lightcurve table to. Directory must exist.
+
+    phased_magnitudes: array-like, shape = [n_samples]
+        Array of phased magnitudes.
+
+    fmt : str
+        Number format string, as understood by :func:`numpy.savetxt`.
+
+    **Returns**
+
+        None
+    """
+    phases = numpy.linspace(0.0, 1.0, len(phased_magnitudes),
+                            endpoint=False)
+
+    data = numpy.column_stack((phases, phased_magnitudes))
+
+    numpy.savetxt(filename, data, fmt=fmt)
+
+
 def plot_lightcurve(*args, engine='mpl', **kwargs):
     """plot_lightcurve(*args, engine='mpl', **kwargs)
 
