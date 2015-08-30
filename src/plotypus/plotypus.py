@@ -12,7 +12,8 @@ from functools import partial
 from itertools import chain, repeat
 import plotypus.lightcurve
 from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
-                                 savetxt_lightcurve, plot_lightcurve)
+                                 savetxt_lightcurve, plot_lightcurve,
+                                 plot_residual)
 from plotypus.periodogram import Lomb_Scargle, conditional_entropy
 import plotypus
 from plotypus.preprocessing import Fourier
@@ -115,10 +116,16 @@ def get_args():
 
     lightcurve_group.add_argument('--output-table-lightcurve', type=str,
         default=None,
-        help='(optional) location to save fitted light curve table')
+        help='(optional) location to save fitted light curve tables')
     lightcurve_group.add_argument('--output-plot-lightcurve', type=str,
         default=None,
         help='(optional) location to save light curve plots')
+    lightcurve_group.add_argument('--output-table-residual', type=str,
+        default=None,
+        help='(optional) location to save the fit residuals tables')
+    lightcurve_group.add_argument('--output-plot-residual', type=str,
+        default=None,
+        help='(optional) location to save the fit residuals plots')
     lightcurve_group.add_argument('--phase-points', type=int,
         default=100, metavar='N',
         help='number of phase points to output '
@@ -349,6 +356,7 @@ def process_star(filename,
                  parameters, period_label, shift_label,
                  plot_engine,
                  output_table_lightcurve, output_plot_lightcurve,
+                 output_table_residual,   output_plot_residual,
                  **kwargs):
     """Processes a star's lightcurve, prints its coefficients, and saves
     its plotted lightcurve to a file. Returns the result of get_lightcurve.
@@ -381,11 +389,15 @@ def process_star(filename,
 
     # output the phased lightcurve as a table
     if output_table_lightcurve is not None:
+        # create the output path if non-existant
         make_sure_path_exists(output_table_lightcurve)
+        # construct the filename for the output table
         filename = path.join(output_table_lightcurve,
-                             result["name"]+extension)
+                             result["name"] + extension)
+        # save the table to a file
         savetxt_lightcurve(filename, result["lightcurve"],
-                           fmt=kwargs["format"])
+                           fmt=kwargs["format"],
+                           delimiter=kwargs["output_sep"])
 
     # output the lightcurve as a plot
     if output_plot_lightcurve is not None:
@@ -403,6 +415,32 @@ def process_star(filename,
             # Fret not, the import is a no-op after the first call
             from matplotlib.pyplot import close
             close(plot)
+
+    # output the residuals as a table
+    if output_table_residual is not None:
+        # create the output path if non-existant
+        make_sure_path_exists(output_table_residual)
+        # construct the filename for the output table
+        filename = path.join(output_table_residual,
+                             result["name"] + extension)
+        # save the table to a file
+        numpy.savetxt(filename, result["residuals"],
+                      fmt=kwargs["format"],
+                      delimiter=kwargs["output_sep"])
+
+    # output the residuals as a plot
+    if output_plot_residual is not None:
+        plot = plot_residual(result["name"], result["residuals"],
+                             output=output_plot_residual,
+                             sanitize_latex=kwargs["sanitize_latex"])
+        # allow figure to get garbage collected
+        if plot_engine == "mpl":
+            # Need to use a local import, a top level import had to be avoided,
+            # because the backend must be configured *before* importing pyplot.
+            # Fret not, the import is a no-op after the first call
+            from matplotlib.pyplot import close
+            close(plot)
+
 
     return result
 

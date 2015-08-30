@@ -28,9 +28,13 @@ __all__ = [
     'get_lightcurve',
     'get_lightcurve_from_file',
     'find_outliers',
+    'savetxt_lightcurve',
     'plot_lightcurve',
     'plot_lightcurve_mpl',
-    'plot_lightcurve_tikz'
+    'plot_lightcurve_tikz',
+    'plot_residual',
+    'plot_residual_mpl',
+    'plot_residual_tikz'
 ]
 
 
@@ -267,15 +271,19 @@ def get_lightcurve(data, copy=False, name=None,
                               verbosity=verbosity)
             data.mask = numpy.ma.mask_or(data.mask, outliers)
 
-    # Build light curve and optionally shift to max light
+    # Build predicted light curve and residuals
     lightcurve = predictor.predict([[i] for i in phases])
+    residuals = prediction_residuals(phase, mag, predictor)
+    # determine phase shift for max light, if a specific shift was not provided
     if shift is None:
         arg_max_light = lightcurve.argmin()
         lightcurve = numpy.concatenate((lightcurve[arg_max_light:],
                                         lightcurve[:arg_max_light]))
         shift = arg_max_light/len(phases)
-
+    # shift observed light curve to max light
     data.T[0] = rephase(data.data, _period, shift).T[0]
+    # use rephased phase points from *data* in residuals
+    residuals = numpy.column_stack((data.T[0], residuals))
 
     # Grab the coefficients from the model
     coefficients = predictor.named_steps['Regressor'].coef_ \
@@ -301,6 +309,7 @@ def get_lightcurve(data, copy=False, name=None,
             'coefficients': coefficients,
             'dA_0':         sem(lightcurve),
             'phased_data':  data,
+            'residuals':    residuals,
             'model':        predictor,
             'R2':           get_score('r2'),
             'MSE':          abs(get_score('mean_squared_error')),
@@ -378,6 +387,58 @@ def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
 #     return single_periods(data, *args, **kwargs)
 
 
+def prediction_residuals(phase, mag, predictor):
+    """prediction_residuals(phase, mag, predictor)
+
+    Returns the residuals between the observed magnitudes, *mag*, and the
+    magnitudes predicted by the *predictor* at the given *phase* points.
+
+    **Parameters**
+
+    phase : array-like, shape = [n_samples]
+        Array of phases of observation.
+    mag : array-like, shape = [n_samples]
+        Array of observed magnitudes at the corresponding phases.
+    predictor : object that has "fit" and "predict" methods, optional
+        Object which predicts *mag* at the given *phase* points.
+
+    **Returns**
+
+    residuals : array-like, shape = [n_samples]
+        Array of residuals between observed and fitted magnitudes.
+    """
+    # If one of the inputs is a masked array, the masked elements will be
+    # skipped in the computation. This is undesirable, as we still want to know
+    # the residuals for the outliers. As a workaround, we take out the masked
+    # arrays' *data* and *mask* attributes, and perform the computation on the
+    # data, reapplying the mask in the end. If the arrays are not masked, then
+    # we treat them as if they are masked arrays with `mask=False`.
+
+    # get data/mask information from *phase* array
+    if numpy.ma.isMaskedArray(phase):
+        phase_data = phase.data
+        phase_mask = phase.mask
+    else:
+        phase_data = phase
+        phase_mask = False
+    # get data/mask information from *mag* array
+    if numpy.ma.isMaskedArray(mag):
+        mag_data = mag.data
+        mag_mask = mag.mask
+    else:
+        mag_data = mag
+        mag_mask = False
+    # if an element is masked in either of the inputs, treat it as masked
+    mask = numpy.logical_or(phase_mask, mag_mask)
+
+    # compute the residuals, using the unmasked data
+    residuals = predictor.predict(colvec(phase_data)) - mag_data
+    # apply the mask to the residuals
+    residuals = numpy.ma.array(residuals, mask=mask)
+
+    return residuals
+
+
 def find_outliers(data, predictor, sigma,
                   method=mad):
     """find_outliers(data, predictor, sigma, method=mad)
@@ -387,8 +448,8 @@ def find_outliers(data, predictor, sigma,
     **Parameters**
 
     data : array-like, shape = [n_samples, 2] or [n_samples, 3]
-        Photometry array containing columns *phase*, *magnitude*, and
-        (optional) *error*.
+        Photometry array containing columns *phase*, *magnitude*, and (optional)
+        *error*.
     predictor : object that has "fit" and "predict" methods, optional
         Object which fits the light curve obtained from *data* after rephasing.
     sigma : number
@@ -403,14 +464,15 @@ def find_outliers(data, predictor, sigma,
         Boolean array indicating the outliers in the given *data* array.
     """
     phase, mag, *err = data.T
-    residuals = numpy.absolute(predictor.predict(colvec(phase)) - mag)
-    outliers = numpy.logical_and((residuals > err[0]) if err else True,
-                                 residuals > sigma * method(residuals))
+    abs_residuals = numpy.absolute(prediction_residuals(phase, mag, predictor))
+    outliers = numpy.logical_and((abs_residuals > err[0]) if err else True,
+                                 abs_residuals > sigma * method(abs_residuals))
 
     return numpy.tile(numpy.vstack(outliers), data.shape[1])
 
 
-def savetxt_lightcurve(filename, phased_magnitudes, fmt):
+def savetxt_lightcurve(filename, phased_magnitudes,
+                       fmt='%.18e', delimiter=' '):
     """savetxt_lightcurve(filename, phased_magnitudes, fmt)
 
     Save a phased lightcurve to a text file.
@@ -435,7 +497,8 @@ def savetxt_lightcurve(filename, phased_magnitudes, fmt):
 
     data = numpy.column_stack((phases, phased_magnitudes))
 
-    numpy.savetxt(filename, data, fmt=fmt)
+    numpy.savetxt(filename, data,
+                  fmt=fmt, delimiter=delimiter)
 
 
 def plot_lightcurve(*args, engine='mpl', **kwargs):
@@ -707,3 +770,86 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
         f.write(tikz)
 
     return tikz
+
+
+def plot_residual(*args, engine='mpl', **kwargs):
+    """plot_residual(*args, engine='mpl', **kwargs)
+
+    **Parameters**
+
+    engine : str, optional
+        Engine to use for plotting, choices are "mpl" and "tikz"
+        (default "mpl")
+
+    kwargs :
+        See :func:`plot_residuals_mpl` and :func:`plot_residuals_tikz`,
+        depending on *engine* specified.
+
+    **Returns**
+
+    plot : object
+        Plot object. Type depends on *engine* used. "mpl" engine returns a
+        `matplotlib.pyplot.Figure` object, and "tikz" engine returns a `str`.
+    """
+    if engine == "mpl":
+        return(plot_residual_mpl(*args, **kwargs))
+    elif engine == "tikz":
+        return(plot_residual_tikz(*args, **kwargs))
+    else:
+        raise KeyError("engine '{}' does not exist".format(engine))
+
+
+def plot_residual_mpl(name, residuals,
+                      output='.', sanitize_latex=False,
+                      color=True,
+                      **kwargs):
+    """plot_residual_mpl(name, residuals, period, output='.', sanitize_latex=False, color=True, **kwargs)
+
+    Save a plot of the given *residuals* to directory *output*, using
+    matplotlib and return the resulting plot object.
+
+    **Parameters**
+
+    name : str
+        Name of the star. Used in filename and plot title.
+    residuals : array-like, shape = [n_samples]
+        Residuals between fitted lightcurve and observations.
+    output : str, optional
+        Directory to save plot to (default '.').
+    color : boolean, optional
+        Whether or not to display color in plot (default True).
+
+    **Returns**
+
+    plot : matplotlib.pyplot.Figure
+        Matplotlib Figure object which contains the plot.
+    """
+    return plt.figure()
+
+
+def plot_residual_tikz(name, residuals,
+                       output='.', sanitize_latex=False,
+                       color=True,
+                       **kwargs):
+    """plot_residual_tikz(name, residuals, period, output='.', sanitize_latex=False, color=True, **kwargs)
+
+    Save TikZ source code for a plot of the given *residuals* to directory
+    *output*, and return the string holding the source code.
+
+    **Parameters**
+
+    name : str
+        Name of the star. Used in filename and plot title.
+    residuals : array-like, shape = [n_samples]
+        Residuals between fitted lightcurve and observations.
+    output : str, optional
+        Directory to save plot to (default '.').
+    color : boolean, optional
+        Whether or not to display color in plot (default True).
+
+    **Returns**
+
+    plot : matplotlib.pyplot.Figure
+        Matplotlib Figure object which contains the plot.
+    """
+    return ""
