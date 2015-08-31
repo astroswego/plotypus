@@ -449,8 +449,12 @@ def _print_star(result, max_degree, form, fmt, sep):
     if result is None:
         return
 
+    # function which formats one number string according to fmt
+    format_one = lambda x: fmt % x
     # function which formats every number in a sequence according to fmt
-    format_all = partial(map, lambda x: fmt % x)
+    format_all = partial(map, format_one)
+    # function which formats result[key] for the list of keys provided
+    format_keys = lambda *keys: format_all(result[key] for key in keys)
 
     # count inliers and outliers
     points   = result['phased_data'][:,0].size
@@ -477,16 +481,17 @@ def _print_star(result, max_degree, form, fmt, sep):
     # and itertools.chain to separate the different results into a
     # continuous list which is then unpacked
     print(*chain(*[[result['name']],
+                   format_keys('period', 'shift', 'coverage'),
                    map(str,
-                       [result['period'], result['shift'], result['coverage'],
-                        inliers, outliers,
-                        result['R2'],     result['MSE'],
-                        max_degree,       n_params]),
+                       [inliers, outliers]),
+                   format_keys('R2', 'MSE'),
+                   map(str,
+                       [max_degree, n_params]),
                    # coefficients and fourier ratios with trailing zeros
                    # formatted defined by the user-provided fmt string
                    format_all(_coefs),         coef_zeros,
                    format_all(fourier_ratios), ratio_zeros]),
-        sep=sep)
+          sep=sep)
 
 
 def _get_files(input):
