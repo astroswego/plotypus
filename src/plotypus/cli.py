@@ -343,9 +343,10 @@ def main():
                              range(2, max_degree+1)))],
               sep=sep)
 
-    printer = lambda result: _print_star(result, max_degree, args.series_form,
-                                         args.format, sep) \
-                             if result is not None else None
+    def printer(result):
+        if result is not None:
+            _print_star(result, max_degree, args.series_form,
+                        args.format, sep)
     pmap(process_star, filepaths, callback=printer,
          processes=args.star_processes, **picklable_args)
 
@@ -449,12 +450,17 @@ def _print_star(result, max_degree, form, fmt, sep):
     if result is None:
         return
 
-    # function which formats one number string according to fmt
-    format_one = lambda x: fmt % x
-    # function which formats every number in a sequence according to fmt
-    format_all = partial(map, format_one)
-    # function which formats result[key] for the list of keys provided
-    format_keys = lambda *keys: format_all(result[key] for key in keys)
+    def format_one(x):
+        """format one number string according to fmt"""
+        return fmt % x
+
+    def format_all(x):
+        """format every number in a sequence according to fmt"""
+        return map(format_one, x)
+
+    def format_keys(*keys):
+        """format result[key] for the list of keys provided"""
+        return format_all(result[key] for key in keys)
 
     # count inliers and outliers
     points   = result['phased_data'][:,0].size
