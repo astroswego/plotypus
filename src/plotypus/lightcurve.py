@@ -296,12 +296,13 @@ def get_lightcurve(data, copy=False, name=None,
         if hasattr(predictor, 'best_estimator_') \
         else predictor
 
-    get_score = lambda scoring: predictor.best_score_ \
-        if hasattr(predictor, 'best_score_') \
-        and predictor.scoring == scoring \
-        else cross_val_score(estimator, colvec(phase), mag,
-                             cv=scoring_cv, scoring=scoring,
-                             n_jobs=scoring_processes).mean()
+    def get_score(scoring):
+        if hasattr(predictor, 'best_score_') and predictor.scoring == scoring:
+            return predictor.best_score_
+        else:
+            return cross_val_score(estimator, colvec(phase), mag,
+                                   cv=scoring_cv, scoring=scoring,
+                                   n_jobs=scoring_processes).mean()
 
     return {'name':         name,
             'period':       _period,
