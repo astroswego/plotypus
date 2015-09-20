@@ -1,5 +1,5 @@
 from os import makedirs
-from os.path import join, isdir
+from os.path import basename, join, isdir
 from sys import stderr
 from multiprocessing import Pool
 from numpy import absolute, concatenate, median, resize
@@ -8,6 +8,7 @@ __all__ = [
     'verbose_print',
     'pmap',
     'make_sure_path_exists',
+    'valid_basename',
     'get_signal',
     'get_noise',
     'colvec',
@@ -17,7 +18,8 @@ __all__ = [
 
 
 def verbose_print(message, *, operation, verbosity):
-    """
+    """verbose_print(message, *, operation, verbosity)
+
     Prints *message* to stderr only if the given *operation* is in the list
     *verbosity*. If "all" is in *verbosity*, all operations are printed.
 
@@ -87,7 +89,8 @@ def pmap(func, args, processes=None, callback=lambda *_, **__: None, **kwargs):
 
 
 def make_sure_path_exists(path):
-    """
+    """make_sure_path_exists(path)
+
     Creates the supplied *path* if it does not exist.
     Raises *OSError* if the *path* cannot be created.
 
@@ -107,8 +110,26 @@ def make_sure_path_exists(path):
             raise
 
 
-def get_signal(data):
+def valid_basename(s):
+    """valid_basename(s)
+
+    Predicate function to check if the string *s* is a valid basename, meaning
+    it is both a valid filename, and does not contain a directory.
+
+    **Parameters**
+
+    s : str
+
+    **Returns**
+
+    is_valid : bool
     """
+    return s == basename(s)
+
+
+def get_signal(data):
+    """get_signal(data)
+
     Returns all of the values in *data* that are not outliers.
 
     **Parameters**
@@ -124,7 +145,8 @@ def get_signal(data):
 
 
 def get_noise(data):
-    """
+    """get_noise(data)
+
     Returns all identified outliers in *data*.
 
     **Parameters**
@@ -140,7 +162,8 @@ def get_noise(data):
 
 
 def colvec(X):
-    """
+    """colvec(X)
+
     Converts a row-vector *X* into a column-vector.
 
     **Parameters**
@@ -155,7 +178,8 @@ def colvec(X):
 
 
 def rowvec(X):
-    """
+    """rowvec(X)
+
     Converts a column-vector *X* into a row-vector.
 
     **Parameters**
@@ -170,7 +194,8 @@ def rowvec(X):
 
 
 def mad(data, axis=None):
-    """
+    """mad(data, axis=None)
+
     Computes the median absolute deviation of *data* along a given *axis*.
     See `link <https://en.wikipedia.org/wiki/Median_absolute_deviation>`_ for
     details.
@@ -187,7 +212,8 @@ def mad(data, axis=None):
 
 
 def autocorrelation(X, lag=1):
-    """
+    """autocorrelation(X, lag=1)
+
     Computes the autocorrelation of *X* with the given *lag*.
     Autocorrelation is simply
     autocovariance(X) / covariance(X-mean, X-mean),
@@ -226,7 +252,8 @@ _latex_replacements = [
 ]
 
 def sanitize_latex(string):
-    """
+    """sanitize_latex(string)
+
     Sanitize a string for input to LaTeX.
 
     Replacements taken from `Stack Overflow
