@@ -145,16 +145,20 @@ def get_args():
 
     lightcurve_group.add_argument('--output-table-lightcurve', type=str,
         default=None,
-        help='(optional) location to save fitted light curve tables')
+        help='(optional) location to save fitted light curve tables, '
+             'or prefix to filename if any of `--output-*-all` options used.')
     lightcurve_group.add_argument('--output-plot-lightcurve', type=str,
         default=None,
-        help='(optional) location to save light curve plots')
+        help='(optional) location to save light curve plots, '
+             'or prefix to filename if any of `--output-*-all` options used.')
     lightcurve_group.add_argument('--output-table-residual', type=str,
         default=None,
-        help='(optional) location to save the fit residuals tables')
+        help='(optional) location to save the fit residuals tables, '
+             'or prefix to filename if any of `--output-*-all` options used.')
     lightcurve_group.add_argument('--output-plot-residual', type=str,
         default=None,
-        help='(optional) location to save the fit residuals plots')
+        help='(optional) location to save the fit residuals plots, '
+             'or prefix to filename if any of `--output-*-all` options used.')
     lightcurve_group.add_argument('--phase-points', type=int,
         default=100, metavar='N',
         help='number of phase points to output '
