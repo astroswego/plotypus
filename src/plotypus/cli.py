@@ -25,6 +25,14 @@ import pkg_resources # part of setuptools
 __version__ = pkg_resources.require("plotypus")[0].version
 
 
+# Dict mapping higher level output types (table, plot) to the specific
+# quantaties output (lightcurve, residual, etc). Any new output types need to
+# be added here.
+outputs = {
+    "table": ["lightcurve", "residual"],
+    "plot":  ["lightcurve", "residual"]
+}
+
 def get_args():
     parser = ArgumentParser()
     general_group    = parser.add_argument_group('General')
@@ -46,14 +54,25 @@ def get_args():
         help='location of stellar observations '
              '(default = stdin)')
     general_group.add_argument('--output-all', type=str,
-        default=None,
-        help='')
+        default=None, metavar="DIR",
+        help='(optional) location to output all file types (plots and tables '
+             'alike), creating a sub-directory for each star. individual '
+             'filenames have defaults which can be overridden by the options '
+             'of the same name. '
+             'cannot be used in conjunction with --output-{table,plot}-all '
+             'option')
     general_group.add_argument('--output-table-all', type=str,
-        default=None,
-        help='')
+        default=None, metavar="DIR",
+        help='(optional) location to output all table file types, creating a '
+             'sub-directory for each star. individual filenames have defaults '
+             'which can be overridden by the options of the same name. '
+             'cannot be used in conjunction with --output-all option')
     general_group.add_argument('--output-plot-all', type=str,
-        default=None,
-        help='')
+        default=None, metavar="DIR",
+        help='(optional) location to output all plot file types, creating a '
+             'sub-directory for each star. individual filenames have defaults '
+             'which can be overridden by the options of the same name. '
+             'cannot be used in conjunction with --output-all option')
     general_group.add_argument('-n', '--star-name', type=str,
         default=None,
         help='name of star '
@@ -321,7 +340,7 @@ def main():
     args_dict = vars(args)
 
     min_degree, max_degree = args.fourier_degree
-    filenames = list(map(lambda x: x.strip(), _get_files(args.input)))
+    filenames = list(map(lambda x: x.strip(), get_files(args.input)))
     filepaths = map(lambda filename:
                     filename if path.isfile(filename)
                              else path.join(args.input, filename),
@@ -357,8 +376,8 @@ def main():
 
     def printer(result):
         if result is not None:
-            _print_star(result, max_degree, args.series_form,
-                        args.format, sep)
+            print_star(result, max_degree, args.series_form,
+                       args.format, sep)
     pmap(process_star, filepaths, callback=printer,
          processes=args.star_processes, **picklable_args)
 
@@ -372,6 +391,7 @@ def fname_fn_bulk(directory, prefix):
         full_directory = path.join(directory, name)
         make_sure_path_exists(full_directory)
         return path.join(full_directory, prefix+ext)
+
     return fn
 
 
@@ -382,69 +402,91 @@ def fname_fn_individual(directory):
     """
     def fn(name, ext):
         return path.join(directory, name+ext)
+
     return fn
 
 
 def output_attr_name_from_parent_child(parent, child):
     """output_attr_name_from_parent_child(parent, child)
-    Returns the attribute name of an output type. These attributes have names
-    of the form output-<parent>-<child>.
 
-    Examples include "output-plot-lightcurve" and "output-table-residuals".
+    Returns the attribute name of an output type. These attributes have names
+    of the form output_<parent>_<child>.
+
+    Examples include "output_plot_lightcurve" and "output_table_residuals".
     """
     return "_".join(["output", parent, child])
 
 
-outputs = {
-    "table": ["lightcurve", "residual"],
-    "plot":  ["lightcurve", "residual"]
-}
-
-
 def output_setup_bulk(args, directory, parent, child):
     """output_setup_bulk(args, directory, parent, child)
+
     Sets the output filename function for the given parent-child output type,
     assuming this is a bulk output.
     """
+    # string representing the name of the output type attribute
     attr_name = output_attr_name_from_parent_child(parent, child)
 
+    # the attribute should either be the string representation of the filename
+    # prefix, or if one wasn't given, default to the name of the output type
     prefix = getattr(args, attr_name, None)
     if prefix is None:
         prefix = child
-    assert valid_basename(prefix), prefix + " is not a valid filename prefix"
 
+    # exit in error if prefix contains a directory or is the empty string
+    if not valid_basename(prefix) or prefix == "":
+        print(prefix + " is not a valid filename prefix",
+              file=stderr)
+        exit(1)
+
+    # replace the output type attribute with a function taking as input a star's
+    # name and file extension, and returning the desired filename string
     setattr(args, attr_name, fname_fn_bulk(directory, prefix))
 
 
 def output_setup_individual(args, parent, child):
     """output_setup_individual(args, parent, child)
+
     Sets the output filename function for the given parent-child output type,
     assuming this is an individual output.
     """
+    # string representing the name of the output type attribute
     attr_name = output_attr_name_from_parent_child(parent, child)
-
-    prefix = ""
-
+    # the attribute should either be the string representation of the output
+    # directory, or None if one wasn't given
     directory = getattr(args, attr_name, None)
 
+    # replace the output type attribute with a function taking as input a star's
+    # name and file extension, and returning the desired filename string,
+    # assuming a directory was given
     if directory is not None:
         make_sure_path_exists(directory)
         setattr(args, attr_name, fname_fn_individual(directory))
 
 
 def output_setup(args):
-    """
-    """
-    ### TODO: test for illegal combinations ###
+    """output_setup(args)
 
+    Sets the output filename functions for all of the various output types
+    requested.
+    """
+    # check for illegal combinations
+    if (args.output_all is not None and
+        any(x is not None for x in [args.output_table_all,
+                                    args.output_plot_all])):
+        print("Cannot combine --output-all with --output-table-all or",
+              "--output-plot-all flags.",
+              file=stderr)
+        exit(1)
+
+    # output all filetypes
     if args.output_all is not None:
         make_sure_path_exists(args.output_all)
         for parent, children in outputs.items():
             for child in children:
-                suffix = "" ## TODO ##
                 output_setup_bulk(args, args.output_all,
                                   parent, child)
 
+    # output all table/plot filetypes to separate directories
     if args.output_table_all is not None:
         make_sure_path_exists(args.output_table_all)
         for child in outputs["table"]:
@@ -456,6 +498,8 @@ def output_setup(args):
             output_setup_bulk(args, args.output_plot_all,
                               "plot", child)
 
+    # output all individual filetypes explicitly requested, assuming none of
+    # the bulk operations above were selected
     if all(x is None for x in [args.output_all,
                                args.output_table_all,
                                args.output_plot_all]):
@@ -472,8 +516,10 @@ def process_star(filename,
                  output_table_lightcurve, output_plot_lightcurve,
                  output_table_residual,   output_plot_residual,
                  **kwargs):
-    """Processes a star's lightcurve, prints its coefficients, and saves
-    its plotted lightcurve to a file. Returns the result of get_lightcurve.
+    """process_star(filename, *, extension, star_name, period, shift, parameters, period_label, shift_label, plot_engine, output_table_lightcurve, output_plot_lightcurve, output_table_residual, output_plot_residual, **kwargs)
+
+    Processes a star's lightcurve, prints its coefficients, and saves its
+    plotted lightcurve to a file. Returns the result of get_lightcurve.
     """
     if star_name is None:
         basename = path.basename(filename)
@@ -504,8 +550,6 @@ def process_star(filename,
     # output the phased lightcurve as a table
     if output_table_lightcurve is not None:
         # construct the filename for the output table
-#        filename = path.join(output_table_lightcurve,
-#                             result["name"] + extension)
         filename = output_table_lightcurve(result["name"], extension)
         # save the table to a file
         savetxt_lightcurve(filename, result["lightcurve"],
@@ -519,7 +563,12 @@ def process_star(filename,
         combined_kwargs = dict(kwargs)
         combined_kwargs.update(result)
 
-        filename = output_plot_lightcurve(result["name"], "")
+        # currenlty only .tikz output needs an explicit extension,
+        # mpl provides its own
+        extension = ".tikz" if plot_engine == "tikz" else ""
+        # construct the filename for the output plot
+        filename = output_plot_lightcurve(result["name"], extension)
+        # make the plot
         plot = plot_lightcurve(output=filename,
                                engine=plot_engine,
                                **combined_kwargs)
@@ -534,8 +583,6 @@ def process_star(filename,
     # output the residuals as a table
     if output_table_residual is not None:
         # construct the filename for the output table
-#        filename = path.join(output_table_residual,
-#                             result["name"] + extension)
         filename = output_table_residual(result["name"], extension)
         # save the table to a file
         numpy.savetxt(filename, result["residuals"],
@@ -544,7 +591,12 @@ def process_star(filename,
 
     # output the residuals as a plot
     if output_plot_residual is not None:
-        filename = output_plot_residual(result["name"], "")
+        # currenlty only .tikz output needs an explicit extension,
+        # mpl provides its own
+        extension = ".tikz" if plot_engine == "tikz" else ""
+        # construct the filename for the output plot
+        filename = output_plot_residual(result["name"], extension)
+        # make the plot
         plot = plot_residual(result["name"], result["residuals"],
                              output=filename,
                              sanitize_latex=kwargs["sanitize_latex"])
@@ -559,20 +611,24 @@ def process_star(filename,
     return result
 
 
-def _print_star(result, max_degree, form, fmt, sep):
+def print_star(result, max_degree, form, fmt, sep):
+    """print_star(result, max_degree, form, fmt, sep)
+
+    Prints a star's entry in the table printed to stdout.
+    """
     if result is None:
         return
 
     def format_one(x):
-        """format one number string according to fmt"""
+        """Format one number string according to fmt."""
         return fmt % x
 
     def format_all(x):
-        """format every number in a sequence according to fmt"""
+        """Format every number in a sequence according to fmt."""
         return map(format_one, x)
 
     def format_keys(*keys):
-        """format result[key] for the list of keys provided"""
+        """Format result[key] for the list of keys provided."""
         return format_all(result[key] for key in keys)
 
     # count inliers and outliers
@@ -613,7 +669,11 @@ def _print_star(result, max_degree, form, fmt, sep):
           sep=sep)
 
 
-def _get_files(input):
+def get_files(input):
+    """get_files(input)
+
+    Returns an iterable of filenames containing data to process.
+    """
     if input is None:
         return stdin
     elif input[0] == "@":
