@@ -530,11 +530,11 @@ def plot_lightcurve(*args, engine='mpl', **kwargs):
 
 
 def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
-                        output='.', legend=False, sanitize_latex=False,
+                        output=None, legend=False, sanitize_latex=False,
                         color=True, n_phases=100,
                         err_const=0.005,
                         **kwargs):
-    """plot_lightcurve(name, lightcurve, period, phased_data, output='.', legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
+    """plot_lightcurve(name, lightcurve, period, phased_data, output=None, legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
 
     Save a plot of the given *lightcurve* to directory *output*, using
     matplotlib and return the resulting plot object.
@@ -542,7 +542,7 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
     **Parameters**
 
     name : str
-        Name of the star. Used in filename and plot title.
+        Name of the star. Used in plot title.
     lightcurve : array-like, shape = [n_samples]
         Fitted lightcurve.
     period : number
@@ -551,7 +551,7 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
         Photometry array containing columns *time*, *magnitude*, and
         (optional) *error*. *time* should be unphased.
     output : str, optional
-        Directory to save plot to (default '.').
+        File to save plot to (default None).
     legend : boolean, optional
         Whether or not to display legend on plot (default False).
     color : boolean, optional
@@ -615,18 +615,18 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
     ax.set_title(utils.sanitize_latex(name) if sanitize_latex else name)
     fig.tight_layout(pad=0.1)
 
-    make_sure_path_exists(output)
-    fig.savefig(path.join(output, name))
+    if output is not None:
+        fig.savefig(output)
 
     return fig
 
 
 def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
-                         output='.', legend=False, sanitize_latex=False,
+                         output=None, legend=False, sanitize_latex=False,
                          color=True, n_phases=100,
                          err_const=0.005,
                          **kwargs):
-    """plot_lightcurve(name, lightcurve, period, phased_data, output='.', legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
+    """plot_lightcurve(name, lightcurve, period, phased_data, output=None, legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
 
     Save TikZ source code for a plot of the given *lightcurve* to directory
     *output*, and return the string holding the source code.
@@ -634,7 +634,7 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
     **Parameters**
 
     name : str
-        Name of the star. Used in filename and plot title.
+        Name of the star. Used in plot title.
     lightcurve : array-like, shape = [n_samples]
         Fitted lightcurve.
     period : number
@@ -643,7 +643,7 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
         Photometry array containing columns *time*, *magnitude*, and
         (optional) *error*. *time* should be unphased.
     output : str, optional
-        Directory to save plot to (default '.').
+        File to save plot to (default None).
     legend : boolean, optional
         Whether or not to display legend on plot (default False).
     color : boolean, optional
@@ -765,10 +765,9 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
 \end{tikzpicture}"""
 
     # save tikz to a file
-    make_sure_path_exists(output)
-    filename = path.join(output, name + ".tikz")
-    with open(filename, "w") as f:
-        f.write(tikz)
+    if output is not None:
+        with open(output, "w") as f:
+            f.write(tikz)
 
     return tikz
 
@@ -801,7 +800,7 @@ def plot_residual(*args, engine='mpl', **kwargs):
 
 
 def plot_residual_mpl(name, residuals,
-                      output='.', sanitize_latex=False,
+                      output=None, sanitize_latex=False,
                       color=True,
                       **kwargs):
     """plot_residual_mpl(name, residuals, period, output='.', sanitize_latex=False, color=True, **kwargs)
@@ -812,11 +811,11 @@ def plot_residual_mpl(name, residuals,
     **Parameters**
 
     name : str
-        Name of the star. Used in filename and plot title.
+        Name of the star. Used in plot title.
     residuals : array-like, shape = [n_samples]
         Residuals between fitted lightcurve and observations.
     output : str, optional
-        Directory to save plot to (default '.').
+        File to save plot to (default None).
     color : boolean, optional
         Whether or not to display color in plot (default True).
 
@@ -829,10 +828,10 @@ def plot_residual_mpl(name, residuals,
 
 
 def plot_residual_tikz(name, residuals,
-                       output='.', sanitize_latex=False,
+                       output=None, sanitize_latex=False,
                        color=True,
                        **kwargs):
-    """plot_residual_tikz(name, residuals, period, output='.', sanitize_latex=False, color=True, **kwargs)
+    """plot_residual_tikz(name, residuals, period, output=None, sanitize_latex=False, color=True, **kwargs)
 
     Save TikZ source code for a plot of the given *residuals* to directory
     *output*, and return the string holding the source code.
@@ -840,11 +839,11 @@ def plot_residual_tikz(name, residuals,
     **Parameters**
 
     name : str
-        Name of the star. Used in filename and plot title.
+        Name of the star. Used in plot title.
     residuals : array-like, shape = [n_samples]
         Residuals between fitted lightcurve and observations.
     output : str, optional
-        Directory to save plot to (default '.').
+        File to save plot to (default None).
     color : boolean, optional
         Whether or not to display color in plot (default True).
 

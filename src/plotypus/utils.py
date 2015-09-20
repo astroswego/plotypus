@@ -8,6 +8,7 @@ __all__ = [
     'verbose_print',
     'pmap',
     'make_sure_path_exists',
+    'valid_basename',
     'get_signal',
     'get_noise',
     'colvec',
@@ -105,6 +106,19 @@ def make_sure_path_exists(path):
     except OSError:
         if not isdir(path):
             raise
+
+
+def valid_basename(s):
+    """valid_basename(s)
+
+    Predicate function to check if the string *s* is a valid basename, meaning
+    it is both a valid filename, and does not contain a directory.
+    """
+    ### TODO ###
+    return True
+
+
+
 
 
 def get_signal(data):

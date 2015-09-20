@@ -17,7 +17,8 @@ from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
 from plotypus.periodogram import Lomb_Scargle, conditional_entropy
 import plotypus
 from plotypus.preprocessing import Fourier
-from plotypus.utils import mad, make_sure_path_exists, pmap, verbose_print
+from plotypus.utils import (mad, make_sure_path_exists, pmap, valid_basename,
+                            verbose_print)
 from plotypus.resources import matplotlibrc
 
 import pkg_resources # part of setuptools
@@ -44,6 +45,15 @@ def get_args():
         default=None,
         help='location of stellar observations '
              '(default = stdin)')
+    general_group.add_argument('--output-all', type=str,
+        default=None,
+        help='')
+    general_group.add_argument('--output-table-all', type=str,
+        default=None,
+        help='')
+    general_group.add_argument('--output-plot-all', type=str,
+        default=None,
+        help='')
     general_group.add_argument('-n', '--star-name', type=str,
         default=None,
         help='name of star '
@@ -301,6 +311,8 @@ def get_args():
         args.parameters = read_table(args.parameters, args.param_sep,
                                      index_col=0, engine='python')
 
+    output_setup(args)
+
     return args
 
 
@@ -351,6 +363,107 @@ def main():
          processes=args.star_processes, **picklable_args)
 
 
+def fname_fn_bulk(directory, prefix):
+    """fname_fn_bulk(directory, prefix)
+    Returns a function which takes a name, and returns a filename in the given
+    `directory`, whose basename has the given `prefix` and `suffix`.
+    """
+    def fn(name, ext):
+        full_directory = path.join(directory, name)
+        make_sure_path_exists(full_directory)
+        return path.join(full_directory, prefix+ext)
+    return fn
+
+
+def fname_fn_individual(directory):
+    """fname_fn_individual(directory)
+    Returns a function which takes a name, and returns a filename in the given
+    `directory`, whose basename has the given `prefix` and `suffix`.
+    """
+    def fn(name, ext):
+        return path.join(directory, name+ext)
+    return fn
+
+
+def output_attr_name_from_parent_child(parent, child):
+    """output_attr_name_from_parent_child(parent, child)
+    Returns the attribute name of an output type. These attributes have names
+    of the form output-<parent>-<child>.
+
+    Examples include "output-plot-lightcurve" and "output-table-residuals".
+    """
+    return "_".join(["output", parent, child])
+
+
+outputs = {
+    "table": ["lightcurve", "residual"],
+    "plot":  ["lightcurve", "residual"]
+}
+
+
+def output_setup_bulk(args, directory, parent, child):
+    """output_setup_bulk(args, directory, parent, child)
+    Sets the output filename function for the given parent-child output type,
+    assuming this is a bulk output.
+    """
+    attr_name = output_attr_name_from_parent_child(parent, child)
+
+    prefix = getattr(args, attr_name, None)
+    if prefix is None:
+        prefix = child
+    assert valid_basename(prefix), prefix + " is not a valid filename prefix"
+
+    setattr(args, attr_name, fname_fn_bulk(directory, prefix))
+
+
+def output_setup_individual(args, parent, child):
+    """output_setup_individual(args, parent, child)
+    Sets the output filename function for the given parent-child output type,
+    assuming this is an individual output.
+    """
+    attr_name = output_attr_name_from_parent_child(parent, child)
+
+    prefix = ""
+
+    directory = getattr(args, attr_name, None)
+
+    if directory is not None:
+        make_sure_path_exists(directory)
+        setattr(args, attr_name, fname_fn_individual(directory))
+
+
+def output_setup(args):
+    """
+    """
+    ### TODO: test for illegal combinations ###
+
+    if args.output_all is not None:
+        make_sure_path_exists(args.output_all)
+        for parent, children in outputs.items():
+            for child in children:
+                suffix = "" ## TODO ##
+                output_setup_bulk(args, args.output_all,
+                                  parent, child)
+
+    if args.output_table_all is not None:
+        make_sure_path_exists(args.output_table_all)
+        for child in outputs["table"]:
+            output_setup_bulk(args, args.output_table_all,
+                              "table", child)
+    if args.output_plot_all is not None:
+        make_sure_path_exists(args.output_plot_all)
+        for child in outputs["plot"]:
+            output_setup_bulk(args, args.output_plot_all,
+                              "plot", child)
+
+    if all(x is None for x in [args.output_all,
+                               args.output_table_all,
+                               args.output_plot_all]):
+        for parent, children in outputs.items():
+            for child in children:
+                output_setup_individual(args, parent, child)
+
+
 def process_star(filename,
                  *,
                  extension, star_name, period, shift,
@@ -390,11 +503,10 @@ def process_star(filename,
 
     # output the phased lightcurve as a table
     if output_table_lightcurve is not None:
-        # create the output path if non-existant
-        make_sure_path_exists(output_table_lightcurve)
         # construct the filename for the output table
-        filename = path.join(output_table_lightcurve,
-                             result["name"] + extension)
+#        filename = path.join(output_table_lightcurve,
+#                             result["name"] + extension)
+        filename = output_table_lightcurve(result["name"], extension)
         # save the table to a file
         savetxt_lightcurve(filename, result["lightcurve"],
                            fmt=kwargs["format"],
@@ -406,7 +518,9 @@ def process_star(filename,
         # we wish to unpack.
         combined_kwargs = dict(kwargs)
         combined_kwargs.update(result)
-        plot = plot_lightcurve(output=output_plot_lightcurve,
+
+        filename = output_plot_lightcurve(result["name"], "")
+        plot = plot_lightcurve(output=filename,
                                engine=plot_engine,
                                **combined_kwargs)
         # allow figure to get garbage collected
@@ -419,11 +533,10 @@ def process_star(filename,
 
     # output the residuals as a table
     if output_table_residual is not None:
-        # create the output path if non-existant
-        make_sure_path_exists(output_table_residual)
         # construct the filename for the output table
-        filename = path.join(output_table_residual,
-                             result["name"] + extension)
+#        filename = path.join(output_table_residual,
+#                             result["name"] + extension)
+        filename = output_table_residual(result["name"], extension)
         # save the table to a file
         numpy.savetxt(filename, result["residuals"],
                       fmt=kwargs["format"],
@@ -431,8 +544,9 @@ def process_star(filename,
 
     # output the residuals as a plot
     if output_plot_residual is not None:
+        filename = output_plot_residual(result["name"], "")
         plot = plot_residual(result["name"], result["residuals"],
-                             output=output_plot_residual,
+                             output=filename,
                              sanitize_latex=kwargs["sanitize_latex"])
         # allow figure to get garbage collected
         if plot_engine == "mpl":
@@ -441,7 +555,6 @@ def process_star(filename,
             # Fret not, the import is a no-op after the first call
             from matplotlib.pyplot import close
             close(plot)
-
 
     return result
 
@@ -505,6 +618,9 @@ def _get_files(input):
         return stdin
     elif input[0] == "@":
         with open(input[1:], 'r') as f:
+            # TODO:
+            # check if mapping over `f` instead of `f.readlines()` has same
+            # result
             return map(lambda x: x.strip(), f.readlines())
     elif path.isfile(input):
         return [input]
