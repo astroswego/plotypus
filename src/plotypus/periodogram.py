@@ -17,10 +17,13 @@ __all__ = [
 ]
 
 
-def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
-    """
+def Lomb_Scargle(data, precision, min_period, max_period,
+                 period_jobs=1, output_periodogram=False):
+    """Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1, output_periodogram=False)
+
     Returns the period of *data* according to the
     `Lomb-Scargle periodogram <https://en.wikipedia.org/wiki/Least-squares_spectral_analysis#The_Lomb.E2.80.93Scargle_periodogram>`_.
+    Optionally outputs a tuple of the period and the periodogram itself.
 
     **Parameters**
 
@@ -36,11 +39,17 @@ def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
         Number of simultaneous processes to use while searching. Only one
         process will ever be used, but argument is included to conform to
         *periodogram* standards of :func:`find_period` (default 1).
+    output_periodogram : bool, optional
+        Whether or not to output the periodogram as well. If true, output
+        is a tuple instead of a single number (default False).
 
     **Returns**
 
     period : number
         The period of *data*.
+    periodogram : None or array, shape = [(max_period-min_period)/precision, 2]
+        Array with columns (period, pgram), or None if *output_periodogram* is
+        False.
     """
     time, mags, *err = data.T
     scaled_mags = (mags-mags.mean())/mags.std()
@@ -48,12 +57,21 @@ def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
     freqs = np.arange(minf, maxf, precision)
     pgram = lombscargle(time, scaled_mags, freqs)
 
-    return 2*np.pi/freqs[np.argmax(pgram)]
+    if output_periodogram:
+        periods = 2*np.pi/freqs
+        period = periods[np.argmax(pgram)]
+        return period, np.column_stack((periods, pgram))
+    else:
+        freq = freqs[np.argmax(pgram)]
+        period = 2*np.pi/freq
+        return period, None
 
 
 def conditional_entropy(data, precision, min_period, max_period,
-                        xbins=10, ybins=5, period_jobs=1):
-    """
+                        xbins=10, ybins=5, period_jobs=1,
+                        output_periodogram=False):
+    """conditional_entropy(data, precision, min_period, max_period, xbins=10, ybins=5, period_jobs=1, output_periodogram=False)
+
     Returns the period of *data* by minimizing conditional entropy.
     See `link <http://arxiv.org/pdf/1306.6664v2.pdf>`_ [GDDMD] for details.
 
@@ -75,11 +93,17 @@ def conditional_entropy(data, precision, min_period, max_period,
         Number of simultaneous processes to use while searching. Only one
         process will ever be used, but argument is included to conform to
         *periodogram* standards of :func:`find_period` (default 1).
+    output_periodogram : bool, optional
+        Whether or not to output the periodogram as well. If true, output
+        is a tuple instead of a single number (default False).
 
     **Returns**
 
     period : number
         The period of *data*.
+    periodogram : None or array, shape = [(max_period-min_period)/precision, 2]
+        Array with columns (period, pgram), or None if *output_periodogram* is
+        False.
 
     **Citations**
 
@@ -96,11 +120,17 @@ def conditional_entropy(data, precision, min_period, max_period,
     m = map if period_jobs <= 1 else Pool(period_jobs).map
     entropies = list(m(partial_job, periods))
 
-    return periods[np.argmin(entropies)]
+    period = periods[np.argmin(entropies)]
+
+    if output_periodogram:
+        return period, np.column_stack((periods, entropies))
+    else:
+        return period, None
 
 
 def CE(period, data, xbins=10, ybins=5):
-    """
+    """CE(period, data, xbins=10, ybins=5)
+
     Returns the conditional entropy of *data* rephased with *period*.
 
     **Parameters**
@@ -168,8 +198,9 @@ def find_period(data,
                 min_period=0.2, max_period=32.0,
                 coarse_precision=1e-5, fine_precision=1e-9,
                 periodogram=Lomb_Scargle,
-                period_jobs=1):
-    """find_period(data, min_period=0.2, max_period=32.0, coarse_precision=1e-5, fine_precision=1e-9, periodogram=Lomb_Scargle, period_jobs=1)
+                period_jobs=1,
+                output_periodogram=False):
+    """find_period(data, min_period=0.2, max_period=32.0, coarse_precision=1e-5, fine_precision=1e-9, periodogram=Lomb_Scargle, period_jobs=1, output_periodogram=False)
 
     Returns the period of *data* according to the given *periodogram*,
     searching first with a coarse precision, and then a fine precision.
@@ -193,23 +224,45 @@ def find_period(data,
         *max_period*, and *period_jobs*, and return value *period*.
     period_jobs : int, optional
         Number of simultaneous processes to use while searching (default 1).
+    output_periodogram : bool, optional
+        Whether or not to output the periodogram as well. If true, output
+        is a tuple instead of a single number (default False).
 
     **Returns**
 
     period : number
         The period of *data*.
+    periodogram : None or array, shape = [(max_period-min_period)/precision, 2]
+        Array with columns (period, pgram), or None if *output_periodogram* is
+        False.
     """
     if min_period >= max_period:
         return min_period
 
-    coarse_period = periodogram(data, coarse_precision, min_period, max_period,
-                                period_jobs=period_jobs)
+    coarse_period, coarse_pgram = periodogram(
+        data, coarse_precision,
+        min_period, max_period,
+        period_jobs=period_jobs,
+        output_periodogram=output_periodogram)
 
-    return coarse_period if coarse_precision <= fine_precision else \
-        periodogram(data, fine_precision,
-                    coarse_period - coarse_precision,
-                    coarse_period + coarse_precision,
-                    period_jobs=period_jobs)
+    if coarse_precision <= fine_precision:
+        return coarse_period, coarse_pgram
+    else:
+        fine_period, fine_pgram = periodogram(
+            data, fine_precision,
+            coarse_period - coarse_precision,
+            coarse_period + coarse_precision,
+            period_jobs=period_jobs,
+            output_periodogram=output_periodogram)
+        if output_periodogram:
+            index = (coarse_period - min_period) / coarse_precision
+            merged_pgram = np.concatenate([coarse_pgram[:index, :],
+                                           fine_pgram,
+                                           coarse_pgram[index+1:, :]])
+
+            return fine_period, merged_pgram
+        else:
+            return fine_period, None
 
 
 def rephase(data, period=1.0, shift=0.0, col=0, copy=True):

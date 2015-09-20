@@ -93,7 +93,7 @@ def get_lightcurve(data, copy=False, name=None,
                    scoring='r2', scoring_cv=3, scoring_processes=1,
                    period=None, min_period=0.2, max_period=32,
                    coarse_precision=1e-5, fine_precision=1e-9,
-                   period_processes=1,
+                   period_processes=1, output_periodogram=False,
                    sigma=20,
                    shift=None,
                    min_phase_cover=0.0, min_observations=1, n_phases=100,
@@ -216,18 +216,20 @@ def get_lightcurve(data, copy=False, name=None,
             return
         # Find the period of the inliers
         if period is not None:
-            _period = period
+            period = period
+            pgram  = None
         else:
             verbose_print("{}: finding period".format(name),
                           operation="period", verbosity=verbosity)
-            _period = find_period(signal,
-                                  min_period, max_period,
-                                  coarse_precision, fine_precision,
-                                  periodogram, period_processes)
+            period, pgram = find_period(signal,
+                                        min_period, max_period,
+                                        coarse_precision, fine_precision,
+                                        periodogram, period_processes,
+                                        output_periodogram=output_periodogram)
 
-        verbose_print("{}: using period {}".format(name, _period),
+        verbose_print("{}: using period {}".format(name, period),
                       operation="period", verbosity=verbosity)
-        phase, mag, *err = rephase(signal, _period).T
+        phase, mag, *err = rephase(signal, period).T
 
 # TODO ###
 # Generalize number of bins to function parameter ``coverage_bins``, which
@@ -257,7 +259,7 @@ def get_lightcurve(data, copy=False, name=None,
 
         # Reject outliers and repeat the process if there are any
         if sigma:
-            outliers = find_outliers(rephase(data.data, _period), predictor,
+            outliers = find_outliers(rephase(data.data, period), predictor,
                                      sigma, sigma_clipping)
             num_outliers = sum(outliers)[0]
             if num_outliers == 0 or \
@@ -281,7 +283,7 @@ def get_lightcurve(data, copy=False, name=None,
                                         lightcurve[:arg_max_light]))
         shift = arg_max_light/len(phases)
     # shift observed light curve to max light
-    data.T[0] = rephase(data.data, _period, shift).T[0]
+    data.T[0] = rephase(data.data, period, shift).T[0]
     # use rephased phase points from *data* in residuals
     residuals = numpy.column_stack((data.T[0], residuals))
 
@@ -305,7 +307,8 @@ def get_lightcurve(data, copy=False, name=None,
                                    n_jobs=scoring_processes).mean()
 
     return {'name':         name,
-            'period':       _period,
+            'period':       period,
+            'periodogram':  pgram,
             'lightcurve':   lightcurve,
             'coefficients': coefficients,
             'dA_0':         sem(lightcurve),

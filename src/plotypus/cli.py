@@ -29,8 +29,8 @@ __version__ = pkg_resources.require("plotypus")[0].version
 # quantaties output (lightcurve, residual, etc). Any new output types need to
 # be added here.
 outputs = {
-    "table": ["lightcurve", "residual"],
-    "plot":  ["lightcurve", "residual"]
+    "table": ["lightcurve", "residual", "periodogram"],
+    "plot":  ["lightcurve", "residual", "periodogram"]
 }
 
 def get_args():
@@ -205,6 +205,18 @@ def get_args():
 
     ## Period Group ##########################################################
 
+    period_group.add_argument('--output-table-periodogram', type=str,
+        default=None,
+        help='(optional) location to save the periodogram table, '
+             'or prefix to filename if any of `--output-*-all` options used.')
+    period_group.add_argument('--output-plot-periodogram', type=str,
+        default=None,
+        help='(optional) location to save the periodogram plots, '
+             'or prefix to filename if any of `--output-*-all` options used.')
+    period_group.add_argument('--output-periodogram-form', type=str,
+        default='period', choices=['frequency', 'period'],
+        help='form to output periodogram in, for both tables and plots '
+             '(default = "period")')
     period_group.add_argument('--period', type=float,
         default=None,
         help='period to use for all stars '
@@ -517,10 +529,11 @@ def process_star(filename,
                  extension, star_name, period, shift,
                  parameters, period_label, shift_label,
                  plot_engine,
-                 output_table_lightcurve, output_plot_lightcurve,
-                 output_table_residual,   output_plot_residual,
+                 output_table_lightcurve,  output_plot_lightcurve,
+                 output_table_residual,    output_plot_residual,
+                 output_table_periodogram, output_plot_periodogram,
                  **kwargs):
-    """process_star(filename, *, extension, star_name, period, shift, parameters, period_label, shift_label, plot_engine, output_table_lightcurve, output_plot_lightcurve, output_table_residual, output_plot_residual, **kwargs)
+    """process_star(filename, *, extension, star_name, period, shift, parameters, period_label, shift_label, plot_engine, output_table_lightcurve, output_plot_lightcurve, output_table_residual, output_plot_residual, output_table_periodogram, **kwargs)
 
     Processes a star's lightcurve, prints its coefficients, and saves its
     plotted lightcurve to a file. Returns the result of get_lightcurve.
@@ -544,12 +557,18 @@ def process_star(filename,
                 except KeyError:
                     pass
 
-    result = get_lightcurve_from_file(filename, name=star_name,
-                                      period=period, shift=shift,
-                                      **kwargs)
+    result = get_lightcurve_from_file(
+        filename, name=star_name, period=period, shift=shift,
+        output_periodogram=bool(output_table_periodogram or
+                                output_plot_periodogram),
+        **kwargs)
     # no results for this star, skip
     if result is None:
         return
+
+    # currenlty only .tikz plot output needs an explicit extension, mpl
+    # provides its own
+    plot_extension = ".tikz" if plot_engine == "tikz" else ""
 
     # output the phased lightcurve as a table
     if output_table_lightcurve is not None:
@@ -567,11 +586,8 @@ def process_star(filename,
         combined_kwargs = dict(kwargs)
         combined_kwargs.update(result)
 
-        # currenlty only .tikz output needs an explicit extension,
-        # mpl provides its own
-        extension = ".tikz" if plot_engine == "tikz" else ""
         # construct the filename for the output plot
-        filename = output_plot_lightcurve(result["name"], extension)
+        filename = output_plot_lightcurve(result["name"], plot_extension)
         # make the plot
         plot = plot_lightcurve(output=filename,
                                engine=plot_engine,
@@ -595,11 +611,8 @@ def process_star(filename,
 
     # output the residuals as a plot
     if output_plot_residual is not None:
-        # currenlty only .tikz output needs an explicit extension,
-        # mpl provides its own
-        extension = ".tikz" if plot_engine == "tikz" else ""
         # construct the filename for the output plot
-        filename = output_plot_residual(result["name"], extension)
+        filename = output_plot_residual(result["name"], plot_extension)
         # make the plot
         plot = plot_residual(result["name"], result["residuals"],
                              output=filename,
@@ -611,6 +624,25 @@ def process_star(filename,
             # Fret not, the import is a no-op after the first call
             from matplotlib.pyplot import close
             close(plot)
+
+    # output the periodogram as a table
+    if all(x is not None for x in [output_table_periodogram,
+                                   result["periodogram"]]):
+        if kwargs["output_periodogram_form"] == "frequency":
+            # frequency
+            free_variable = 2*numpy.pi / result["periodogram"]
+        else:
+            # period
+            free_variable = result["periodogram"]
+
+        # construct the filename for the output table
+        filename = output_table_periodogram(result["name"], extension)
+        # save the table to a file
+        numpy.savetxt(filename, free_variable,
+                      fmt=kwargs["format"],
+                      delimiter=kwargs["output_sep"])
+
+    # TODO: output the periodogram as a plot
 
     return result
 
