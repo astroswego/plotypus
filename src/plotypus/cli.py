@@ -8,6 +8,7 @@ from sklearn.linear_model import (LassoCV, LassoLarsCV, LassoLarsIC,
                                   LinearRegression, RidgeCV, ElasticNetCV)
 from sklearn.grid_search import GridSearchCV
 from matplotlib import rc_params_from_file
+from collections import ChainMap
 from functools import partial
 from itertools import chain, repeat
 import plotypus.lightcurve
@@ -581,17 +582,12 @@ def process_star(filename,
 
     # output the lightcurve as a plot
     if output_plot_lightcurve is not None:
-        # cannot unpack two dicts in Python <3.5, so we must join the two dicts
-        # we wish to unpack.
-        combined_kwargs = dict(kwargs)
-        combined_kwargs.update(result)
-
         # construct the filename for the output plot
         filename = output_plot_lightcurve(result["name"], plot_extension)
         # make the plot
         plot = plot_lightcurve(output=filename,
                                engine=plot_engine,
-                               **combined_kwargs)
+                               **ChainMap(kwargs, result))
         # allow figure to get garbage collected
         if plot_engine == "mpl":
             # Need to use a local import, a top level import had to be avoided,
@@ -630,15 +626,15 @@ def process_star(filename,
                                    result["periodogram"]]):
         if kwargs["output_periodogram_form"] == "frequency":
             # frequency
-            free_variable = 2*numpy.pi / result["periodogram"]
+            pgram = 2*numpy.pi / result["periodogram"]
         else:
             # period
-            free_variable = result["periodogram"]
+            pgram = result["periodogram"]
 
         # construct the filename for the output table
         filename = output_table_periodogram(result["name"], extension)
         # save the table to a file
-        numpy.savetxt(filename, free_variable,
+        numpy.savetxt(filename, pgram,
                       fmt=kwargs["format"],
                       delimiter=kwargs["output_sep"])
 
