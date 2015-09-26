@@ -630,6 +630,8 @@ def process_star(filename,
         else:
             # period
             pgram = result["periodogram"]
+            # flip array vertically because periods are in reverse order
+            pgram = numpy.flipud(pgram)
 
         # construct the filename for the output table
         filename = output_table_periodogram(result["name"], extension)
