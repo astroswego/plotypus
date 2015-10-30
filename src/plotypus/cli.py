@@ -1,4 +1,4 @@
-import numpy
+import numpy as np
 from numpy import std
 from sys import exit, stdin, stdout, stderr
 from os import path, listdir
@@ -24,7 +24,6 @@ from plotypus.resources import matplotlibrc
 
 import pkg_resources # part of setuptools
 __version__ = pkg_resources.require("plotypus")[0].version
-
 
 # Dict mapping higher level output types (table, plot) to the specific
 # quantaties output (lightcurve, residual, etc). Any new output types need to
@@ -54,7 +53,7 @@ def get_args():
         default=None,
         help='location of stellar observations '
              '(default = stdin)')
-    general_group.add_argument('--output-all', type=str,
+    general_group.add_argument('-o', '--output-all', type=str,
         default=None, metavar="DIR",
         help='(optional) location to output all file types (plots and tables '
              'alike), creating a sub-directory for each star. individual '
@@ -341,7 +340,7 @@ def get_args():
     args.predictor = make_predictor(Selector=Selector,
                                     use_baart=(args.selector == 'Baart'),
                                     **vars(args))
-    args.phases = numpy.arange(0, 1, 1/args.phase_points)
+    args.phases = np.arange(0, 1, 1/args.phase_points)
 
     if args.parameters is not None:
         args.parameters = read_table(args.parameters, args.param_sep,
@@ -601,7 +600,7 @@ def process_star(filename,
         # construct the filename for the output table
         filename = output_table_residual(result["name"], extension)
         # save the table to a file
-        numpy.savetxt(filename, result["residuals"],
+        np.savetxt(filename, result["residuals"],
                       fmt=kwargs["format"],
                       delimiter=kwargs["output_sep"])
 
@@ -626,17 +625,17 @@ def process_star(filename,
                                    result["periodogram"]]):
         if kwargs["output_periodogram_form"] == "frequency":
             # frequency
-            pgram = 2*numpy.pi / result["periodogram"]
+            pgram = 2*np.pi / result["periodogram"]
         else:
             # period
             pgram = result["periodogram"]
             # flip array vertically because periods are in reverse order
-            pgram = numpy.flipud(pgram)
+            pgram = np.flipud(pgram)
 
         # construct the filename for the output table
         filename = output_table_periodogram(result["name"], extension)
         # save the table to a file
-        numpy.savetxt(filename, pgram,
+        np.savetxt(filename, pgram,
                       fmt=kwargs["format"],
                       delimiter=kwargs["output_sep"])
 
@@ -667,14 +666,14 @@ def print_star(result, max_degree, form, fmt, sep):
 
     # count inliers and outliers
     points   = result['phased_data'][:,0].size
-    outliers = numpy.ma.count_masked(result['phased_data'][:, 0])
+    outliers = np.ma.count_masked(result['phased_data'][:, 0])
     inliers  = points - outliers
 
     # get fourier coefficients and compute ratios
     coefs  = Fourier.phase_shifted_coefficients(result['coefficients'],
                                                 shift=result['shift'],
                                                 form=form)
-    _coefs = numpy.concatenate(([coefs[0]],
+    _coefs = np.concatenate(([coefs[0]],
                                [result['dA_0']],
                                coefs[1:]))
     fourier_ratios = Fourier.fourier_ratios(coefs)
@@ -683,8 +682,8 @@ def print_star(result, max_degree, form, fmt, sep):
     coef_zeros  = repeat('0', times=(2*max_degree + 1 - len(coefs)))
     ratio_zeros = repeat('0', times=(2*(max_degree - 1) - len(fourier_ratios)))
 
-    max_degree = numpy.trim_zeros(coefs[1::2], 'b').size
-    n_params   = numpy.count_nonzero(coefs[1::2])
+    max_degree = np.trim_zeros(coefs[1::2], 'b').size
+    n_params   = np.count_nonzero(coefs[1::2])
 
     # print the entry for the star with tabs as separators
     # and itertools.chain to separate the different results into a

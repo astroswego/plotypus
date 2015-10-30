@@ -2,8 +2,8 @@
 Light curve fitting and plotting functions.
 """
 
-import numpy
-numpy.random.seed(0)
+import numpy as np
+np.random.seed(0)
 from scipy.stats import sem
 from sys import stderr
 from math import floor
@@ -21,6 +21,7 @@ from sklearn.utils import ConvergenceWarning
 import warnings
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 __all__ = [
@@ -192,8 +193,8 @@ def get_lightcurve(data, copy=False, name=None,
 
     :func:`get_lightcurve_from_file`
     """
-    data = numpy.ma.array(data, copy=copy)
-    phases = numpy.linspace(0, 1, n_phases, endpoint=False)
+    data = np.ma.array(data, copy=copy)
+    phases = np.linspace(0, 1, n_phases, endpoint=False)
 # TODO ###
 # Replace dA_0 with error matrix dA
     if predictor is None:
@@ -235,7 +236,7 @@ def get_lightcurve(data, copy=False, name=None,
 # Generalize number of bins to function parameter ``coverage_bins``, which
 # defaults to 100, the current hard-coded behavior
         # Determine whether there is sufficient phase coverage
-        coverage = numpy.zeros((100))
+        coverage = np.zeros((100))
         for p in phase:
             coverage[int(floor(p*100))] = 1
         coverage = sum(coverage)/100
@@ -263,15 +264,15 @@ def get_lightcurve(data, copy=False, name=None,
                                      sigma, sigma_clipping)
             num_outliers = sum(outliers)[0]
             if num_outliers == 0 or \
-               set.issubset(set(numpy.nonzero(outliers.T[0])[0]),
-                            set(numpy.nonzero(data.mask.T[0])[0])):
+               set.issubset(set(np.nonzero(outliers.T[0])[0]),
+                            set(np.nonzero(data.mask.T[0])[0])):
                 data.mask = outliers
                 break
             if num_outliers > 0:
                 verbose_print("{}: {} outliers".format(name, sum(outliers)[0]),
                               operation="outlier",
                               verbosity=verbosity)
-            data.mask = numpy.ma.mask_or(data.mask, outliers)
+            data.mask = np.ma.mask_or(data.mask, outliers)
 
     # Build predicted light curve and residuals
     lightcurve = predictor.predict([[i] for i in phases])
@@ -279,13 +280,13 @@ def get_lightcurve(data, copy=False, name=None,
     # determine phase shift for max light, if a specific shift was not provided
     if shift is None:
         arg_max_light = lightcurve.argmin()
-        lightcurve = numpy.concatenate((lightcurve[arg_max_light:],
+        lightcurve = np.concatenate((lightcurve[arg_max_light:],
                                         lightcurve[:arg_max_light]))
         shift = arg_max_light/len(phases)
     # shift observed light curve to max light
     data.T[0] = rephase(data.data, period, shift).T[0]
     # use rephased phase points from *data* in residuals
-    residuals = numpy.column_stack((data.T[0], residuals))
+    residuals = np.column_stack((data.T[0], residuals))
 
     # Grab the coefficients from the model
     coefficients = predictor.named_steps['Regressor'].coef_ \
@@ -345,9 +346,9 @@ def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
     out : dict
         See :func:`get_lightcurve`.
     """
-    data = numpy.loadtxt(file, skiprows=skiprows, usecols=use_cols)
+    data = np.loadtxt(file, skiprows=skiprows, usecols=use_cols)
     if len(data) != 0:
-        masked_data = numpy.ma.array(data=data, mask=None, dtype=float)
+        masked_data = np.ma.array(data=data, mask=None, dtype=float)
         return get_lightcurve(masked_data, *args,
                               verbosity=verbosity, **kwargs)
     else:
@@ -366,13 +367,13 @@ def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
 #
 #
 # def single_periods(data, period, min_points=10, copy=False, *args, **kwargs):
-#     data = numpy.ma.array(data, copy=copy)
+#     data = np.ma.array(data, copy=copy)
 #     time, mag, *err = data.T
 #
-#     tstart, tfinal = numpy.min(time), numpy.max(time)
-#     periods = numpy.arange(tstart, tfinal+period, period)
+#     tstart, tfinal = np.min(time), np.max(time)
+#     periods = np.arange(tstart, tfinal+period, period)
 #     data_range = (
-#         data[numpy.logical_and(time>pstart, time<=pend),:]
+#         data[np.logical_and(time>pstart, time<=pend),:]
 #         for pstart, pend in zip(periods[:-1], periods[1:])
 #     )
 #
@@ -385,7 +386,7 @@ def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
 #
 # def single_periods_from_file(filename, *args, use_cols=(0, 1, 2), skiprows=0,
 #                              **kwargs):
-#     data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols,
+#     data = np.ma.array(data=np.loadtxt(filename, usecols=use_cols,
 #                                              skiprows=skiprows),
 #                           mask=None, dtype=float)
 #     return single_periods(data, *args, **kwargs)
@@ -419,26 +420,26 @@ def prediction_residuals(phase, mag, predictor):
     # we treat them as if they are masked arrays with `mask=False`.
 
     # get data/mask information from *phase* array
-    if numpy.ma.isMaskedArray(phase):
+    if np.ma.isMaskedArray(phase):
         phase_data = phase.data
         phase_mask = phase.mask
     else:
         phase_data = phase
         phase_mask = False
     # get data/mask information from *mag* array
-    if numpy.ma.isMaskedArray(mag):
+    if np.ma.isMaskedArray(mag):
         mag_data = mag.data
         mag_mask = mag.mask
     else:
         mag_data = mag
         mag_mask = False
     # if an element is masked in either of the inputs, treat it as masked
-    mask = numpy.logical_or(phase_mask, mag_mask)
+    mask = np.logical_or(phase_mask, mag_mask)
 
     # compute the residuals, using the unmasked data
     residuals = predictor.predict(colvec(phase_data)) - mag_data
     # apply the mask to the residuals
-    residuals = numpy.ma.array(residuals, mask=mask)
+    residuals = np.ma.array(residuals, mask=mask)
 
     return residuals
 
@@ -468,11 +469,11 @@ def find_outliers(data, predictor, sigma,
         Boolean array indicating the outliers in the given *data* array.
     """
     phase, mag, *err = data.T
-    abs_residuals = numpy.absolute(prediction_residuals(phase, mag, predictor))
-    outliers = numpy.logical_and((abs_residuals > err[0]) if err else True,
+    abs_residuals = np.absolute(prediction_residuals(phase, mag, predictor))
+    outliers = np.logical_and((abs_residuals > err[0]) if err else True,
                                  abs_residuals > sigma * method(abs_residuals))
 
-    return numpy.tile(numpy.vstack(outliers), data.shape[1])
+    return np.tile(np.vstack(outliers), data.shape[1])
 
 
 def savetxt_lightcurve(filename, phased_magnitudes,
@@ -490,18 +491,18 @@ def savetxt_lightcurve(filename, phased_magnitudes,
         Array of phased magnitudes.
 
     fmt : str
-        Number format string, as understood by :func:`numpy.savetxt`.
+        Number format string, as understood by :func:`np.savetxt`.
 
     **Returns**
 
         None
     """
-    phases = numpy.linspace(0.0, 1.0, len(phased_magnitudes),
+    phases = np.linspace(0.0, 1.0, len(phased_magnitudes),
                             endpoint=False)
 
-    data = numpy.column_stack((phases, phased_magnitudes))
+    data = np.column_stack((phases, phased_magnitudes))
 
-    numpy.savetxt(filename, data,
+    np.savetxt(filename, data,
                   fmt=fmt, delimiter=delimiter)
 
 
@@ -569,7 +570,7 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
     plot : matplotlib.pyplot.Figure
         Matplotlib Figure object which contains the plot.
     """
-    phases = numpy.linspace(0, 1, n_phases, endpoint=False)
+    phases = np.linspace(0, 1, n_phases, endpoint=False)
 
     # initialize Figure and Axes objects
     fig, ax = plt.subplots()
@@ -583,9 +584,9 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
 
     error = err[0] if err else mag*err_const
 
-    inliers = ax.errorbar(numpy.hstack((phase,1+phase)),
-                          numpy.hstack((mag, mag)),
-                          yerr=numpy.hstack((error, error)),
+    inliers = ax.errorbar(np.hstack((phase,1+phase)),
+                          np.hstack((mag, mag)),
+                          yerr=np.hstack((error, error)),
                           ls='None',
                           ms=.01, mew=.01, capsize=0)
 
@@ -594,17 +595,17 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
 
     error = err[0] if err else mag*err_const
 
-    outliers = ax.errorbar(numpy.hstack((phase,1+phase)),
-                           numpy.hstack((mag, mag)),
-                           yerr=numpy.hstack((error, error)),
+    outliers = ax.errorbar(np.hstack((phase,1+phase)),
+                           np.hstack((mag, mag)),
+                           yerr=np.hstack((error, error)),
                            ls='None', marker='o' if color else 'x',
                            ms=.01 if color else 4,
                            mew=.01 if color else 1,
                            capsize=0 if color else 1)
 
     # Plot the fitted light curve
-    signal, = ax.plot(numpy.hstack((phases,1+phases)),
-                      numpy.hstack((lightcurve, lightcurve)),
+    signal, = ax.plot(np.hstack((phases,1+phases)),
+                      np.hstack((lightcurve, lightcurve)),
                       linewidth=1)
 
     if legend:
@@ -664,7 +665,7 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
     x_min = round(min(min(lightcurve), min(phased_data[:,1]))-0.05, 2)
     x_max = round(max(max(lightcurve), max(phased_data[:,1]))+0.05, 2)
     yticks = ", ".join("{:.2f}".format(x)
-                       for x in numpy.linspace(x_min, x_max, 4))
+                       for x in np.linspace(x_min, x_max, 4))
     tikz = r"""\begin{tikzpicture}
     \begin{axis}[
         trig format plots=rad,

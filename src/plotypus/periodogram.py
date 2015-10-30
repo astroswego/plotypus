@@ -1,6 +1,7 @@
 """
 Period finding and rephasing functions.
 """
+
 import numpy as np
 from scipy.signal import lombscargle
 from multiprocessing import Pool

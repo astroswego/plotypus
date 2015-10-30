@@ -1,7 +1,7 @@
 """
 Light curve space transformation preprocessors for regressing upon.
 """
-import numpy
+import numpy as np
 from numpy import pi
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
@@ -111,7 +111,7 @@ class Fourier():
         design_matrix : array-like, shape = [n_samples, 2*degree+1]
             Fourier design matrix produced by :func:`Fourier.design_matrix`.
         """
-        data = numpy.dstack((numpy.array(X).T[0], range(len(X))))[0]
+        data = np.dstack((np.array(X).T[0], range(len(X))))[0]
         phase, order = data[data[:,0].argsort()].T
         design_matrix = self.design_matrix(phase, self.degree)
         return design_matrix[order.argsort()]
@@ -165,8 +165,8 @@ class Fourier():
         cutoff = self.baart_tolerance(X)
         pipeline = Pipeline([('Fourier', Fourier()),
                              ('Regressor', self.regressor)])
-        sorted_X = numpy.sort(X, axis=0)
-        X_sorting = numpy.argsort(rowvec(X))
+        sorted_X = np.sort(X, axis=0)
+        X_sorting = np.argsort(rowvec(X))
         for degree in range(min_degree, max_degree):
             pipeline.set_params(Fourier__degree=degree)
             pipeline.fit(X, y)
@@ -240,23 +240,23 @@ class Fourier():
         """
         n_samples = phases.size
         # initialize coefficient matrix
-        M = numpy.empty((n_samples, 2*degree+1))
+        M = np.empty((n_samples, 2*degree+1))
         # indices
-        i = numpy.arange(1, degree+1)
+        i = np.arange(1, degree+1)
         # initialize the Nxn matrix that is repeated within the
         # sine and cosine terms
-        x = numpy.empty((n_samples, degree))
+        x = np.empty((n_samples, degree))
         # the Nxn matrix now has N copies of the same row, and each row is
         # integer multiples of pi counting from 1 to the degree
-        x[:,:] = i*2*numpy.pi
+        x[:,:] = i*2*np.pi
         # multiply each row of x by the phases
         x.T[:,:] *= phases
         # place 1's in the first column of the coefficient matrix
         M[:,0]    = 1
         # the odd indices of the coefficient matrix have sine terms
-        M[:,1::2] = numpy.sin(x)
+        M[:,1::2] = np.sin(x)
         # the even indices of the coefficient matrix have cosine terms
-        M[:,2::2] = numpy.cos(x)
+        M[:,2::2] = np.cos(x)
         return M
 
     @staticmethod
@@ -309,7 +309,7 @@ class Fourier():
         b_k = amplitude_coefficients[2::2]
 
         degree = a_k.size
-        k = numpy.arange(1, degree+1)
+        k = np.arange(1, degree+1)
         # A_k and Phi_k are the angle and hypotenuse in the right triangles
         # pictured below. A_k is obtained with the Pythagorean theorem, and
         # Phi_k is obtained with the 2-argument inverse tangent.
@@ -329,16 +329,16 @@ class Fourier():
         #       \ |                ---------
         #        \|                   a_k
         #
-        A_k   = numpy.sqrt(a_k**2 + b_k**2)
+        A_k   = np.sqrt(a_k**2 + b_k**2)
         # phase coefficients are shifted to the left by optional ``shift``
         if form == 'cos':
-            Phi_k = numpy.arctan2(-a_k, b_k) + 2*pi*k*shift
+            Phi_k = np.arctan2(-a_k, b_k) + 2*pi*k*shift
         elif form == 'sin':
-            Phi_k = numpy.arctan2(b_k, a_k) + 2*pi*k*shift
+            Phi_k = np.arctan2(b_k, a_k) + 2*pi*k*shift
         # constrain Phi between 0 and 2*pi
         Phi_k %= 2*pi
 
-        phase_shifted_coefficients_ = numpy.empty(amplitude_coefficients.shape,
+        phase_shifted_coefficients_ = np.empty(amplitude_coefficients.shape,
                                                   dtype=float)
         phase_shifted_coefficients_[0]    = A_0
         phase_shifted_coefficients_[1::2] = A_k
@@ -383,17 +383,17 @@ class Fourier():
 
         # there are degree-1 amplitude ratios, and degree-1 phase deltas,
         # so altogether there are 2*(degree-1) values
-        ratios = numpy.empty(2*(degree-1), dtype=float)
+        ratios = np.empty(2*(degree-1), dtype=float)
         amplitude_ratios = ratios[::2]
         phase_deltas = ratios[1::2]
 
         # amplitudes may be zero, so suppress division by zero warnings
-        with numpy.errstate(divide="ignore"):
+        with np.errstate(divide="ignore"):
             amplitude_ratios[:] = amplitudes[1:]
             amplitude_ratios   /= amplitudes[0]
 
         # indices for phase deltas
-        i = numpy.arange(2, degree+1)
+        i = np.arange(2, degree+1)
         phase_deltas[:] = phases[1:]
         phase_deltas   -= i*phases[0]
         # constrain phase_deltas between 0 and 2*pi
