@@ -384,6 +384,12 @@ def plot_periodogram_mpl(name, periodogram, period=None,
     plot : matplotlib.pyplot.Figure
         Matplotlib Figure object which contains the plot.
     """
+    ## Input Validation ##
+    allowed_forms = {"period", "frequency"}
+    if form not in allowed_forms:
+        raise TypeError("Periodogram must be one of: {}\n"
+                        "'{}' not recognized.".format(allowed_forms, form))
+
     # initialize Figure and Axes objects
     fig, ax = plt.subplots()
 
@@ -395,7 +401,7 @@ def plot_periodogram_mpl(name, periodogram, period=None,
     # plot the periodogram
     ax.plot(periods, pgram, 'k-', zorder=1)
 
-    ax.set_xlim(0, max(periods))
+    ax.set_xlim(min(periods), max(periods))
     ax.set_ylim(min(0, min(pgram)), max(pgram)+max(pgram)*0.05)
 
     ax.set_xlabel('Period (days)' if form == 'period' else 'Frequency (1/d)')
