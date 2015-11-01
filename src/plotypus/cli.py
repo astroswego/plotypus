@@ -80,7 +80,7 @@ def get_args():
         help='name of star '
              '(default = name of input file)')
     general_group.add_argument('-f', '--format', type=str,
-        default='%.5g',
+        default='%.6g',
         help='format specifier for output table')
     general_group.add_argument('--output-sep', type=str,
         default='\t',
@@ -725,12 +725,7 @@ def process_star(filename,
     if all(x is not None for x in [output_plot_periodogram, pgram]):
         # construct the filename for the output table
         filename = output_plot_periodogram(result["name"], plot_extension)
-
-        # save the table to a file
-        np.savetxt(filename, pgram,
-                   fmt=kwargs["format"],
-                   delimiter=kwargs["output_sep"],
-                   header=header)
+        
         # make the plot
         plot = plot_periodogram(result["name"],
                                 pgram, period,

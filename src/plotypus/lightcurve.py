@@ -662,6 +662,7 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
     inliers = ax.errorbar(np.hstack((phase,1+phase)),
                           np.hstack((mag, mag)),
                           yerr=np.hstack((error, error)),
+                          color="darkblue",
                           ls='None',
                           ms=.01, mew=.01, capsize=0)
 
@@ -673,6 +674,7 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
     outliers = ax.errorbar(np.hstack((phase,1+phase)),
                            np.hstack((mag, mag)),
                            yerr=np.hstack((error, error)),
+                           color="darkred",
                            ls='None', marker='o' if color else 'x',
                            ms=.01 if color else 4,
                            mew=.01 if color else 1,
@@ -681,7 +683,7 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
     # Plot the fitted light curve
     signal, = ax.plot(np.hstack((phases,1+phases)),
                       np.hstack((lightcurve, lightcurve)),
-                      linewidth=1)
+                      linewidth=1, color="k")
 
     if legend:
         ax.legend([signal, inliers, outliers],
@@ -920,7 +922,7 @@ def plot_residual_mpl(name, residuals, period,
 
     error = err[0] if err else mag*err_const
 
-    inliers = ax.errorbar(fitted, residual, yerr=error,
+    inliers = ax.errorbar(fitted, residual, yerr=error, color="darkblue",
                           ls='None', ms=.01, mew=.01, capsize=0)
     
     # Plot outliers rejected

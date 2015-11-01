@@ -9,6 +9,7 @@ from functools import partial
 import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
+from matplotlib.ticker import AutoMinorLocator
 
 __all__ = [
     'find_period',
@@ -386,16 +387,23 @@ def plot_periodogram_mpl(name, periodogram, period=None,
     # initialize Figure and Axes objects
     fig, ax = plt.subplots()
 
-    periods, pgram = periodogram.T
+    periods, pgram = periodogram[periodogram[:,0].argsort()].T
+    
 
     # display vertical line for chosen period, if given
     if period is not None:
-        ax.axvline(period, color="red", zorder=1)
+        ax.axvline(period, color="red", ls='--', zorder=2)
     # plot the periodogram
-    ax.scatter(periods, pgram, zorder=2)
+    ax.plot(periods, pgram, 'k-', zorder=1)
+    
+    ax.set_xlim(0, max(periods))
+    ax.set_ylim(min(0, min(pgram)), max(pgram)+max(pgram)*0.05)
 
-    ax.set_xlabel(form)
-    ax.set_ylabel('Periodogram')
+    ax.set_xlabel('Period (days)' if form == 'period' else 'Frequency (1/d)')
+    ax.set_ylabel('Power')
+    
+    ax.xaxis.set_minor_locator(AutoMinorLocator(5))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
 
     ax.set_title(utils.sanitize_latex(name) if sanitize_latex else name)
     fig.tight_layout(pad=0.1)
