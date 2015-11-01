@@ -18,8 +18,8 @@ from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
 from plotypus.periodogram import Lomb_Scargle, conditional_entropy
 import plotypus
 from plotypus.preprocessing import Fourier
-from plotypus.utils import (mad, make_sure_path_exists, pmap, valid_basename,
-                            verbose_print)
+from plotypus.utils import (colvec, mad, make_sure_path_exists, pmap,
+                            valid_basename, verbose_print)
 from plotypus.resources import matplotlibrc
 
 import pkg_resources # part of setuptools
@@ -27,9 +27,10 @@ __version__ = pkg_resources.require("plotypus")[0].version
 
 # Dict mapping higher level output types (table, plot) to the specific
 # quantaties output (lightcurve, residual, etc). Any new output types need to
-# be added here.
+# be added here, with "-"'s replaced with "_"'s.
 outputs = {
-    "table": ["lightcurve", "residual", "periodogram"],
+    "table": ["lightcurve", "residual", "periodogram",
+              "fourier_coeffs", "fourier_ratios"],
     "plot":  ["lightcurve", "residual", "periodogram"]
 }
 
@@ -245,6 +246,14 @@ def get_args():
 
     ## Fourier Group #########################################################
 
+    fourier_group.add_argument('--output-table-fourier-coeffs', type=str,
+        default=None,
+        help='(optional) location to save the fourier coefficient table, '
+             'or prefix to filename if any of `--output-*-all` options used.')
+    fourier_group.add_argument('--output-table-fourier-ratios', type=str,
+        default=None,
+        help='(optional) location to save the fourier ratio table, '
+             'or prefix to filename if any of `--output-*-all` options used.')
     fourier_group.add_argument('-d', '--fourier-degree', type=int, nargs=2,
         default=(2, 20), metavar=('MIN', 'MAX'),
         help='range of degrees of fourier fits to use '
@@ -260,8 +269,8 @@ def get_args():
         default='GridSearch',
         help='type of model selector to use '
              '(default = "GridSearch")')
-    fourier_group.add_argument('--series-form', type=str,
-        default='cos', choices=['sin', 'cos'],
+    fourier_group.add_argument('--fourier-form', type=str,
+        default='cos', choices=['sin_cos', 'sin', 'cos'],
         help='form of Fourier series to use in coefficient output, '
              'does not affect the fit '
              '(default = "cos")')
@@ -373,6 +382,8 @@ def main():
     if not args.no_header:
         # print file header
         print(*['Name',
+                'A_0',
+                'dA_0',
                 'Period',
                 'Shift',
                 'Coverage',
@@ -381,18 +392,12 @@ def main():
                 'R^2',
                 'MSE',
                 'MaxDegree',
-                'Params',
-                'A_0',
-                'dA_0',
-                sep.join(map(('A_{0}' + sep + 'Phi_{0}').format,
-                             range(1, max_degree+1))),
-                sep.join(map(('R_{0}1' + sep + 'phi_{0}1').format,
-                             range(2, max_degree+1)))],
+                'Params'],
               sep=sep)
 
     def printer(result):
         if result is not None:
-            print_star(result, max_degree, args.series_form,
+            print_star(result, max_degree, args.fourier_form,
                        args.format, sep)
     pmap(process_star, filepaths, callback=printer,
          processes=args.star_processes, **picklable_args)
@@ -529,11 +534,12 @@ def process_star(filename,
                  extension, star_name, period, shift,
                  parameters, period_label, shift_label,
                  plot_engine,
-                 output_table_lightcurve,  output_plot_lightcurve,
-                 output_table_residual,    output_plot_residual,
-                 output_table_periodogram, output_plot_periodogram,
+                 output_table_fourier_coeffs, output_table_fourier_ratios,
+                 output_table_lightcurve,     output_plot_lightcurve,
+                 output_table_residual,       output_plot_residual,
+                 output_table_periodogram,    output_plot_periodogram,
                  **kwargs):
-    """process_star(filename, *, extension, star_name, period, shift, parameters, period_label, shift_label, plot_engine, output_table_lightcurve, output_plot_lightcurve, output_table_residual, output_plot_residual, output_table_periodogram, **kwargs)
+    """process_star(filename, *, extension, star_name, period, shift, parameters, period_label, shift_label, plot_engine, output_table_fourier_coeffs, output_table_fourier_ratios, output_table_lightcurve,     output_plot_lightcurve, output_table_residual,       output_plot_residual, output_table_periodogram,    output_plot_periodogram, **kwargs)
 
     Processes a star's lightcurve, prints its coefficients, and saves its
     plotted lightcurve to a file. Returns the result of get_lightcurve.
@@ -570,14 +576,71 @@ def process_star(filename,
     # provides its own
     plot_extension = ".tikz" if plot_engine == "tikz" else ""
 
+    if output_table_fourier_coeffs is not None:
+        # construct the filename for the output table
+        filename = output_table_fourier_coeffs(result["name"], extension)
+
+        coeffs = result["coefficients"]
+        coeff_errors = result["coefficient_errors"]
+
+        # generate wavenumbers (only handles single-period case)
+        n_coeffs = np.size(coeffs, 0)
+        ks = colvec(np.arange(n_coeffs))
+
+        coeff_table = np.hstack((ks, coeffs, coeff_errors))
+
+        # construct the header
+        header = kwargs["output_sep"].join(
+            ["k", "a_k", "b_k",   "da_k", "db_k"]
+                if kwargs["fourier_form"] == "sin_cos" else
+            ["k", "A_k", "Phi_k", "dA_k", "dPhi_k"]
+        )
+
+        # save the table to a file
+        np.savetxt(filename, coeff_table,
+                   # improve this by making ks integers
+                   fmt=kwargs["format"],
+                   delimiter=kwargs["output_sep"],
+                   header=header)
+
+    if (output_table_fourier_ratios is not None
+        and kwargs["fourier_form"] != "sin_cos"):
+        # construct the filename for the output table
+        filename = output_table_fourier_ratios(result["name"], extension)
+
+        ratios = result["fourier_ratios"]
+        ratio_errors = result["fourier_ratio_errors"]
+        # generate ratio indices (e.g. Phi_ji)
+        # NOTE: currently only supports Phi_j1
+        n_ratios, *_ = np.shape(ratios)
+        j = colvec(np.arange(2, n_ratios+2))
+        i = np.ones_like(j)
+
+        ratio_table = np.hstack((j, i, ratios, ratio_errors))
+
+        # construct the header
+        header = kwargs["output_sep"].join(
+            ["j", "i", "R_ji", "Phi_ji", "dR_ji", "dPhi_ji"]
+        )
+        np.savetxt(filename, ratio_table,
+                   fmt=kwargs["format"],
+                   delimiter=kwargs["output_sep"],
+                   header=header)
+
+
     # output the phased lightcurve as a table
     if output_table_lightcurve is not None:
         # construct the filename for the output table
         filename = output_table_lightcurve(result["name"], extension)
+        # construct the header
+        header = kwargs["output_sep"].join(
+            ["Phase", "Magnitude"]
+        )
         # save the table to a file
         savetxt_lightcurve(filename, result["lightcurve"],
                            fmt=kwargs["format"],
-                           delimiter=kwargs["output_sep"])
+                           delimiter=kwargs["output_sep"],
+                           header=header)
 
     # output the lightcurve as a plot
     if output_plot_lightcurve is not None:
@@ -599,10 +662,15 @@ def process_star(filename,
     if output_table_residual is not None:
         # construct the filename for the output table
         filename = output_table_residual(result["name"], extension)
+        # construct the header
+        header = kwargs["output_sep"].join(
+            ["Phase", "Magnitude"]
+        )
         # save the table to a file
         np.savetxt(filename, result["residuals"],
-                      fmt=kwargs["format"],
-                      delimiter=kwargs["output_sep"])
+                   fmt=kwargs["format"],
+                   delimiter=kwargs["output_sep"],
+                   header=header)
 
     # output the residuals as a plot
     if output_plot_residual is not None:
@@ -634,10 +702,15 @@ def process_star(filename,
 
         # construct the filename for the output table
         filename = output_table_periodogram(result["name"], extension)
+        # construct the header
+        header = kwargs["output_sep"].join(
+            ["Period", "Pgram"]
+        )
         # save the table to a file
         np.savetxt(filename, pgram,
-                      fmt=kwargs["format"],
-                      delimiter=kwargs["output_sep"])
+                   fmt=kwargs["format"],
+                   delimiter=kwargs["output_sep"],
+                   header=header)
 
     # TODO: output the periodogram as a plot
 
@@ -670,35 +743,25 @@ def print_star(result, max_degree, form, fmt, sep):
     inliers  = points - outliers
 
     # get fourier coefficients and compute ratios
-    coefs  = Fourier.phase_shifted_coefficients(result['coefficients'],
-                                                shift=result['shift'],
-                                                form=form)
-    _coefs = np.concatenate(([coefs[0]],
-                               [result['dA_0']],
-                               coefs[1:]))
-    fourier_ratios = Fourier.fourier_ratios(coefs)
+    coefs          = result["coefficients"]
+    coef_errors    = result["coefficient_errors"]
 
-    # create the vectors of zeroes
-    coef_zeros  = repeat('0', times=(2*max_degree + 1 - len(coefs)))
-    ratio_zeros = repeat('0', times=(2*(max_degree - 1) - len(fourier_ratios)))
-
-    max_degree = np.trim_zeros(coefs[1::2], 'b').size
+    max_degree = max(np.trim_zeros(coefs[1:,0], 'b').size,
+                     np.trim_zeros(coefs[1:,1], 'b').size)
     n_params   = np.count_nonzero(coefs[1::2])
 
     # print the entry for the star with tabs as separators
     # and itertools.chain to separate the different results into a
     # continuous list which is then unpacked
     print(*chain(*[[result['name']],
+                   # A_0
+                   format_all([coefs[0,0], coef_errors[0,0]]),
                    format_keys('period', 'shift', 'coverage'),
                    map(str,
                        [inliers, outliers]),
                    format_keys('R2', 'MSE'),
                    map(str,
-                       [max_degree, n_params]),
-                   # coefficients and fourier ratios with trailing zeros
-                   # formatted defined by the user-provided fmt string
-                   format_all(_coefs),         coef_zeros,
-                   format_all(fourier_ratios), ratio_zeros]),
+                       [max_degree, n_params])]),
           sep=sep)
 
 

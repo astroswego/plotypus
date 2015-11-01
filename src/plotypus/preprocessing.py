@@ -339,7 +339,7 @@ class Fourier():
         Phi_k %= 2*pi
 
         phase_shifted_coefficients_ = np.empty(amplitude_coefficients.shape,
-                                                  dtype=float)
+                                               dtype=float)
         phase_shifted_coefficients_[0]    = A_0
         phase_shifted_coefficients_[1::2] = A_k
         phase_shifted_coefficients_[2::2] = Phi_k
@@ -383,9 +383,9 @@ class Fourier():
 
         # there are degree-1 amplitude ratios, and degree-1 phase deltas,
         # so altogether there are 2*(degree-1) values
-        ratios = np.empty(2*(degree-1), dtype=float)
-        amplitude_ratios = ratios[::2]
-        phase_deltas = ratios[1::2]
+        ratios = np.empty((degree-1, 2), dtype=float)
+        amplitude_ratios = ratios.T[0]
+        phase_deltas = ratios.T[1]
 
         # amplitudes may be zero, so suppress division by zero warnings
         with np.errstate(divide="ignore"):

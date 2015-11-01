@@ -96,10 +96,11 @@ def get_lightcurve(data, copy=False, name=None,
                    coarse_precision=1e-5, fine_precision=1e-9,
                    period_processes=1, output_periodogram=False,
                    sigma=20,
+                   fourier_form="sin_cos",
                    shift=None,
                    min_phase_cover=0.0, min_observations=1, n_phases=100,
                    verbosity=None, **kwargs):
-    """get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring='r2', scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=None, **kwargs)
+    """get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring='r2', scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, fourier_form="sin_cos", shift=None, min_phase_cover=0.0, n_phases=100, verbosity=None, **kwargs)
 
     Fits a light curve to the given `data` using the specified methods,
     with default behavior defined for all methods.
@@ -147,6 +148,12 @@ def get_lightcurve(data, copy=False, name=None,
     sigma : number, optional
         Upper bound on score obtained by *sigma_clipping* for a point to be
         considered an inlier.
+    fourier_form : str, optional
+        Return coefficients for the Fourier series of the given form
+        Form of coefficients in Fourier series
+            * "sin_cos", a_k sin(kwt) + b_k cos(kwt) (the default)
+            * "sin", A_k sin(kwt + Phi_k)
+            * "cos", A_k cos(kwt + Phi_k)
     shift : number or None, optional
         Phase shift to apply to light curve if provided. Light curve is shifted
         such that max light occurs at ``phase[0]`` if None given (default None).
@@ -170,10 +177,15 @@ def get_lightcurve(data, copy=False, name=None,
                 The star's period.
             * lightcurve : array-like, shape = [n_phases]
                 Magnitudes of fitted light curve sampled at sample phases.
-            * coefficients : array-like, shape = [n_coeffs]
+            * coefficients : array-like, shape = [degree+1, 2]
                 Fitted light curve coefficients.
-            * dA_0 : non-negative number
-                Error on mean magnitude.
+            * coefficient_errors : array-like, shape = [degree+1, 2]
+                Errors in coefficients
+            * fourier_ratios : array-like, shape = [degree-1, 2]
+                Ratios and phase deltas in Fourier coefficients,
+                e.g. :math:`R_{21}` and :math:`\\Phi_{21}`
+            * fourier_ratio_errors : array-like, shape = [degree+1, 2]
+                Errors in fourier_ratios
             * phased_data : array-like, shape = [n_samples]
                 *data* transformed from temporal to phase space.
             * model : predictor object
@@ -193,6 +205,15 @@ def get_lightcurve(data, copy=False, name=None,
 
     :func:`get_lightcurve_from_file`
     """
+    ################################
+    ## Argument Validity Checking ##
+    ################################
+    # Fourier form is allowed
+    _allowed_fourier_forms = {"sin_cos", "sin", "cos"}
+    if fourier_form not in _allowed_fourier_forms:
+        raise TypeError("Fourier form must be one of: {}"
+                        .format(_allowed_fourier_forms))
+
     data = np.ma.array(data, copy=copy)
     phases = np.linspace(0, 1, n_phases, endpoint=False)
 # TODO ###
@@ -307,20 +328,71 @@ def get_lightcurve(data, copy=False, name=None,
                                    cv=scoring_cv, scoring=scoring,
                                    n_jobs=scoring_processes).mean()
 
-    return {'name':         name,
-            'period':       period,
-            'periodogram':  pgram,
-            'lightcurve':   lightcurve,
-            'coefficients': coefficients,
-            'dA_0':         sem(lightcurve),
-            'phased_data':  data,
-            'residuals':    residuals,
-            'model':        predictor,
-            'R2':           get_score('r2'),
-            'MSE':          abs(get_score('mean_squared_error')),
-            'degree':       estimator.get_params()['Fourier__degree'],
-            'shift':        shift,
-            'coverage':     coverage}
+    ## Formatting Coefficients ##
+    # convert to phase-shifted form (A_k, Phi_k) if necessary
+    if fourier_form != "sin_cos":
+        coefficients = Fourier.phase_shifted_coefficients(coefficients,
+                                                          form=fourier_form,
+                                                          shift=shift)
+        a_0 = coefficients[0]
+        b_0 = 0
+    else:
+        # b_0 actually corresponds to A_0
+        a_0 = 0
+        b_0 = coefficients[0]
+    # convert coefficients into a matrix of the form:
+    #  /                  \
+    # |  A_0/a_0 -----/A_0 |
+    # |  A_1/a_1 Phi_1/b_1 |
+    # |  .       .         |
+    # |  .       .         |
+    # |  .       .         |
+    # |  A_n/a_n Phi_n/b_n |
+    #  \                  /
+    coeff_matrix = np.column_stack((
+        # A_k's or A_0 + a_k's
+        np.insert(coefficients[1::2], 0, a_0),
+        # Phi_k's or b_k's, with a zero for the 0 term
+        np.insert(coefficients[2::2], 0, b_0)))
+
+    ## Coefficient Errors ##
+    ## Note: currently we're not actually computing errors
+    ##       for now we just give the SEM(predictions) as the error on A_0
+    ##
+    # initialize coefficient errors
+    coeff_error_matrix = np.zeros_like(coeff_matrix)
+    # use SEM(predictions) as err(A_0)
+    coeff_error_matrix[0,0] = sem(lightcurve)
+
+    ## Fourier Ratios ##
+    ## Compute the Fourier ratios like R21 and Phi21,
+    ## and put them in a table, but only if the form of the Fourier
+    ## coefficients is (A_k, Phi_k), not (a_k, b_k)
+    if fourier_form != "sin_cos":
+        fourier_ratios = Fourier.fourier_ratios(coefficients)
+        # TODO
+        fourier_ratio_errors = np.zeros_like(fourier_ratios)
+    else:
+        fourier_ratios = None
+        fourier_ratio_errors = None
+
+
+    return {'name':                 name,
+            'period':               period,
+            'periodogram':          pgram,
+            'lightcurve':           lightcurve,
+            'coefficients':         coeff_matrix,
+            'coefficient_errors':   coeff_error_matrix,
+            'fourier_ratios':       fourier_ratios,
+            'fourier_ratio_errors': fourier_ratio_errors,
+            'phased_data':          data,
+            'residuals':            residuals,
+            'model':                predictor,
+            'R2':                   get_score('r2'),
+            'MSE':                  abs(get_score('mean_squared_error')),
+            'degree':               estimator.get_params()['Fourier__degree'],
+            'shift':                shift,
+            'coverage':             coverage}
 
 
 def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
@@ -477,7 +549,8 @@ def find_outliers(data, predictor, sigma,
 
 
 def savetxt_lightcurve(filename, phased_magnitudes,
-                       fmt='%.18e', delimiter=' '):
+                       fmt='%.18e', delimiter=' ',
+                       header=""):
     """savetxt_lightcurve(filename, phased_magnitudes, fmt)
 
     Save a phased lightcurve to a text file.
