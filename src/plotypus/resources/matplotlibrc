@@ -33,7 +33,7 @@ text.color : black
 axes.labelsize : 10
 # light curve plots will use the colors provided by color_cycle, in-order,
 # to color the fit line, inliers, and outliers
-# by default there is a black fit line, blue inliers, and red outliers
+# by default there are blue inliers, red outliers, and a black fit line
 axes.color_cycle : darkblue, darkred, black
 
 

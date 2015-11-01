@@ -23,6 +23,7 @@ warnings.filterwarnings("ignore", category=ConvergenceWarning)
 import matplotlib
 matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.ticker import AutoMinorLocator
 
 __all__ = [
     'make_predictor',
@@ -307,7 +308,7 @@ def get_lightcurve(data, copy=False, name=None,
     # shift observed light curve to max light
     data.T[0] = rephase(data.data, period, shift).T[0]
     # use rephased phase points from *data* in residuals
-    residuals = np.column_stack((data.T[0], residuals))
+    residuals = np.column_stack((data.T[0], residuals, data.T[2]))
 
     # Grab the coefficients from the model
     coefficients = predictor.named_steps['Regressor'].coef_ \
@@ -688,6 +689,9 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
 
     ax.set_xlabel('Phase ({0:0.7} day period)'.format(period))
     ax.set_ylabel('Magnitude')
+    
+    ax.xaxis.set_minor_locator(AutoMinorLocator(5))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
 
     ax.set_title(utils.sanitize_latex(name) if sanitize_latex else name)
     fig.tight_layout(pad=0.1)
@@ -878,7 +882,7 @@ def plot_residual(*args, engine='mpl', **kwargs):
 
 def plot_residual_mpl(name, residuals, period,
                       output=None, legend=False, sanitize_latex=False,
-                      color=True,
+                      color=True, err_const=0.005,
                       **kwargs):
     """plot_residual_mpl(name, residuals, period, output='.', sanitize_latex=False, color=True, **kwargs)
 
@@ -904,14 +908,24 @@ def plot_residual_mpl(name, residuals, period,
     # initialize Figure and Axes objects
     fig, ax = plt.subplots()
 
-    phase, resid = residuals.T
+    #phase, resid = residuals.T
 
     # format the x- and y-axis
     ax.invert_yaxis()
     ax.set_xlim(0,2)
 
-    inliers = ax.scatter(np.concatenate((phase,1+phase)),
-                         np.concatenate((resid, resid)))
+    phase, mag, *err = residuals.T
+
+    error = err[0] if err else mag*err_const
+
+    inliers = ax.errorbar(np.hstack((phase,1+phase)),
+                          np.hstack((mag, mag)),
+                          yerr=np.hstack((error, error)),
+                          ls='None',
+                          ms=.01, mew=.01, capsize=0)
+    
+    #inliers = ax.scatter(np.concatenate((phase,1+phase)),
+    #                     np.concatenate((resid, resid)))
 
     # Plot outliers rejected
 #    phase, mag = get_noise(residuals).T
@@ -923,9 +937,14 @@ def plot_residual_mpl(name, residuals, period,
         ax.legend([inliers],
                   ["Inliers"],
                   loc='best')
+    
+    ax.axhline(color='k', ls='--')
 
     ax.set_xlabel('Phase ({0:0.7} day period)'.format(period))
     ax.set_ylabel('Magnitude Residuals')
+    
+    ax.xaxis.set_minor_locator(AutoMinorLocator(5))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
 
     ax.set_title(utils.sanitize_latex(name) if sanitize_latex else name)
     fig.tight_layout(pad=0.1)
