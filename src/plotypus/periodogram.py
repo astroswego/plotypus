@@ -402,7 +402,7 @@ def plot_periodogram_mpl(name, periodogram, period=None,
     ax.plot(periods, pgram, 'k-', zorder=1)
 
     ax.set_xlim(min(periods), max(periods))
-    ax.set_ylim(min(0, min(pgram)), max(pgram)+max(pgram)*0.05)
+    ax.set_ylim(min(0, min(pgram)), max(pgram)*1.05)
 
     ax.set_xlabel('Period (days)' if form == 'period' else 'Frequency (1/d)')
     ax.set_ylabel('Power')
