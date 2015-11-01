@@ -692,7 +692,7 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
 
     ax.set_xlabel('Phase ({0:0.7} day period)'.format(period))
     ax.set_ylabel('Magnitude')
-    
+
     ax.xaxis.set_minor_locator(AutoMinorLocator(5))
     ax.yaxis.set_minor_locator(AutoMinorLocator(5))
 
@@ -924,7 +924,7 @@ def plot_residual_mpl(name, residuals, period,
 
     inliers = ax.errorbar(fitted, residual, yerr=error, color="darkblue",
                           ls='None', ms=.01, mew=.01, capsize=0)
-    
+
     # Plot outliers rejected
 #    phase, mag = get_noise(residuals).T
 
@@ -935,12 +935,12 @@ def plot_residual_mpl(name, residuals, period,
         ax.legend([inliers],
                   ["Inliers"],
                   loc='best')
-    
+
     ax.axhline(color='k', ls='--')
 
     ax.set_xlabel('Fitted Magnitude')
     ax.set_ylabel('Residual Magnitude')
-    
+
     ax.xaxis.set_minor_locator(AutoMinorLocator(5))
     ax.yaxis.set_minor_locator(AutoMinorLocator(5))
 
