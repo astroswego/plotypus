@@ -665,7 +665,7 @@ def process_star(filename,
         filename = output_table_residual(result["name"], extension)
         # construct the header
         header = kwargs["output_sep"].join(
-            ["Phase", "Magnitude", "Uncertainty"]
+            ["Time", "Phase", "Fitted", "Residual", "Uncertainty"]
         )
         # save the table to a file
         np.savetxt(filename, result["residuals"],

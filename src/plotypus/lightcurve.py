@@ -306,9 +306,10 @@ def get_lightcurve(data, copy=False, name=None,
                                         lightcurve[:arg_max_light]))
         shift = arg_max_light/len(phases)
     # shift observed light curve to max light
-    data.T[0] = rephase(data.data, period, shift).T[0]
+    phase = rephase(data.data, period, shift).T[0]
     # use rephased phase points from *data* in residuals
-    residuals = np.column_stack((data.T[0], residuals, data.T[2]))
+    residuals = np.column_stack((data.T[0], phase, data.T[1], residuals, data.T[2]))
+    data.T[0] = phase
 
     # Grab the coefficients from the model
     coefficients = predictor.named_steps['Regressor'].coef_ \
@@ -912,21 +913,16 @@ def plot_residual_mpl(name, residuals, period,
 
     # format the x- and y-axis
     ax.invert_yaxis()
-    ax.set_xlim(0,2)
+    ax.invert_xaxis()
+    #ax.set_xlim(0,2)
 
-    phase, mag, *err = residuals.T
+    time, phase, fitted, residual, *err = residuals.T
 
     error = err[0] if err else mag*err_const
 
-    inliers = ax.errorbar(np.hstack((phase,1+phase)),
-                          np.hstack((mag, mag)),
-                          yerr=np.hstack((error, error)),
-                          ls='None',
-                          ms=.01, mew=.01, capsize=0)
+    inliers = ax.errorbar(fitted, residual, yerr=error,
+                          ls='None', ms=.01, mew=.01, capsize=0)
     
-    #inliers = ax.scatter(np.concatenate((phase,1+phase)),
-    #                     np.concatenate((resid, resid)))
-
     # Plot outliers rejected
 #    phase, mag = get_noise(residuals).T
 
@@ -940,8 +936,8 @@ def plot_residual_mpl(name, residuals, period,
     
     ax.axhline(color='k', ls='--')
 
-    ax.set_xlabel('Phase ({0:0.7} day period)'.format(period))
-    ax.set_ylabel('Magnitude Residuals')
+    ax.set_xlabel('Fitted Magnitude')
+    ax.set_ylabel('Residual Magnitude')
     
     ax.xaxis.set_minor_locator(AutoMinorLocator(5))
     ax.yaxis.set_minor_locator(AutoMinorLocator(5))
