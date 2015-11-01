@@ -15,7 +15,8 @@ import plotypus.lightcurve
 from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
                                  savetxt_lightcurve, plot_lightcurve,
                                  plot_residual)
-from plotypus.periodogram import Lomb_Scargle, conditional_entropy
+from plotypus.periodogram import (Lomb_Scargle, conditional_entropy,
+                                  plot_periodogram)
 import plotypus
 from plotypus.preprocessing import Fourier
 from plotypus.utils import (colvec, mad, make_sure_path_exists, pmap,
@@ -677,7 +678,8 @@ def process_star(filename,
         # construct the filename for the output plot
         filename = output_plot_residual(result["name"], plot_extension)
         # make the plot
-        plot = plot_residual(result["name"], result["residuals"],
+        plot = plot_residual(result["name"],
+                             result["residuals"], result["period"],
                              output=filename,
                              sanitize_latex=kwargs["sanitize_latex"])
         # allow figure to get garbage collected
@@ -688,23 +690,30 @@ def process_star(filename,
             from matplotlib.pyplot import close
             close(plot)
 
-    # output the periodogram as a table
-    if all(x is not None for x in [output_table_periodogram,
-                                   result["periodogram"]]):
+    ## Periodogram ##
+
+    if result["periodogram"] is not None and (output_table_periodogram or
+                                              output_plot_periodogram):
+        pgram = result["periodogram"]
+        period = result["period"]
+
         if kwargs["output_periodogram_form"] == "frequency":
-            # frequency
-            pgram = 2*np.pi / result["periodogram"]
+            # convert periods to frequencies
+            pgram[:,0] = 2*np.pi / pgram[:,0]
+            period = 2*np.pi / period
         else:
-            # period
-            pgram = result["periodogram"]
             # flip array vertically because periods are in reverse order
             pgram = np.flipud(pgram)
+    else:
+        pgram = None
 
+    # output the periodogram as a table
+    if all(x is not None for x in [output_table_periodogram, pgram]):
         # construct the filename for the output table
         filename = output_table_periodogram(result["name"], extension)
         # construct the header
         header = kwargs["output_sep"].join(
-            ["Period", "Pgram"]
+            [kwargs["output_periodogram_form"], "Pgram"]
         )
         # save the table to a file
         np.savetxt(filename, pgram,
@@ -712,7 +721,31 @@ def process_star(filename,
                    delimiter=kwargs["output_sep"],
                    header=header)
 
-    # TODO: output the periodogram as a plot
+    # output the periodogram as a plot
+    if all(x is not None for x in [output_plot_periodogram, pgram]):
+        # construct the filename for the output table
+        filename = output_plot_periodogram(result["name"], plot_extension)
+
+        # save the table to a file
+        np.savetxt(filename, pgram,
+                   fmt=kwargs["format"],
+                   delimiter=kwargs["output_sep"],
+                   header=header)
+        # make the plot
+        plot = plot_periodogram(result["name"],
+                                pgram, period,
+                                form=kwargs["output_periodogram_form"],
+                                output=filename,
+                                sanitize_latex=kwargs["sanitize_latex"])
+        # allow figure to get garbage collected
+        if plot_engine == "mpl":
+            # Need to use a local import, a top level import had to be avoided,
+            # because the backend must be configured *before* importing pyplot.
+            # Fret not, the import is a no-op after the first call
+            from matplotlib.pyplot import close
+            close(plot)
+
+
 
     return result
 

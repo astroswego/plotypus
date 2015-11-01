@@ -6,7 +6,9 @@ import numpy as np
 from scipy.signal import lombscargle
 from multiprocessing import Pool
 from functools import partial
-
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
 
 __all__ = [
     'find_period',
@@ -15,6 +17,9 @@ __all__ = [
     'Lomb_Scargle',
     'rephase',
     'get_phase'
+    'plot_periodogram',
+    'plot_periodogram_mpl',
+    'plot_periodogram_tikz'
 ]
 
 
@@ -319,3 +324,112 @@ def get_phase(time, period=1.0, shift=0.0):
         phase-shift *shift*.
     """
     return (time / period - shift) % 1
+
+
+def plot_periodogram(*args, engine='mpl', **kwargs):
+    """plot_periodogram(*args, engine='mpl', **kwargs)
+
+    **Parameters**
+
+    engine : str, optional
+        Engine to use for plotting, choices are "mpl" and "tikz"
+        (default "mpl")
+
+    kwargs :
+        See :func:`plot_periodogram_mpl` and :func:`plot_periodogram_tikz`,
+        depending on *engine* specified.
+
+    **Returns**
+
+    plot : object
+        Plot object. Type depends on *engine* used. "mpl" engine returns a
+        `matplotlib.pyplot.Figure` object, and "tikz" engine returns a `str`.
+    """
+    if engine == "mpl":
+        return(plot_periodogram_mpl(*args, **kwargs))
+    elif engine == "tikz":
+        return(plot_periodogram_tikz(*args, **kwargs))
+    else:
+        raise KeyError("engine '{}' does not exist".format(engine))
+
+
+def plot_periodogram_mpl(name, periodogram, period=None,
+                         form="frequency",
+                         output=None,
+                         sanitize_latex=False, color=True,
+                         **kwargs):
+    """plot_periodogram_mpl(name, periodogram, period, form="frequency", output=None, legend=False, sanitize_latex=False, color=True, **kwargs)
+
+    Save a plot of the given *periodogram* to file *output*, using
+    matplotlib and return the resulting plot object.
+
+    **Parameters**
+
+    name : str
+        Name of the star. Used in plot title.
+    periodogram : array-like, shape = [n_periods, 2]
+        The periodogram, containing columns: periods/frequencies, pgram
+    period : number (optional)
+        The optimal period, to display on the plot.
+    form : str (optional)
+        Form of the periodogram, "frequency" or "period" (default "frequency")
+    output : str, optional
+        File to save plot to (default None).
+    color : boolean, optional
+        Whether or not to display color in plot (default True).
+
+    **Returns**
+
+    plot : matplotlib.pyplot.Figure
+        Matplotlib Figure object which contains the plot.
+    """
+    # initialize Figure and Axes objects
+    fig, ax = plt.subplots()
+
+    periods, pgram = periodogram.T
+
+    # display vertical line for chosen period, if given
+    if period is not None:
+        ax.axvline(period, color="red", zorder=1)
+    # plot the periodogram
+    ax.scatter(periods, pgram, zorder=2)
+
+    ax.set_xlabel(form)
+    ax.set_ylabel('Periodogram')
+
+    ax.set_title(utils.sanitize_latex(name) if sanitize_latex else name)
+    fig.tight_layout(pad=0.1)
+
+    if output is not None:
+        fig.savefig(output)
+
+    return fig
+
+
+def plot_periodogram_tikz(name, residuals, period=None,
+                          form="frequency",
+                          output=None, sanitize_latex=False,
+                          color=True,
+                          **kwargs):
+    """plot_periodogram_tikz(name, residuals, period=None, form="frequency", output=None, sanitize_latex=False, color=True, **kwargs)
+
+    Save TikZ source code for a plot of the given *residuals* to directory
+    *output*, and return the string holding the source code.
+
+    **Parameters**
+
+    name : str
+        Name of the star. Used in plot title.
+    residuals : array-like, shape = [n_samples]
+        Residuals between fitted lightcurve and observations.
+    output : str, optional
+        File to save plot to (default None).
+    color : boolean, optional
+        Whether or not to display color in plot (default True).
+
+    **Returns**
+
+    plot : matplotlib.pyplot.Figure
+        Matplotlib Figure object which contains the plot.
+    """
+    return ""

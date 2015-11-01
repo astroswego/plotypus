@@ -613,7 +613,7 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
                         **kwargs):
     """plot_lightcurve(name, lightcurve, period, phased_data, output=None, legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
 
-    Save a plot of the given *lightcurve* to directory *output*, using
+    Save a plot of the given *lightcurve* to file *output*, using
     matplotlib and return the resulting plot object.
 
     **Parameters**
@@ -705,7 +705,7 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
                          **kwargs):
     """plot_lightcurve(name, lightcurve, period, phased_data, output=None, legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
 
-    Save TikZ source code for a plot of the given *lightcurve* to directory
+    Save TikZ source code for a plot of the given *lightcurve* to file
     *output*, and return the string holding the source code.
 
     **Parameters**
@@ -876,13 +876,13 @@ def plot_residual(*args, engine='mpl', **kwargs):
         raise KeyError("engine '{}' does not exist".format(engine))
 
 
-def plot_residual_mpl(name, residuals,
-                      output=None, sanitize_latex=False,
+def plot_residual_mpl(name, residuals, period,
+                      output=None, legend=False, sanitize_latex=False,
                       color=True,
                       **kwargs):
     """plot_residual_mpl(name, residuals, period, output='.', sanitize_latex=False, color=True, **kwargs)
 
-    Save a plot of the given *residuals* to directory *output*, using
+    Save a plot of the given *residuals* to file *output*, using
     matplotlib and return the resulting plot object.
 
     **Parameters**
@@ -901,16 +901,48 @@ def plot_residual_mpl(name, residuals,
     plot : matplotlib.pyplot.Figure
         Matplotlib Figure object which contains the plot.
     """
-    return plt.figure()
+    # initialize Figure and Axes objects
+    fig, ax = plt.subplots()
+
+    phase, resid = residuals.T
+
+    # format the x- and y-axis
+    ax.invert_yaxis()
+    ax.set_xlim(0,2)
+
+    inliers = ax.scatter(np.concatenate((phase,1+phase)),
+                         np.concatenate((resid, resid)))
+
+    # Plot outliers rejected
+#    phase, mag = get_noise(residuals).T
+
+#    outliers = ax.scatter(np.hstack((phase,1+phase)),
+#                          np.hstack((resid, resid)))
+
+    if legend:
+        ax.legend([inliers],
+                  ["Inliers"],
+                  loc='best')
+
+    ax.set_xlabel('Phase ({0:0.7} day period)'.format(period))
+    ax.set_ylabel('Magnitude Residuals')
+
+    ax.set_title(utils.sanitize_latex(name) if sanitize_latex else name)
+    fig.tight_layout(pad=0.1)
+
+    if output is not None:
+        fig.savefig(output)
+
+    return fig
 
 
-def plot_residual_tikz(name, residuals,
+def plot_residual_tikz(name, residuals, period,
                        output=None, sanitize_latex=False,
                        color=True,
                        **kwargs):
     """plot_residual_tikz(name, residuals, period, output=None, sanitize_latex=False, color=True, **kwargs)
 
-    Save TikZ source code for a plot of the given *residuals* to directory
+    Save TikZ source code for a plot of the given *residuals* to file
     *output*, and return the string holding the source code.
 
     **Parameters**
