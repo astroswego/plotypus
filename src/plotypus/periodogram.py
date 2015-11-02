@@ -1,11 +1,15 @@
 """
 Period finding and rephasing functions.
 """
+
 import numpy as np
 from scipy.signal import lombscargle
 from multiprocessing import Pool
 from functools import partial
-
+import matplotlib
+matplotlib.use("Agg")
+import matplotlib.pyplot as plt
+from matplotlib.ticker import AutoMinorLocator
 
 __all__ = [
     'find_period',
@@ -14,13 +18,19 @@ __all__ = [
     'Lomb_Scargle',
     'rephase',
     'get_phase'
+    'plot_periodogram',
+    'plot_periodogram_mpl',
+    'plot_periodogram_tikz'
 ]
 
 
-def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
-    """
+def Lomb_Scargle(data, precision, min_period, max_period,
+                 period_jobs=1, output_periodogram=False):
+    """Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1, output_periodogram=False)
+
     Returns the period of *data* according to the
     `Lomb-Scargle periodogram <https://en.wikipedia.org/wiki/Least-squares_spectral_analysis#The_Lomb.E2.80.93Scargle_periodogram>`_.
+    Optionally outputs a tuple of the period and the periodogram itself.
 
     **Parameters**
 
@@ -36,11 +46,17 @@ def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
         Number of simultaneous processes to use while searching. Only one
         process will ever be used, but argument is included to conform to
         *periodogram* standards of :func:`find_period` (default 1).
+    output_periodogram : bool, optional
+        Whether or not to output the periodogram as well. If true, output
+        is a tuple instead of a single number (default False).
 
     **Returns**
 
     period : number
         The period of *data*.
+    periodogram : None or array, shape = [(max_period-min_period)/precision, 2]
+        Array with columns (period, pgram), or None if *output_periodogram* is
+        False.
     """
     time, mags, *err = data.T
     scaled_mags = (mags-mags.mean())/mags.std()
@@ -48,12 +64,21 @@ def Lomb_Scargle(data, precision, min_period, max_period, period_jobs=1):
     freqs = np.arange(minf, maxf, precision)
     pgram = lombscargle(time, scaled_mags, freqs)
 
-    return 2*np.pi/freqs[np.argmax(pgram)]
+    if output_periodogram:
+        periods = 2*np.pi/freqs
+        period = periods[np.argmax(pgram)]
+        return period, np.column_stack((periods, pgram))
+    else:
+        freq = freqs[np.argmax(pgram)]
+        period = 2*np.pi/freq
+        return period, None
 
 
 def conditional_entropy(data, precision, min_period, max_period,
-                        xbins=10, ybins=5, period_jobs=1):
-    """
+                        xbins=10, ybins=5, period_jobs=1,
+                        output_periodogram=False):
+    """conditional_entropy(data, precision, min_period, max_period, xbins=10, ybins=5, period_jobs=1, output_periodogram=False)
+
     Returns the period of *data* by minimizing conditional entropy.
     See `link <http://arxiv.org/pdf/1306.6664v2.pdf>`_ [GDDMD] for details.
 
@@ -75,11 +100,17 @@ def conditional_entropy(data, precision, min_period, max_period,
         Number of simultaneous processes to use while searching. Only one
         process will ever be used, but argument is included to conform to
         *periodogram* standards of :func:`find_period` (default 1).
+    output_periodogram : bool, optional
+        Whether or not to output the periodogram as well. If true, output
+        is a tuple instead of a single number (default False).
 
     **Returns**
 
     period : number
         The period of *data*.
+    periodogram : None or array, shape = [(max_period-min_period)/precision, 2]
+        Array with columns (period, pgram), or None if *output_periodogram* is
+        False.
 
     **Citations**
 
@@ -96,11 +127,17 @@ def conditional_entropy(data, precision, min_period, max_period,
     m = map if period_jobs <= 1 else Pool(period_jobs).map
     entropies = list(m(partial_job, periods))
 
-    return periods[np.argmin(entropies)]
+    period = periods[np.argmin(entropies)]
+
+    if output_periodogram:
+        return period, np.column_stack((periods, entropies))
+    else:
+        return period, None
 
 
 def CE(period, data, xbins=10, ybins=5):
-    """
+    """CE(period, data, xbins=10, ybins=5)
+
     Returns the conditional entropy of *data* rephased with *period*.
 
     **Parameters**
@@ -168,8 +205,9 @@ def find_period(data,
                 min_period=0.2, max_period=32.0,
                 coarse_precision=1e-5, fine_precision=1e-9,
                 periodogram=Lomb_Scargle,
-                period_jobs=1):
-    """find_period(data, min_period=0.2, max_period=32.0, coarse_precision=1e-5, fine_precision=1e-9, periodogram=Lomb_Scargle, period_jobs=1)
+                period_jobs=1,
+                output_periodogram=False):
+    """find_period(data, min_period=0.2, max_period=32.0, coarse_precision=1e-5, fine_precision=1e-9, periodogram=Lomb_Scargle, period_jobs=1, output_periodogram=False)
 
     Returns the period of *data* according to the given *periodogram*,
     searching first with a coarse precision, and then a fine precision.
@@ -193,23 +231,45 @@ def find_period(data,
         *max_period*, and *period_jobs*, and return value *period*.
     period_jobs : int, optional
         Number of simultaneous processes to use while searching (default 1).
+    output_periodogram : bool, optional
+        Whether or not to output the periodogram as well. If true, output
+        is a tuple instead of a single number (default False).
 
     **Returns**
 
     period : number
         The period of *data*.
+    periodogram : None or array, shape = [(max_period-min_period)/precision, 2]
+        Array with columns (period, pgram), or None if *output_periodogram* is
+        False.
     """
     if min_period >= max_period:
         return min_period
 
-    coarse_period = periodogram(data, coarse_precision, min_period, max_period,
-                                period_jobs=period_jobs)
+    coarse_period, coarse_pgram = periodogram(
+        data, coarse_precision,
+        min_period, max_period,
+        period_jobs=period_jobs,
+        output_periodogram=output_periodogram)
 
-    return coarse_period if coarse_precision <= fine_precision else \
-        periodogram(data, fine_precision,
-                    coarse_period - coarse_precision,
-                    coarse_period + coarse_precision,
-                    period_jobs=period_jobs)
+    if coarse_precision <= fine_precision:
+        return coarse_period, coarse_pgram
+    else:
+        fine_period, fine_pgram = periodogram(
+            data, fine_precision,
+            coarse_period - coarse_precision,
+            coarse_period + coarse_precision,
+            period_jobs=period_jobs,
+            output_periodogram=output_periodogram)
+        if output_periodogram:
+            index = (coarse_period - min_period) / coarse_precision
+            merged_pgram = np.concatenate([coarse_pgram[:index, :],
+                                           fine_pgram,
+                                           coarse_pgram[index+1:, :]])
+
+            return fine_period, merged_pgram
+        else:
+            return fine_period, None
 
 
 def rephase(data, period=1.0, shift=0.0, col=0, copy=True):
@@ -265,3 +325,124 @@ def get_phase(time, period=1.0, shift=0.0):
         phase-shift *shift*.
     """
     return (time / period - shift) % 1
+
+
+def plot_periodogram(*args, engine='mpl', **kwargs):
+    """plot_periodogram(*args, engine='mpl', **kwargs)
+
+    **Parameters**
+
+    engine : str, optional
+        Engine to use for plotting, choices are "mpl" and "tikz"
+        (default "mpl")
+
+    kwargs :
+        See :func:`plot_periodogram_mpl` and :func:`plot_periodogram_tikz`,
+        depending on *engine* specified.
+
+    **Returns**
+
+    plot : object
+        Plot object. Type depends on *engine* used. "mpl" engine returns a
+        `matplotlib.pyplot.Figure` object, and "tikz" engine returns a `str`.
+    """
+    if engine == "mpl":
+        return(plot_periodogram_mpl(*args, **kwargs))
+    elif engine == "tikz":
+        return(plot_periodogram_tikz(*args, **kwargs))
+    else:
+        raise KeyError("engine '{}' does not exist".format(engine))
+
+
+def plot_periodogram_mpl(name, periodogram, period=None,
+                         form="frequency",
+                         output=None,
+                         sanitize_latex=False, color=True,
+                         **kwargs):
+    """plot_periodogram_mpl(name, periodogram, period, form="frequency", output=None, legend=False, sanitize_latex=False, color=True, **kwargs)
+
+    Save a plot of the given *periodogram* to file *output*, using
+    matplotlib and return the resulting plot object.
+
+    **Parameters**
+
+    name : str
+        Name of the star. Used in plot title.
+    periodogram : array-like, shape = [n_periods, 2]
+        The periodogram, containing columns: periods/frequencies, pgram
+    period : number (optional)
+        The optimal period, to display on the plot.
+    form : str (optional)
+        Form of the periodogram, "frequency" or "period" (default "frequency")
+    output : str, optional
+        File to save plot to (default None).
+    color : boolean, optional
+        Whether or not to display color in plot (default True).
+
+    **Returns**
+
+    plot : matplotlib.pyplot.Figure
+        Matplotlib Figure object which contains the plot.
+    """
+    ## Input Validation ##
+    allowed_forms = {"period", "frequency"}
+    if form not in allowed_forms:
+        raise TypeError("Periodogram must be one of: {}\n"
+                        "'{}' not recognized.".format(allowed_forms, form))
+
+    # initialize Figure and Axes objects
+    fig, ax = plt.subplots()
+
+    periods, pgram = periodogram[periodogram[:,0].argsort()].T
+
+    # display vertical line for chosen period, if given
+    if period is not None:
+        ax.axvline(period, color="red", ls='--', zorder=2)
+    # plot the periodogram
+    ax.plot(periods, pgram, 'k-', zorder=1)
+
+    ax.set_xlim(min(periods), max(periods))
+    ax.set_ylim(min(0, min(pgram)), max(pgram)*1.05)
+
+    ax.set_xlabel('Period (days)' if form == 'period' else 'Frequency (1/d)')
+    ax.set_ylabel('Power')
+
+    ax.xaxis.set_minor_locator(AutoMinorLocator(5))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
+
+    ax.set_title(utils.sanitize_latex(name) if sanitize_latex else name)
+    fig.tight_layout(pad=0.1)
+
+    if output is not None:
+        fig.savefig(output)
+
+    return fig
+
+
+def plot_periodogram_tikz(name, residuals, period=None,
+                          form="frequency",
+                          output=None, sanitize_latex=False,
+                          color=True,
+                          **kwargs):
+    """plot_periodogram_tikz(name, residuals, period=None, form="frequency", output=None, sanitize_latex=False, color=True, **kwargs)
+
+    Save TikZ source code for a plot of the given *residuals* to directory
+    *output*, and return the string holding the source code.
+
+    **Parameters**
+
+    name : str
+        Name of the star. Used in plot title.
+    residuals : array-like, shape = [n_samples]
+        Residuals between fitted lightcurve and observations.
+    output : str, optional
+        File to save plot to (default None).
+    color : boolean, optional
+        Whether or not to display color in plot (default True).
+
+    **Returns**
+
+    plot : matplotlib.pyplot.Figure
+        Matplotlib Figure object which contains the plot.
+    """
+    return ""

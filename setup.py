@@ -49,7 +49,7 @@ def setup_package():
         package_data={'plotypus': ['resources/matplotlibrc']},
         entry_points={
             'console_scripts': [
-                'plotypus = plotypus.plotypus:main'
+                'plotypus = plotypus.cli:main'
             ]
         },
         keywords=[

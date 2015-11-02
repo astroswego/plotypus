@@ -2,8 +2,8 @@
 Light curve fitting and plotting functions.
 """
 
-import numpy
-numpy.random.seed(0)
+import numpy as np
+np.random.seed(0)
 from scipy.stats import sem
 from sys import stderr
 from math import floor
@@ -21,16 +21,22 @@ from sklearn.utils import ConvergenceWarning
 import warnings
 warnings.filterwarnings("ignore", category=ConvergenceWarning)
 import matplotlib
+matplotlib.use('Agg')
 import matplotlib.pyplot as plt
+from matplotlib.ticker import AutoMinorLocator
 
 __all__ = [
     'make_predictor',
     'get_lightcurve',
     'get_lightcurve_from_file',
     'find_outliers',
+    'savetxt_lightcurve',
     'plot_lightcurve',
     'plot_lightcurve_mpl',
-    'plot_lightcurve_tikz'
+    'plot_lightcurve_tikz',
+    'plot_residual',
+    'plot_residual_mpl',
+    'plot_residual_tikz'
 ]
 
 
@@ -89,12 +95,13 @@ def get_lightcurve(data, copy=False, name=None,
                    scoring='r2', scoring_cv=3, scoring_processes=1,
                    period=None, min_period=0.2, max_period=32,
                    coarse_precision=1e-5, fine_precision=1e-9,
-                   period_processes=1,
+                   period_processes=1, output_periodogram=False,
                    sigma=20,
+                   fourier_form="sin_cos",
                    shift=None,
                    min_phase_cover=0.0, min_observations=1, n_phases=100,
                    verbosity=None, **kwargs):
-    """get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring='r2', scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, shift=None, min_phase_cover=0.0, n_phases=100, verbosity=None, **kwargs)
+    """get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring='r2', scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, fourier_form="sin_cos", shift=None, min_phase_cover=0.0, n_phases=100, verbosity=None, **kwargs)
 
     Fits a light curve to the given `data` using the specified methods,
     with default behavior defined for all methods.
@@ -142,6 +149,12 @@ def get_lightcurve(data, copy=False, name=None,
     sigma : number, optional
         Upper bound on score obtained by *sigma_clipping* for a point to be
         considered an inlier.
+    fourier_form : str, optional
+        Return coefficients for the Fourier series of the given form
+        Form of coefficients in Fourier series
+            * "sin_cos", a_k sin(kwt) + b_k cos(kwt) (the default)
+            * "sin", A_k sin(kwt + Phi_k)
+            * "cos", A_k cos(kwt + Phi_k)
     shift : number or None, optional
         Phase shift to apply to light curve if provided. Light curve is shifted
         such that max light occurs at ``phase[0]`` if None given (default None).
@@ -165,10 +178,15 @@ def get_lightcurve(data, copy=False, name=None,
                 The star's period.
             * lightcurve : array-like, shape = [n_phases]
                 Magnitudes of fitted light curve sampled at sample phases.
-            * coefficients : array-like, shape = [n_coeffs]
+            * coefficients : array-like, shape = [degree+1, 2]
                 Fitted light curve coefficients.
-            * dA_0 : non-negative number
-                Error on mean magnitude.
+            * coefficient_errors : array-like, shape = [degree+1, 2]
+                Errors in coefficients
+            * fourier_ratios : array-like, shape = [degree-1, 2]
+                Ratios and phase deltas in Fourier coefficients,
+                e.g. :math:`R_{21}` and :math:`\\Phi_{21}`
+            * fourier_ratio_errors : array-like, shape = [degree+1, 2]
+                Errors in fourier_ratios
             * phased_data : array-like, shape = [n_samples]
                 *data* transformed from temporal to phase space.
             * model : predictor object
@@ -188,8 +206,17 @@ def get_lightcurve(data, copy=False, name=None,
 
     :func:`get_lightcurve_from_file`
     """
-    data = numpy.ma.array(data, copy=copy)
-    phases = numpy.linspace(0, 1, n_phases, endpoint=False)
+    ################################
+    ## Argument Validity Checking ##
+    ################################
+    # Fourier form is allowed
+    _allowed_fourier_forms = {"sin_cos", "sin", "cos"}
+    if fourier_form not in _allowed_fourier_forms:
+        raise TypeError("Fourier form must be one of: {}"
+                        .format(_allowed_fourier_forms))
+
+    data = np.ma.array(data, copy=copy)
+    phases = np.linspace(0, 1, n_phases, endpoint=False)
 # TODO ###
 # Replace dA_0 with error matrix dA
     if predictor is None:
@@ -212,24 +239,26 @@ def get_lightcurve(data, copy=False, name=None,
             return
         # Find the period of the inliers
         if period is not None:
-            _period = period
+            period = period
+            pgram  = None
         else:
             verbose_print("{}: finding period".format(name),
                           operation="period", verbosity=verbosity)
-            _period = find_period(signal,
-                                  min_period, max_period,
-                                  coarse_precision, fine_precision,
-                                  periodogram, period_processes)
+            period, pgram = find_period(signal,
+                                        min_period, max_period,
+                                        coarse_precision, fine_precision,
+                                        periodogram, period_processes,
+                                        output_periodogram=output_periodogram)
 
-        verbose_print("{}: using period {}".format(name, _period),
+        verbose_print("{}: using period {}".format(name, period),
                       operation="period", verbosity=verbosity)
-        phase, mag, *err = rephase(signal, _period).T
+        phase, mag, *err = rephase(signal, period).T
 
 # TODO ###
 # Generalize number of bins to function parameter ``coverage_bins``, which
 # defaults to 100, the current hard-coded behavior
         # Determine whether there is sufficient phase coverage
-        coverage = numpy.zeros((100))
+        coverage = np.zeros((100))
         for p in phase:
             coverage[int(floor(p*100))] = 1
         coverage = sum(coverage)/100
@@ -253,34 +282,39 @@ def get_lightcurve(data, copy=False, name=None,
 
         # Reject outliers and repeat the process if there are any
         if sigma:
-            outliers = find_outliers(rephase(data.data, _period), predictor,
+            outliers = find_outliers(rephase(data.data, period), predictor,
                                      sigma, sigma_clipping)
             num_outliers = sum(outliers)[0]
             if num_outliers == 0 or \
-               set.issubset(set(numpy.nonzero(outliers.T[0])[0]),
-                            set(numpy.nonzero(data.mask.T[0])[0])):
+               set.issubset(set(np.nonzero(outliers.T[0])[0]),
+                            set(np.nonzero(data.mask.T[0])[0])):
                 data.mask = outliers
                 break
             if num_outliers > 0:
                 verbose_print("{}: {} outliers".format(name, sum(outliers)[0]),
                               operation="outlier",
                               verbosity=verbosity)
-            data.mask = numpy.ma.mask_or(data.mask, outliers)
+            data.mask = np.ma.mask_or(data.mask, outliers)
 
-    # Build light curve and optionally shift to max light
+    # Build predicted light curve and residuals
     lightcurve = predictor.predict([[i] for i in phases])
+    residuals = prediction_residuals(phase, mag, predictor)
+    # determine phase shift for max light, if a specific shift was not provided
     if shift is None:
         arg_max_light = lightcurve.argmin()
-        lightcurve = numpy.concatenate((lightcurve[arg_max_light:],
+        lightcurve = np.concatenate((lightcurve[arg_max_light:],
                                         lightcurve[:arg_max_light]))
         shift = arg_max_light/len(phases)
-
-    data.T[0] = rephase(data.data, _period, shift).T[0]
+    # shift observed light curve to max light
+    phase = rephase(data.data, period, shift).T[0]
+    # use rephased phase points from *data* in residuals
+    residuals = np.column_stack((data.T[0], phase, data.T[1], residuals, data.T[2]))
+    data.T[0] = phase
 
     # Grab the coefficients from the model
     coefficients = predictor.named_steps['Regressor'].coef_ \
         if isinstance(predictor, Pipeline) \
-        else predictor.best_estimator_.named_steps['Regressor'].coef_,
+        else predictor.best_estimator_.named_steps['Regressor'].coef_
 
     # compute R^2 and MSE if they haven't already been
     # (one or zero have been computed, depending on the predictor)
@@ -288,25 +322,79 @@ def get_lightcurve(data, copy=False, name=None,
         if hasattr(predictor, 'best_estimator_') \
         else predictor
 
-    get_score = lambda scoring: predictor.best_score_ \
-        if hasattr(predictor, 'best_score_') \
-        and predictor.scoring == scoring \
-        else cross_val_score(estimator, colvec(phase), mag,
-                             cv=scoring_cv, scoring=scoring,
-                             n_jobs=scoring_processes).mean()
+    def get_score(scoring):
+        if hasattr(predictor, 'best_score_') and predictor.scoring == scoring:
+            return predictor.best_score_
+        else:
+            return cross_val_score(estimator, colvec(phase), mag,
+                                   cv=scoring_cv, scoring=scoring,
+                                   n_jobs=scoring_processes).mean()
 
-    return {'name':         name,
-            'period':       _period,
-            'lightcurve':   lightcurve,
-            'coefficients': coefficients[0],
-            'dA_0':         sem(lightcurve),
-            'phased_data':  data,
-            'model':        predictor,
-            'R2':           get_score('r2'),
-            'MSE':          abs(get_score('mean_squared_error')),
-            'degree':       estimator.get_params()['Fourier__degree'],
-            'shift':        shift,
-            'coverage':     coverage}
+    ## Formatting Coefficients ##
+    # convert to phase-shifted form (A_k, Phi_k) if necessary
+    if fourier_form != "sin_cos":
+        coefficients = Fourier.phase_shifted_coefficients(coefficients,
+                                                          form=fourier_form,
+                                                          shift=shift)
+        a_0 = coefficients[0]
+        b_0 = 0
+    else:
+        # b_0 actually corresponds to A_0
+        a_0 = 0
+        b_0 = coefficients[0]
+    # convert coefficients into a matrix of the form:
+    #  /                  \
+    # |  A_0/a_0 -----/A_0 |
+    # |  A_1/a_1 Phi_1/b_1 |
+    # |  .       .         |
+    # |  .       .         |
+    # |  .       .         |
+    # |  A_n/a_n Phi_n/b_n |
+    #  \                  /
+    coeff_matrix = np.column_stack((
+        # A_k's or A_0 + a_k's
+        np.insert(coefficients[1::2], 0, a_0),
+        # Phi_k's or b_k's, with a zero for the 0 term
+        np.insert(coefficients[2::2], 0, b_0)))
+
+    ## Coefficient Errors ##
+    ## Note: currently we're not actually computing errors
+    ##       for now we just give the SEM(predictions) as the error on A_0
+    ##
+    # initialize coefficient errors
+    coeff_error_matrix = np.zeros_like(coeff_matrix)
+    # use SEM(predictions) as err(A_0)
+    coeff_error_matrix[0,0] = sem(lightcurve)
+
+    ## Fourier Ratios ##
+    ## Compute the Fourier ratios like R21 and Phi21,
+    ## and put them in a table, but only if the form of the Fourier
+    ## coefficients is (A_k, Phi_k), not (a_k, b_k)
+    if fourier_form != "sin_cos":
+        fourier_ratios = Fourier.fourier_ratios(coefficients)
+        # TODO
+        fourier_ratio_errors = np.zeros_like(fourier_ratios)
+    else:
+        fourier_ratios = None
+        fourier_ratio_errors = None
+
+
+    return {'name':                 name,
+            'period':               period,
+            'periodogram':          pgram,
+            'lightcurve':           lightcurve,
+            'coefficients':         coeff_matrix,
+            'coefficient_errors':   coeff_error_matrix,
+            'fourier_ratios':       fourier_ratios,
+            'fourier_ratio_errors': fourier_ratio_errors,
+            'phased_data':          data,
+            'residuals':            residuals,
+            'model':                predictor,
+            'R2':                   get_score('r2'),
+            'MSE':                  abs(get_score('mean_squared_error')),
+            'degree':               estimator.get_params()['Fourier__degree'],
+            'shift':                shift,
+            'coverage':             coverage}
 
 
 def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
@@ -332,9 +420,9 @@ def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
     out : dict
         See :func:`get_lightcurve`.
     """
-    data = numpy.loadtxt(file, skiprows=skiprows, usecols=use_cols)
+    data = np.loadtxt(file, skiprows=skiprows, usecols=use_cols)
     if len(data) != 0:
-        masked_data = numpy.ma.array(data=data, mask=None, dtype=float)
+        masked_data = np.ma.array(data=data, mask=None, dtype=float)
         return get_lightcurve(masked_data, *args,
                               verbosity=verbosity, **kwargs)
     else:
@@ -353,13 +441,13 @@ def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
 #
 #
 # def single_periods(data, period, min_points=10, copy=False, *args, **kwargs):
-#     data = numpy.ma.array(data, copy=copy)
+#     data = np.ma.array(data, copy=copy)
 #     time, mag, *err = data.T
 #
-#     tstart, tfinal = numpy.min(time), numpy.max(time)
-#     periods = numpy.arange(tstart, tfinal+period, period)
+#     tstart, tfinal = np.min(time), np.max(time)
+#     periods = np.arange(tstart, tfinal+period, period)
 #     data_range = (
-#         data[numpy.logical_and(time>pstart, time<=pend),:]
+#         data[np.logical_and(time>pstart, time<=pend),:]
 #         for pstart, pend in zip(periods[:-1], periods[1:])
 #     )
 #
@@ -372,10 +460,62 @@ def get_lightcurve_from_file(file, *args, use_cols=None, skiprows=0,
 #
 # def single_periods_from_file(filename, *args, use_cols=(0, 1, 2), skiprows=0,
 #                              **kwargs):
-#     data = numpy.ma.array(data=numpy.loadtxt(filename, usecols=use_cols,
+#     data = np.ma.array(data=np.loadtxt(filename, usecols=use_cols,
 #                                              skiprows=skiprows),
 #                           mask=None, dtype=float)
 #     return single_periods(data, *args, **kwargs)
+
+
+def prediction_residuals(phase, mag, predictor):
+    """prediction_residuals(phase, mag, predictor)
+
+    Returns the residuals between the observed magnitudes, *mag*, and the
+    magnitudes predicted by the *predictor* at the given *phase* points.
+
+    **Parameters**
+
+    phase : array-like, shape = [n_samples]
+        Array of phases of observation.
+    mag : array-like, shape = [n_samples]
+        Array of observed magnitudes at the corresponding phases.
+    predictor : object that has "fit" and "predict" methods, optional
+        Object which predicts *mag* at the given *phase* points.
+
+    **Returns**
+
+    residuals : array-like, shape = [n_samples]
+        Array of residuals between observed and fitted magnitudes.
+    """
+    # If one of the inputs is a masked array, the masked elements will be
+    # skipped in the computation. This is undesirable, as we still want to know
+    # the residuals for the outliers. As a workaround, we take out the masked
+    # arrays' *data* and *mask* attributes, and perform the computation on the
+    # data, reapplying the mask in the end. If the arrays are not masked, then
+    # we treat them as if they are masked arrays with `mask=False`.
+
+    # get data/mask information from *phase* array
+    if np.ma.isMaskedArray(phase):
+        phase_data = phase.data
+        phase_mask = phase.mask
+    else:
+        phase_data = phase
+        phase_mask = False
+    # get data/mask information from *mag* array
+    if np.ma.isMaskedArray(mag):
+        mag_data = mag.data
+        mag_mask = mag.mask
+    else:
+        mag_data = mag
+        mag_mask = False
+    # if an element is masked in either of the inputs, treat it as masked
+    mask = np.logical_or(phase_mask, mag_mask)
+
+    # compute the residuals, using the unmasked data
+    residuals = predictor.predict(colvec(phase_data)) - mag_data
+    # apply the mask to the residuals
+    residuals = np.ma.array(residuals, mask=mask)
+
+    return residuals
 
 
 def find_outliers(data, predictor, sigma,
@@ -387,8 +527,8 @@ def find_outliers(data, predictor, sigma,
     **Parameters**
 
     data : array-like, shape = [n_samples, 2] or [n_samples, 3]
-        Photometry array containing columns *phase*, *magnitude*, and
-        (optional) *error*.
+        Photometry array containing columns *phase*, *magnitude*, and (optional)
+        *error*.
     predictor : object that has "fit" and "predict" methods, optional
         Object which fits the light curve obtained from *data* after rephasing.
     sigma : number
@@ -403,15 +543,42 @@ def find_outliers(data, predictor, sigma,
         Boolean array indicating the outliers in the given *data* array.
     """
     phase, mag, *err = data.T
-    residuals = numpy.absolute(predictor.predict(colvec(phase)) - mag)
-    outliers = numpy.logical_and((residuals > err[0]) if err else True,
-                                 residuals > sigma * method(residuals))
+    abs_residuals = np.absolute(prediction_residuals(phase, mag, predictor))
+    outliers = np.logical_and((abs_residuals > err[0]) if err else True,
+                                 abs_residuals > sigma * method(abs_residuals))
 
-    return numpy.tile(numpy.vstack(outliers), data.shape[1])
+    return np.tile(np.vstack(outliers), data.shape[1])
 
 
-def _plot_lightcurve_filename():
-    pass
+def savetxt_lightcurve(filename, phased_magnitudes,
+                       fmt='%.18e', delimiter=' ',
+                       header=""):
+    """savetxt_lightcurve(filename, phased_magnitudes, fmt)
+
+    Save a phased lightcurve to a text file.
+
+    **Parameters**
+
+    filename : str
+        File to save lightcurve table to. Directory must exist.
+
+    phased_magnitudes: array-like, shape = [n_samples]
+        Array of phased magnitudes.
+
+    fmt : str
+        Number format string, as understood by :func:`np.savetxt`.
+
+    **Returns**
+
+        None
+    """
+    phases = np.linspace(0.0, 1.0, len(phased_magnitudes),
+                            endpoint=False)
+
+    data = np.column_stack((phases, phased_magnitudes))
+
+    np.savetxt(filename, data,
+                  fmt=fmt, delimiter=delimiter)
 
 
 def plot_lightcurve(*args, engine='mpl', **kwargs):
@@ -442,19 +609,19 @@ def plot_lightcurve(*args, engine='mpl', **kwargs):
 
 
 def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
-                        output='.', legend=False, sanitize_latex=False,
+                        output=None, legend=False, sanitize_latex=False,
                         color=True, n_phases=100,
                         err_const=0.005,
                         **kwargs):
-    """plot_lightcurve(name, lightcurve, period, phased_data, output='.', legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
+    """plot_lightcurve(name, lightcurve, period, phased_data, output=None, legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
 
-    Save a plot of the given *lightcurve* to directory *output*, using
+    Save a plot of the given *lightcurve* to file *output*, using
     matplotlib and return the resulting plot object.
 
     **Parameters**
 
     name : str
-        Name of the star. Used in filename and plot title.
+        Name of the star. Used in plot title.
     lightcurve : array-like, shape = [n_samples]
         Fitted lightcurve.
     period : number
@@ -463,7 +630,7 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
         Photometry array containing columns *time*, *magnitude*, and
         (optional) *error*. *time* should be unphased.
     output : str, optional
-        Directory to save plot to (default '.').
+        File to save plot to (default None).
     legend : boolean, optional
         Whether or not to display legend on plot (default False).
     color : boolean, optional
@@ -478,7 +645,7 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
     plot : matplotlib.pyplot.Figure
         Matplotlib Figure object which contains the plot.
     """
-    phases = numpy.linspace(0, 1, n_phases, endpoint=False)
+    phases = np.linspace(0, 1, n_phases, endpoint=False)
 
     # initialize Figure and Axes objects
     fig, ax = plt.subplots()
@@ -492,9 +659,10 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
 
     error = err[0] if err else mag*err_const
 
-    inliers = ax.errorbar(numpy.hstack((phase,1+phase)),
-                          numpy.hstack((mag, mag)),
-                          yerr=numpy.hstack((error, error)),
+    inliers = ax.errorbar(np.hstack((phase,1+phase)),
+                          np.hstack((mag, mag)),
+                          yerr=np.hstack((error, error)),
+                          color="darkblue",
                           ls='None',
                           ms=.01, mew=.01, capsize=0)
 
@@ -503,18 +671,19 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
 
     error = err[0] if err else mag*err_const
 
-    outliers = ax.errorbar(numpy.hstack((phase,1+phase)),
-                           numpy.hstack((mag, mag)),
-                           yerr=numpy.hstack((error, error)),
+    outliers = ax.errorbar(np.hstack((phase,1+phase)),
+                           np.hstack((mag, mag)),
+                           yerr=np.hstack((error, error)),
+                           color="darkred",
                            ls='None', marker='o' if color else 'x',
                            ms=.01 if color else 4,
                            mew=.01 if color else 1,
                            capsize=0 if color else 1)
 
     # Plot the fitted light curve
-    signal, = ax.plot(numpy.hstack((phases,1+phases)),
-                      numpy.hstack((lightcurve, lightcurve)),
-                      linewidth=1)
+    signal, = ax.plot(np.hstack((phases,1+phases)),
+                      np.hstack((lightcurve, lightcurve)),
+                      linewidth=1, color="k")
 
     if legend:
         ax.legend([signal, inliers, outliers],
@@ -524,29 +693,32 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
     ax.set_xlabel('Phase ({0:0.7} day period)'.format(period))
     ax.set_ylabel('Magnitude')
 
+    ax.xaxis.set_minor_locator(AutoMinorLocator(5))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
+
     ax.set_title(utils.sanitize_latex(name) if sanitize_latex else name)
     fig.tight_layout(pad=0.1)
 
-    make_sure_path_exists(output)
-    fig.savefig(path.join(output, name))
+    if output is not None:
+        fig.savefig(output)
 
     return fig
 
 
 def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
-                         output='.', legend=False, sanitize_latex=False,
+                         output=None, legend=False, sanitize_latex=False,
                          color=True, n_phases=100,
                          err_const=0.005,
                          **kwargs):
-    """plot_lightcurve(name, lightcurve, period, phased_data, output='.', legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
+    """plot_lightcurve(name, lightcurve, period, phased_data, output=None, legend=False, color=True, n_phases=100, err_const=0.005, **kwargs)
 
-    Save TikZ source code for a plot of the given *lightcurve* to directory
+    Save TikZ source code for a plot of the given *lightcurve* to file
     *output*, and return the string holding the source code.
 
     **Parameters**
 
     name : str
-        Name of the star. Used in filename and plot title.
+        Name of the star. Used in plot title.
     lightcurve : array-like, shape = [n_samples]
         Fitted lightcurve.
     period : number
@@ -555,7 +727,7 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
         Photometry array containing columns *time*, *magnitude*, and
         (optional) *error*. *time* should be unphased.
     output : str, optional
-        Directory to save plot to (default '.').
+        File to save plot to (default None).
     legend : boolean, optional
         Whether or not to display legend on plot (default False).
     color : boolean, optional
@@ -570,10 +742,10 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
     plot : str
         String containing the TikZ source code for the plot.
     """
-    x_min = round(min(min(lightcurve), min(phased_data[:,1]))-0.05, 2) 
+    x_min = round(min(min(lightcurve), min(phased_data[:,1]))-0.05, 2)
     x_max = round(max(max(lightcurve), max(phased_data[:,1]))+0.05, 2)
-    yticks = ", ".join("{:.2f}".format(x) 
-                       for x in numpy.linspace(x_min, x_max, 4))
+    yticks = ", ".join("{:.2f}".format(x)
+                       for x in np.linspace(x_min, x_max, 4))
     tikz = r"""\begin{tikzpicture}
     \begin{axis}[
         trig format plots=rad,
@@ -599,20 +771,20 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
         line width=0.75pt
     ] {
 """ % (period, x_min, x_max, yticks)
-    
+
     # Add light curve
     for (k, A) in enumerate(coefficients):
         if k == 0:
             tikz += r"""        %s"""%A
-        elif (A == 0): 
+        elif (A == 0):
             continue
         elif k % 2:
-            tikz += r""" + 
+            tikz += r""" +
         sin(2*pi*%s*(x+%s)) * %s""" % (int((k-1)/2+1), kwargs['shift'], A)
         else:
-            tikz += r""" + 
+            tikz += r""" +
         cos(2*pi*%s*(x+%s)) * %s""" % (int(k/2), kwargs['shift'], A)
-    
+
     # Add points
     tikz += r"""
     };
@@ -640,7 +812,7 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
             %s %s %s %s \\
             %s %s %s %s \\""" % (row[0], row[1], row[2]/2, row[2]/2,
                                1+row[0], row[1], row[2]/2, row[2]/2)
-    
+
     # Add outliers
     if (len(get_noise(phased_data))>0):
         tikz += r"""
@@ -669,7 +841,7 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
                 %s %s %s %s \\
                 %s %s %s %s \\""" % (row[0], row[1], row[2]/2, row[2]/2,
                                    1+row[0], row[1], row[2]/2, row[2]/2)
-    
+
     # Done!
     tikz += r"""
         };
@@ -677,9 +849,133 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
 \end{tikzpicture}"""
 
     # save tikz to a file
-    make_sure_path_exists(output)
-    filename = path.join(output, name+".tikz")
-    with open(filename, "w") as f:
-        f.write(tikz)
+    if output is not None:
+        with open(output, "w") as f:
+            f.write(tikz)
 
     return tikz
+
+
+def plot_residual(*args, engine='mpl', **kwargs):
+    """plot_residual(*args, engine='mpl', **kwargs)
+
+    **Parameters**
+
+    engine : str, optional
+        Engine to use for plotting, choices are "mpl" and "tikz"
+        (default "mpl")
+
+    kwargs :
+        See :func:`plot_residuals_mpl` and :func:`plot_residuals_tikz`,
+        depending on *engine* specified.
+
+    **Returns**
+
+    plot : object
+        Plot object. Type depends on *engine* used. "mpl" engine returns a
+        `matplotlib.pyplot.Figure` object, and "tikz" engine returns a `str`.
+    """
+    if engine == "mpl":
+        return(plot_residual_mpl(*args, **kwargs))
+    elif engine == "tikz":
+        return(plot_residual_tikz(*args, **kwargs))
+    else:
+        raise KeyError("engine '{}' does not exist".format(engine))
+
+
+def plot_residual_mpl(name, residuals, period,
+                      output=None, legend=False, sanitize_latex=False,
+                      color=True, err_const=0.005,
+                      **kwargs):
+    """plot_residual_mpl(name, residuals, period, output='.', sanitize_latex=False, color=True, **kwargs)
+
+    Save a plot of the given *residuals* to file *output*, using
+    matplotlib and return the resulting plot object.
+
+    **Parameters**
+
+    name : str
+        Name of the star. Used in plot title.
+    residuals : array-like, shape = [n_samples]
+        Residuals between fitted lightcurve and observations.
+    output : str, optional
+        File to save plot to (default None).
+    color : boolean, optional
+        Whether or not to display color in plot (default True).
+
+    **Returns**
+
+    plot : matplotlib.pyplot.Figure
+        Matplotlib Figure object which contains the plot.
+    """
+    # initialize Figure and Axes objects
+    fig, ax = plt.subplots()
+
+    #phase, resid = residuals.T
+
+    # format the x- and y-axis
+    ax.invert_yaxis()
+    ax.invert_xaxis()
+    #ax.set_xlim(0,2)
+
+    time, phase, fitted, residual, *err = residuals.T
+
+    error = err[0] if err else mag*err_const
+
+    inliers = ax.errorbar(fitted, residual, yerr=error, color="darkblue",
+                          ls='None', ms=.01, mew=.01, capsize=0)
+
+    # Plot outliers rejected
+#    phase, mag = get_noise(residuals).T
+
+#    outliers = ax.scatter(np.hstack((phase,1+phase)),
+#                          np.hstack((resid, resid)))
+
+    if legend:
+        ax.legend([inliers],
+                  ["Inliers"],
+                  loc='best')
+
+    ax.axhline(color='k', ls='--')
+
+    ax.set_xlabel('Fitted Magnitude')
+    ax.set_ylabel('Residual Magnitude')
+
+    ax.xaxis.set_minor_locator(AutoMinorLocator(5))
+    ax.yaxis.set_minor_locator(AutoMinorLocator(5))
+
+    ax.set_title(utils.sanitize_latex(name) if sanitize_latex else name)
+    fig.tight_layout(pad=0.1)
+
+    if output is not None:
+        fig.savefig(output)
+
+    return fig
+
+
+def plot_residual_tikz(name, residuals, period,
+                       output=None, sanitize_latex=False,
+                       color=True,
+                       **kwargs):
+    """plot_residual_tikz(name, residuals, period, output=None, sanitize_latex=False, color=True, **kwargs)
+
+    Save TikZ source code for a plot of the given *residuals* to file
+    *output*, and return the string holding the source code.
+
+    **Parameters**
+
+    name : str
+        Name of the star. Used in plot title.
+    residuals : array-like, shape = [n_samples]
+        Residuals between fitted lightcurve and observations.
+    output : str, optional
+        File to save plot to (default None).
+    color : boolean, optional
+        Whether or not to display color in plot (default True).
+
+    **Returns**
+
+    plot : matplotlib.pyplot.Figure
+        Matplotlib Figure object which contains the plot.
+    """
+    return ""
