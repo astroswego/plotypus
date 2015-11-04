@@ -77,9 +77,11 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
     out : object with "fit" and "predict" methods
         The created predictor object.
     """
+    # 
     fourier = Fourier(degree_range=fourier_degree, regressor=regressor) \
               if use_baart else Fourier()
-    pipeline = Pipeline([('Fourier', fourier), ('Regressor', regressor)])
+    pipeline = Pipeline([('Fourier', fourier),
+                         ('Regressor', regressor)])
     if use_baart:
         return pipeline
     else:
