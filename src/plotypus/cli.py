@@ -2,6 +2,7 @@ import numpy as np
 from numpy import std
 from sys import exit, stdin, stdout, stderr
 from os import path, listdir
+import dill
 from argparse import ArgumentError, ArgumentParser, SUPPRESS
 from pandas import read_table
 from sklearn.linear_model import (LassoCV, LassoLarsCV, LassoLarsIC,
@@ -34,6 +35,22 @@ outputs = {
               "fourier_coeffs", "fourier_ratios"],
     "plot":  ["lightcurve", "residual", "periodogram"]
 }
+
+# generate a set of the function names corresponding to the above
+# outputs, for later use
+full_output_names = set(chain.from_iterable(
+    ("_".join(["output", general_type, specific_type])
+      for specific_type in subtypes)
+    for general_type, subtypes in outputs.items()
+))
+
+# set of arguments which cannot be serialized by the `pickle` module.
+# fortunately the `dill` module was created to fix the shortcomings of
+# `pickle`, and so we explicitly serialize these arguments with `dill`
+non_picklable_args  = {"input"}
+non_picklable_args |= full_output_names
+
+
 
 def get_args():
     parser = ArgumentParser()
@@ -374,10 +391,12 @@ def main():
 
     # create a dict containing all args which can be pickled, because
     # all parameters to pmap must be picklable
-    non_picklable_args = {"input"}
-    picklable_args = {k: args_dict[k]
-                      for k in args_dict
-                      if k not in non_picklable_args}
+
+    # serialize all arguments which cannot be pickled using the `dill` module,
+    # as all parameters to `pmap` must be picklable
+    for arg in non_picklable_args:
+        args_dict[arg] = dill.dumps(args_dict[arg])
+
     sep = args.output_sep
 
     if not args.no_header:
@@ -401,7 +420,7 @@ def main():
             print_star(result, max_degree, args.fourier_form,
                        args.format, sep)
     pmap(process_star, filepaths, callback=printer,
-         processes=args.star_processes, **picklable_args)
+         processes=args.star_processes, **args_dict)
 
 
 def fname_fn_bulk(directory, prefix):
@@ -535,16 +554,28 @@ def process_star(filename,
                  extension, star_name, period, shift,
                  parameters, period_label, shift_label,
                  plot_engine,
-                 output_table_fourier_coeffs, output_table_fourier_ratios,
-                 output_table_lightcurve,     output_plot_lightcurve,
-                 output_table_residual,       output_plot_residual,
-                 output_table_periodogram,    output_plot_periodogram,
                  **kwargs):
     """process_star(filename, *, extension, star_name, period, shift, parameters, period_label, shift_label, plot_engine, output_table_fourier_coeffs, output_table_fourier_ratios, output_table_lightcurve,     output_plot_lightcurve, output_table_residual,       output_plot_residual, output_table_periodogram,    output_plot_periodogram, **kwargs)
 
     Processes a star's lightcurve, prints its coefficients, and saves its
     plotted lightcurve to a file. Returns the result of get_lightcurve.
     """
+    # deserialize objects which have been serialized with `dill`
+    for arg in non_picklable_args:
+        kwargs[arg] = dill.loads(kwargs[arg])
+
+
+    # extract some kwargs into their own variables for easy usage
+    output_table_fourier_coeffs = kwargs["output_table_fourier_coeffs"]
+    output_table_fourier_ratios = kwargs["output_table_fourier_ratios"]
+    output_table_lightcurve     = kwargs["output_table_lightcurve"]
+    output_plot_lightcurve      = kwargs["output_plot_lightcurve"]
+    output_table_residual       = kwargs["output_table_residual"]
+    output_plot_residual        = kwargs["output_plot_residual"]
+    output_table_periodogram    = kwargs["output_table_periodogram"]
+    output_plot_periodogram     = kwargs["output_plot_periodogram"]
+
+
     if star_name is None:
         basename = path.basename(filename)
         if basename.endswith(extension):
@@ -725,7 +756,7 @@ def process_star(filename,
     if all(x is not None for x in [output_plot_periodogram, pgram]):
         # construct the filename for the output table
         filename = output_plot_periodogram(result["name"], plot_extension)
-        
+
         # make the plot
         plot = plot_periodogram(result["name"],
                                 pgram, period,

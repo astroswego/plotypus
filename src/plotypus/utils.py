@@ -2,7 +2,8 @@ from os import makedirs
 from os.path import basename, join, isdir
 from sys import stderr
 from multiprocessing import Pool
-from numpy import absolute, concatenate, median, resize
+import numbers
+from numpy import absolute, concatenate, isscalar, median, resize
 
 __all__ = [
     'verbose_print',
@@ -72,19 +73,49 @@ def pmap(func, args, processes=None, callback=lambda *_, **__: None, **kwargs):
     results : list
         A list equivalent to ``[func(x, **kwargs) for x in args]``.
     """
+    ######################
+    ## Input Validation ##
+    ######################
+    # processes=None is a special case, and avoids all the following checks
+    if (processes is not None):
+        # processes must be scalar, not an array, list, etc
+        if not isscalar(processes):
+            raise TypeError("Number of processes must be scalar, not '{}'"
+                            .format(processes))
+        # processes must be an integer
+        elif not isinstance(processes, numbers.Integral):
+            raise TypeError("Number of processes must be an integer, not '{}'"
+                            .format(processes))
+        # processes must be at least 1
+        elif processes < 1:
+            raise TypeError("Number of processes must be positive, not '{}'"
+                            .format(processes))
+
+    # if only one process is used, avoid the overhead of a thread pool, while
+    # emulating the behavior of a `multiprocessing.apply_async`
     if processes is 1:
+        # initialize a list of results
         results = []
+        # map the function over the arguments,
+        # run the callback function on each result,
+        # and append the results to a list
         for arg in args:
             result = func(arg, **kwargs)
             results.append(result)
             callback(result)
-
+        # return the list of results
         return results
+    # if more than one process is used, use a thread pool
     else:
-        with Pool() if processes is None else Pool(processes) as p:
+        # create a thread pool with the number of processes specified,
+        # or use the number of CPUs if processes=None
+        with Pool(processes) as p:
+            # create a list of futures, holding the results of calling the
+            # function on each argument
             results = [p.apply_async(func, (arg,), kwargs, callback)
                        for arg in args]
-
+            # evaluate each of the results and store them in a list,
+            # return the list
             return [result.get() for result in results]
 
 

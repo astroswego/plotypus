@@ -1,5 +1,5 @@
 """
-Light curve space transformation preprocessors for regressing upon.
+Preprocessors to light curve regression.
 """
 import numpy as np
 from numpy import pi
@@ -89,8 +89,11 @@ class Fourier():
 
         self : returns an instance of self
         """
+        # if a range of degrees to search were not provided, use Baart's
+        # criteria to search for one
         if self.degree_range is not None:
             self.degree = self.baart_criteria(X, y)
+
         return self
 
     def transform(self, X, y=None, **params):
@@ -157,21 +160,34 @@ class Fourier():
                  The uncertainties of Fourier decomposition parameters.",
                  A&A, Vol. 170, p. 59-69
         """
+        # degree_range should be a length two iterable:
+        #   (min_degree, max_degree)
         try:
             min_degree, max_degree = self.degree_range
         except ValueError:
             raise ValueError("Degree range must be a length two sequence")
 
+        # determine the Baart cutoff tolerance
         cutoff = self.baart_tolerance(X)
+        # create a simple pipeline for fitting a Fourier series, using the
+        # provided regressor
         pipeline = Pipeline([('Fourier', Fourier()),
                              ('Regressor', self.regressor)])
+        # do some probably unnecessary sorting
         sorted_X = np.sort(X, axis=0)
         X_sorting = np.argsort(rowvec(X))
+        # iterate over the range of degrees until the Baart cutoff is reached
         for degree in range(min_degree, max_degree):
+            # edit the pipeline, such that it fits the desired Fourier degree
             pipeline.set_params(Fourier__degree=degree)
+            # fit a "degree"-th order Fourier series to the data,
+            # use this model to predict the light curve at the observed times,
+            # and take the residuals between the observed and predicted values
             pipeline.fit(X, y)
             lc = pipeline.predict(sorted_X)
             residuals = y[X_sorting] - lc
+            # compute the autocorrelation of the residuals, and if they are
+            # below the Baart cutoff tolerance, we have converged to a solution
             p_c = autocorrelation(residuals)
             if abs(p_c) <= cutoff:
                 return degree

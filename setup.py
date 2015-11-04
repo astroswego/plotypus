@@ -64,7 +64,8 @@ def setup_package():
             'numpy>=1.6.0',
             'pandas>=0.13.0',
             'scikit-learn>=0.14.0',
-            'scipy>=0.9.0'
+            'scipy>=0.9.0',
+            'dill>=0.2.4'
         ]
     )
 
