@@ -384,16 +384,7 @@ def main():
 
     min_degree, max_degree = args.fourier_degree
     filenames = list(map(lambda x: x.strip(), get_files(args.input)))
-    filepaths = map(lambda filename:
-                    filename if path.isfile(filename)
-                             else path.join(args.input, filename),
-                    filenames)
 
-    # create a dict containing all args which can be pickled, because
-    # all parameters to pmap must be picklable
-
-    # serialize all arguments which cannot be pickled using the `dill` module,
-    # as all parameters to `pmap` must be picklable
     for arg in non_picklable_args:
         args_dict[arg] = dill.dumps(args_dict[arg])
 
@@ -419,7 +410,7 @@ def main():
         if result is not None:
             print_star(result, max_degree, args.fourier_form,
                        args.format, sep)
-    pmap(process_star, filepaths, callback=printer,
+    pmap(process_star, filenames, callback=printer,
          processes=args.star_processes, **args_dict)
 
 
@@ -829,18 +820,28 @@ def get_files(input):
 
     Returns an iterable of filenames containing data to process.
     """
+    # if no input as specified, read from stdin, expecting to see a list of
+    # filenames, and process those
     if input is None:
         return stdin
+    # if the input begins with an '@', assume that the file contains a list of
+    # filenames, and process those
     elif input[0] == "@":
         with open(input[1:], 'r') as f:
             # TODO:
             # check if mapping over `f` instead of `f.readlines()` has same
             # result
             return map(lambda x: x.strip(), f.readlines())
+    # if the input is the name of a single file, and doesn't begin with an '@',
+    # only process the light curve in that file
     elif path.isfile(input):
         return [input]
+    # if the input is the name of a directory, process each of the files within
+    # that directory
     elif path.isdir(input):
-        return sorted(listdir(input))
+        return sorted(map(partial(path.join, input),
+                          listdir(input)))
+    # input does not exist
     else:
         raise FileNotFoundError('file {} not found'.format(input))
 
