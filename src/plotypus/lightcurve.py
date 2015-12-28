@@ -241,20 +241,20 @@ def get_lightcurve(data, copy=False, name=None,
             return
         # Find the period of the inliers
         if period is not None:
-            period = period
-            pgram  = None
+            _period = period
+            pgram = None
         else:
             verbose_print("{}: finding period".format(name),
                           operation="period", verbosity=verbosity)
-            period, pgram = find_period(signal,
+            _period, pgram = find_period(signal,
                                         min_period, max_period,
                                         coarse_precision, fine_precision,
                                         periodogram, period_processes,
                                         output_periodogram=output_periodogram)
 
-        verbose_print("{}: using period {}".format(name, period),
+        verbose_print("{}: using period {}".format(name, _period),
                       operation="period", verbosity=verbosity)
-        phase, mag, *err = rephase(signal, period).T
+        phase, mag, *err = rephase(signal, _period).T
 
 # TODO ###
 # Generalize number of bins to function parameter ``coverage_bins``, which
@@ -284,7 +284,7 @@ def get_lightcurve(data, copy=False, name=None,
 
         # Reject outliers and repeat the process if there are any
         if sigma:
-            outliers = find_outliers(rephase(data.data, period), predictor,
+            outliers = find_outliers(rephase(data.data, _period), predictor,
                                      sigma, sigma_clipping)
             num_outliers = sum(outliers)[0]
             if num_outliers == 0 or \
@@ -298,6 +298,9 @@ def get_lightcurve(data, copy=False, name=None,
                               verbosity=verbosity)
             data.mask = np.ma.mask_or(data.mask, outliers)
 
+    # replace *phase*, *mag*, and *err* with the newly masked values in *data*
+    phase, mag, *err = data.T
+
     # Build predicted light curve and residuals
     lightcurve = predictor.predict([[i] for i in phases])
     residuals = prediction_residuals(phase, mag, predictor)
@@ -308,9 +311,10 @@ def get_lightcurve(data, copy=False, name=None,
                                         lightcurve[:arg_max_light]))
         shift = arg_max_light/len(phases)
     # shift observed light curve to max light
-    phase = rephase(data.data, period, shift).T[0]
+    phase = rephase(data.data, _period, shift).T[0]
     # use rephased phase points from *data* in residuals
-    residuals = np.column_stack((data.T[0], phase, data.T[1], residuals, data.T[2]))
+    residuals = np.column_stack((data.T[0], phase, data.T[1], residuals,
+                                 data.T[2]))
     data.T[0] = phase
 
     # Grab the coefficients from the model
@@ -382,7 +386,7 @@ def get_lightcurve(data, copy=False, name=None,
 
 
     return {'name':                 name,
-            'period':               period,
+            'period':               _period,
             'periodogram':          pgram,
             'lightcurve':           lightcurve,
             'coefficients':         coeff_matrix,
@@ -658,24 +662,30 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
 
     # Plot points used
     phase, mag, *err = get_signal(phased_data).T
-
     error = err[0] if err else mag*err_const
+
+    has_inliers = len(phase) > 0
 
     inliers = ax.errorbar(np.hstack((phase,1+phase)),
                           np.hstack((mag, mag)),
-                          yerr=np.hstack((error, error)),
+                          yerr=(np.hstack((error, error))
+                                if has_inliers
+                                else None),
                           color="darkblue",
                           ls='None',
                           ms=.01, mew=.01, capsize=0)
 
     # Plot outliers rejected
     phase, mag, *err = get_noise(phased_data).T
-
     error = err[0] if err else mag*err_const
+
+    has_outliers = len(phase) > 0
 
     outliers = ax.errorbar(np.hstack((phase,1+phase)),
                            np.hstack((mag, mag)),
-                           yerr=np.hstack((error, error)),
+                           yerr=(np.hstack((error, error))
+                                 if has_outliers
+                                 else None),
                            color="darkred",
                            ls='None', marker='o' if color else 'x',
                            ms=.01 if color else 4,
@@ -921,10 +931,13 @@ def plot_residual_mpl(name, residuals, period,
     #ax.set_xlim(0,2)
 
     time, phase, fitted, residual, *err = residuals.T
-
     error = err[0] if err else mag*err_const
 
-    inliers = ax.errorbar(fitted, residual, yerr=error, color="darkblue",
+    has_inliers = len(time) > 0
+
+    inliers = ax.errorbar(fitted, residual,
+                          yerr=(error if has_inliers else None),
+                          color="darkblue",
                           ls='None', ms=.01, mew=.01, capsize=0)
 
     # Plot outliers rejected
