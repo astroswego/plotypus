@@ -662,24 +662,30 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
 
     # Plot points used
     phase, mag, *err = get_signal(phased_data).T
-
     error = err[0] if err else mag*err_const
+
+    has_inliers = len(phase) > 0
 
     inliers = ax.errorbar(np.hstack((phase,1+phase)),
                           np.hstack((mag, mag)),
-                          yerr=np.hstack((error, error)),
+                          yerr=(np.hstack((error, error))
+                                if has_inliers
+                                else None),
                           color="darkblue",
                           ls='None',
                           ms=.01, mew=.01, capsize=0)
 
     # Plot outliers rejected
     phase, mag, *err = get_noise(phased_data).T
-
     error = err[0] if err else mag*err_const
+
+    has_outliers = len(phase) > 0
 
     outliers = ax.errorbar(np.hstack((phase,1+phase)),
                            np.hstack((mag, mag)),
-                           yerr=np.hstack((error, error)),
+                           yerr=(np.hstack((error, error))
+                                 if has_outliers
+                                 else None),
                            color="darkred",
                            ls='None', marker='o' if color else 'x',
                            ms=.01 if color else 4,
@@ -925,10 +931,13 @@ def plot_residual_mpl(name, residuals, period,
     #ax.set_xlim(0,2)
 
     time, phase, fitted, residual, *err = residuals.T
-
     error = err[0] if err else mag*err_const
 
-    inliers = ax.errorbar(fitted, residual, yerr=error, color="darkblue",
+    has_inliers = len(time) > 0
+
+    inliers = ax.errorbar(fitted, residual,
+                          yerr=(error if has_inliers else None),
+                          color="darkblue",
                           ls='None', ms=.01, mew=.01, capsize=0)
 
     # Plot outliers rejected
