@@ -315,6 +315,10 @@ def get_args():
 
     args = parser.parse_args()
 
+    # populate the various output options either with functions that return
+    # the appropriate output filename, or `None` if there is to be no output
+    output_setup(args)
+
     # configure Matplotlib only if necessary
     plot_outputs = [args.output_plot_lightcurve]
     if (args.plot_engine == "mpl" and
@@ -372,8 +376,6 @@ def get_args():
     if args.parameters is not None:
         args.parameters = read_table(args.parameters, args.param_sep,
                                      index_col=0, engine='python')
-
-    output_setup(args)
 
     return args
 
