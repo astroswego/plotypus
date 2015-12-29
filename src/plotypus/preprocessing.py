@@ -114,7 +114,7 @@ class Fourier():
         design_matrix : array-like, shape = [n_samples, 2*degree+1]
             Fourier design matrix produced by :func:`Fourier.design_matrix`.
         """
-        return self.design_matrix(np.transpose(X), self.degree)
+        return self.design_matrix(rowvec(X), self.degree)
 
     def get_params(self, deep=False):
         """
