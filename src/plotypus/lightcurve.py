@@ -302,7 +302,7 @@ def get_lightcurve(data, copy=False, name=None,
     phase, mag, *err = data.T
 
     # Build predicted light curve and residuals
-    lightcurve = predictor.predict([[i] for i in phases])
+    lightcurve = predictor.predict(colvec(phases))
     residuals = prediction_residuals(phase, mag, predictor)
     # determine phase shift for max light, if a specific shift was not provided
     if shift is None:
