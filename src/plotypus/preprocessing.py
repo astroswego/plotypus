@@ -114,7 +114,7 @@ class Fourier():
         design_matrix : array-like, shape = [n_samples, 2*degree+1]
             Fourier design matrix produced by :func:`Fourier.design_matrix`.
         """
-        data = np.dstack((np.array(X).T[0], range(len(X))))[0]
+        data = np.column_stack((X, range(len(X))))
         phase, order = data[data[:,0].argsort()].T
         design_matrix = self.design_matrix(phase, self.degree)
         return design_matrix[order.argsort()]
