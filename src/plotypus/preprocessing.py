@@ -204,11 +204,11 @@ class Fourier(BaseEstimator):
 
             \begin{bmatrix}
               1
-            & \sin(1 \cdot 2\pi \cdot t_0 / P)
-            & \cos(1 \cdot 2\pi \cdot t_0 / P)
+            & \sin(1 \omega t_0)
+            & \cos(1 \omega t_0)
             & \ldots
-            & \sin(n \cdot 2\pi \cdot t_0 / P)
-            & \cos(n \cdot 2\pi \cdot t_0 / P)
+            & \sin(n \omega t_0)
+            & \cos(n \omega t_0)
             \\
               \vdots
             & \vdots
@@ -218,14 +218,17 @@ class Fourier(BaseEstimator):
             & \vdots
             \\
               1
-            & \sin(1 \cdot 2\pi \cdot t_N / P)
-            & \cos(1 \cdot 2\pi \cdot t_N / P)
+            & \sin(1 \omega t_N)
+            & \cos(1 \omega t_N)
             & \ldots
-            & \sin(n \cdot 2\pi \cdot t_N / P)
-            & \cos(n \cdot 2\pi \cdot t_N / P)
+            & \sin(n \omega t_N)
+            & \cos(n \omega t_N)
             \end{bmatrix}
 
-        where :math:`n =` *degree*, :math:`N =` *n_samples*, and
+        where
+        :math:`n =` *degree*,
+        :math:`N =` *n_samples*,
+        :math:`\omega = 2 \pi /` *period*, and
         :math:`t_i =` *times[i]*.
 
         **Parameters**
@@ -243,6 +246,8 @@ class Fourier(BaseEstimator):
         """
         # pre-compute number of samples
         n_samples = np.size(times)
+        # convert the period into angular frequency
+        omega = 2*np.pi / period
         # initialize coefficient matrix
         M = np.empty((n_samples, 2*degree+1))
         # indices
@@ -251,12 +256,10 @@ class Fourier(BaseEstimator):
         # sine and cosine terms
         x = np.empty((n_samples, degree))
         # the Nxn matrix now has N copies of the same row, and each row is
-        # integer multiples of pi counting from 1 to the degree
-        x[:,:] = i*2*np.pi
+        # integer multiples the angular frequency counting from 1 to the degree
+        x[:,:] = i * omega
         # multiply each row of x by the times
         x.T[:,:] *= times
-        # divide each element in x by the period
-        x /= period
         # place 1's in the first column of the coefficient matrix
         M[:,0]    = 1
         # the odd indices of the coefficient matrix have sine terms
