@@ -127,38 +127,6 @@ class Fourier(BaseEstimator):
 
         return self.design_matrix(rowvec(X), self.period, self.degree)
 
-    # def get_params(self, deep=False):
-    #     """
-    #     Get parameters for this preprocessor.
-
-    #     **Parameters**
-
-    #     deep : boolean, optional
-    #         Only here for scikit-learn compliance. Ignore it (default False).
-
-    #     **Returns**
-
-    #     params : dict
-    #         Mapping of parameter name to value.
-    #     """
-    #     return {'degree': self.degree,
-    #             'period': self.period}
-
-    # def set_params(self, **params):
-    #     """
-    #     Set parameters for this preprocessor.
-
-    #     **Returns**
-
-    #     self : returns an instance of self
-    #     """
-    #     if 'degree' in params:
-    #         self.degree = params['degree']
-    #     if 'period' in params:
-    #         self.period = params['period']
-
-    #     return self
-
     def baart_criteria(self, X, y, period):
         """
         Returns the optimal Fourier series degree as determined by
