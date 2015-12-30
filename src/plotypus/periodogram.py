@@ -299,7 +299,7 @@ def rephase(data, period=1.0, shift=0.0, col=0, copy=True):
         Array containing the rephased *data*.
     """
     rephased = np.ma.array(data, copy=copy)
-    rephased[:, col] = get_phase(rephased[:, col], period, shift)
+    rephased.data[:, col] = get_phase(rephased.data[:, col], period, shift)
 
     return rephased
 
