@@ -3,6 +3,7 @@ from os.path import basename, join, isdir
 from sys import stderr
 from multiprocessing import Pool
 import numbers
+import numpy as np
 from numpy import absolute, concatenate, isscalar, median, resize
 
 __all__ = [
@@ -205,7 +206,10 @@ def colvec(X):
 
     out : array-like, shape = [n_samples, 1]
     """
-    return resize(X, (X.shape[0], 1))
+    if np.ndim(X) != 1:
+        raise ValueError("input array must be a row vector")
+
+    return np.reshape(X, (-1, 1))
 
 
 def rowvec(X):
@@ -221,7 +225,12 @@ def rowvec(X):
 
     out : array-like, shape = [n_samples]
     """
-    return resize(X, (1, X.shape[0]))[0]
+    # a column vector must be 2-dimensional  (ndim(X)     == 2),
+    # and have shape (n_rows, 1)             (shape(X)[1] == 1)
+    if np.ndim(X) != 2 or np.shape(X)[1] != 1:
+        raise ValueError("input array must be a column vector")
+
+    return np.reshape(X, (1, -1))
 
 
 def mad(data, axis=None):

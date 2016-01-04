@@ -286,7 +286,7 @@ def get_lightcurve(data, copy=False, name=None,
         if sigma:
             outliers = find_outliers(rephase(data.data, _period), predictor,
                                      sigma, sigma_clipping)
-            num_outliers = sum(outliers)[0]
+            num_outliers = np.sum(outliers[:,0])
             if num_outliers == 0 or \
                set.issubset(set(np.nonzero(outliers.T[0])[0]),
                             set(np.nonzero(data.mask.T[0])[0])):
@@ -302,7 +302,7 @@ def get_lightcurve(data, copy=False, name=None,
     phase, mag, *err = data.T
 
     # Build predicted light curve and residuals
-    lightcurve = predictor.predict([[i] for i in phases])
+    lightcurve = predictor.predict(colvec(phases))
     residuals = prediction_residuals(phase, mag, predictor)
     # determine phase shift for max light, if a specific shift was not provided
     if shift is None:

@@ -67,12 +67,13 @@ def Lomb_Scargle(data, precision, min_period, max_period,
     if output_periodogram:
         periods = 2*np.pi/freqs
         period = periods[np.argmax(pgram)]
-        return period, np.column_stack((periods, pgram))
+        pgram = np.column_stack((periods, pgram))
     else:
         freq = freqs[np.argmax(pgram)]
         period = 2*np.pi/freq
-        return period, None
+        pgram = None
 
+    return period, pgram
 
 def conditional_entropy(data, precision, min_period, max_period,
                         xbins=10, ybins=5, period_jobs=1,
@@ -128,11 +129,10 @@ def conditional_entropy(data, precision, min_period, max_period,
     entropies = list(m(partial_job, periods))
 
     period = periods[np.argmin(entropies)]
+    pgram = np.column_stack((periods, entropies)) if output_periodogram \
+                                                else None
 
-    if output_periodogram:
-        return period, np.column_stack((periods, entropies))
-    else:
-        return period, None
+    return period, pgram
 
 
 def CE(period, data, xbins=10, ybins=5):
