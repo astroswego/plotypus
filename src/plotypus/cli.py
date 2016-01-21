@@ -5,8 +5,7 @@ from os import path, listdir
 import dill
 from argparse import ArgumentError, ArgumentParser, SUPPRESS
 from pandas import read_table
-from sklearn.linear_model import (LassoCV, LassoLarsCV, LassoLarsIC,
-                                  LinearRegression, RidgeCV, ElasticNetCV)
+import sklearn.linear_model
 from sklearn.grid_search import GridSearchCV
 from matplotlib import rc_params_from_file
 from collections import ChainMap
@@ -20,8 +19,9 @@ from plotypus.periodogram import (Lomb_Scargle, conditional_entropy,
                                   plot_periodogram)
 import plotypus
 from plotypus.preprocessing import Fourier
-from plotypus.utils import (colvec, mad, make_sure_path_exists, pmap,
-                            strlist_to_dict, valid_basename, verbose_print)
+from plotypus.utils import (colvec, import_name, mad, make_sure_path_exists,
+                            pmap, strlist_to_dict, valid_basename,
+                            verbose_print)
 from plotypus.resources import matplotlibrc
 
 import pkg_resources # part of setuptools
@@ -277,12 +277,12 @@ def get_args():
         default=(2, 20), metavar=('MIN', 'MAX'),
         help='range of degrees of fourier fits to use '
              '(default = 2 20)')
-    fourier_group.add_argument('-r', '--regressor',
-        choices=['LassoCV', 'LassoLarsCV', 'LassoLarsIC', 'OLS', 'RidgeCV',
-                 'ElasticNetCV'],
-        default='LassoLarsIC',
-        help='type of regressor to use '
-             '(default = "Lasso")')
+    fourier_group.add_argument('-r', '--regressor', type=import_name,
+        default=sklearn.linear_model.LassoLarsIC,
+        help='type of regressor to use, loads any Python object named like '
+             '*module.submodule.etc.object_name*, though it must behave like a '
+             'scikit-learn regressor '
+             '(default = "sklearn.linear_model.LassoLarsIC")')
     fourier_group.add_argument('--selector',
         choices=['Baart', 'GridSearch'],
         default='GridSearch',
@@ -333,16 +333,6 @@ def get_args():
     # parse regressor (TODO: and selector) options into a dict
     regressor_options = strlist_to_dict(args.regressor_options)
 
-    regressor_choices = {
-        "LassoCV"             : LassoCV,
-        "LassoLarsCV"         : LassoLarsCV,
-        "LassoLarsIC"         : LassoLarsIC,
-        "OLS"                 : LinearRegression,
-        "RidgeCV"             : RidgeCV,
-        "ElasticNetCV"        : ElasticNetCV
-    }
-
-
     selector_choices = {
         "Baart"               : None,
         "GridSearch"          : GridSearchCV
@@ -363,7 +353,7 @@ def get_args():
         }
         args.scoring = scoring_choices[args.scoring]
 
-    args.regressor = regressor_choices[args.regressor](**regressor_options)
+    args.regressor = args.regressor(**regressor_options)
     Selector = selector_choices[args.selector] or GridSearchCV
     args.periodogram = periodogram_choices[args.periodogram]
     args.sigma_clipping = sigma_clipping_choices[args.sigma_clipping]

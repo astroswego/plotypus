@@ -8,6 +8,7 @@ from numpy import absolute, concatenate, isscalar, median, resize
 
 __all__ = [
     'verbose_print',
+    'import_name',
     'literal_eval_str',
     'strlist_to_dict',
     'pmap',
@@ -45,6 +46,51 @@ def verbose_print(message, *, operation, verbosity):
     if (verbosity is not None) and ((operation in verbosity) or
                                     ("all"     in verbosity)):
         print(message, file=stderr)
+
+
+def import_name(dotted_name):
+    """import_name(dotted_name)
+
+    Import an object from a module, and return the object. Does not affect the
+    encapsulating namespace.
+
+    **Parameters**
+
+    dotted_name : str
+        The fully-qualified name of the object to import, in the form
+        *module.submodule.etc.object_name*. Will error if *dotted_name* is
+        a top-level module (e.g. *module* and not *module.something*) or if
+        the object does not exist.
+
+    **Returns**
+
+    obj : object
+        The object specified by *dotted_name*.
+    """
+    # Separate `module.submodule.object` into `[module, submodule]` and `object`
+    *module_path_components, object_name = dotted_name.split(".")
+
+    # Ensure `object_name` is contained within a module, and is not a
+    # standalone module.
+    # In other words, make sure `dotted_name` is a module containing an object
+    # like `foo.bar.baz` and not just a module like `baz`
+    if len(module_path_components) == 0:
+        raise ValueError("must name object within a module, not just a module")
+
+    # Reinsert the dots into the module name, e.g. turn
+    # `[module, submodule]` back into `module.submodule`
+    module_name = ".".join(module_path_components)
+
+    # import the module
+    from importlib import import_module
+    module = import_module(module_name)
+
+    # return the desired object
+    try:
+        return getattr(module, object_name)
+    except AttributeError:
+        raise ImportError("module '{module}' has no object '{object_name}'"
+                          .format(module=module_name, object_name=object_name))
 
 
 def literal_eval_str(string):
