@@ -297,7 +297,7 @@ def get_args():
     ## Regressor Group #######################################################
 
     regressor_group.add_argument('--regressor-options', type=str, nargs='+',
-        default=[],
+        default=[], metavar="KEY VALUE",
         help='list of key value pairs to pass to regressor object. '
              'accepted keys depend on regressor. '
              'values which form valid Python literals (e.g. 2, True, [1,2]) '
