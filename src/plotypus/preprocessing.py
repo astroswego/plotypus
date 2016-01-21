@@ -74,7 +74,7 @@ class Fourier(BaseEstimator):
     def __init__(self,
                  degree=3, degree_range=None,
                  period=None,
-                 regressor=LinearRegression(fit_intercept=False)):
+                 regressor=LinearRegression()):
         self.degree = degree
         self.degree_range = degree_range
         self.period = period
@@ -203,8 +203,7 @@ class Fourier(BaseEstimator):
         .. math::
 
             \begin{bmatrix}
-              1
-            & \sin(1 \omega t_0)
+              \sin(1 \omega t_0)
             & \cos(1 \omega t_0)
             & \ldots
             & \sin(n \omega t_0)
@@ -212,13 +211,11 @@ class Fourier(BaseEstimator):
             \\
               \vdots
             & \vdots
-            & \vdots
             & \ddots
             & \vdots
             & \vdots
             \\
-              1
-            & \sin(1 \omega t_N)
+              \sin(1 \omega t_N)
             & \cos(1 \omega t_N)
             & \ldots
             & \sin(n \omega t_N)
@@ -241,7 +238,7 @@ class Fourier(BaseEstimator):
 
         **Returns**
 
-        design_matrix : array-like, shape = [n_samples, 2*degree + 1]
+        design_matrix : array-like, shape = [n_samples, 2*degree]
 
         """
         # pre-compute number of samples
@@ -249,7 +246,7 @@ class Fourier(BaseEstimator):
         # convert the period into angular frequency
         omega = 2*np.pi / period
         # initialize coefficient matrix
-        M = np.empty((n_samples, 2*degree+1))
+        M = np.empty((n_samples, 2*degree))
         # indices
         i = np.arange(1, degree+1)
         # initialize the Nxn matrix that is repeated within the
@@ -260,12 +257,10 @@ class Fourier(BaseEstimator):
         x[:,:] = i * omega
         # multiply each row of x by the times
         x.T[:,:] *= times
-        # place 1's in the first column of the coefficient matrix
-        M[:,0]    = 1
-        # the odd indices of the coefficient matrix have sine terms
-        M[:,1::2] = np.sin(x)
-        # the even indices of the coefficient matrix have cosine terms
-        M[:,2::2] = np.cos(x)
+        # the even indices of the coefficient matrix have sine terms
+        M[:,0::2] = np.sin(x)
+        # the odd indices of the coefficient matrix have cosine terms
+        M[:,1::2] = np.cos(x)
 
         return M
 
