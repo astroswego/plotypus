@@ -293,20 +293,17 @@ def get_args():
         help='form of Fourier series to use in coefficient output, '
              'does not affect the fit '
              '(default = "cos")')
-    fourier_group.add_argument('--max-iter', type=int,
-        default=1000, metavar='N',
-        help='maximum number of iterations in the regularization path '
-             '(default = 1000)')
-    fourier_group.add_argument('--regularization-cv', type=int,
-        default=None, metavar='N',
-        help='number of folds used in regularization regularization_cv '
-             'validation '
-             '(default = 3)')
 
     ## Regressor Group #######################################################
 
-    regressor_group.add_argument("--regressor-options", type=str, nargs="+",
-        default=[],)
+    regressor_group.add_argument('--regressor-options', type=str, nargs='+',
+        default=[],
+        help='list of key value pairs to pass to regressor object. '
+             'accepted keys depend on regressor. '
+             'values which form valid Python literals (e.g. 2, True, [1,2]) '
+             'are all parsed to their obvious type, or left as strings '
+             'otherwise '
+             '(default = None)')
 
     ## Outlier Group #########################################################
 
