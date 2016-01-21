@@ -277,12 +277,6 @@ def get_args():
         default=(2, 20), metavar=('MIN', 'MAX'),
         help='range of degrees of fourier fits to use '
              '(default = 2 20)')
-    fourier_group.add_argument('-r', '--regressor', type=import_name,
-        default=sklearn.linear_model.LassoLarsIC,
-        help='type of regressor to use, loads any Python object named like '
-             '*module.submodule.etc.object_name*, though it must behave like a '
-             'scikit-learn regressor '
-             '(default = "sklearn.linear_model.LassoLarsIC")')
     fourier_group.add_argument('--selector',
         choices=['Baart', 'GridSearch'],
         default='GridSearch',
@@ -296,6 +290,12 @@ def get_args():
 
     ## Regressor Group #######################################################
 
+    fourier_group.add_argument('-r', '--regressor', type=import_name,
+        default=sklearn.linear_model.LassoLarsIC,
+        help='type of regressor to use, loads any Python object named like '
+             '*module.submodule.etc.object_name*, though it must behave like a '
+             'scikit-learn regressor '
+             '(default = "sklearn.linear_model.LassoLarsIC")')
     regressor_group.add_argument('--regressor-options', type=str, nargs='+',
         default=[], metavar="KEY VALUE",
         help='list of key value pairs to pass to regressor object. '
