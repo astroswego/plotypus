@@ -8,6 +8,8 @@ from numpy import absolute, concatenate, isscalar, median, resize
 
 __all__ = [
     'verbose_print',
+    'literal_eval_str',
+    'strlist_to_dict',
     'pmap',
     'make_sure_path_exists',
     'valid_basename',
@@ -43,6 +45,61 @@ def verbose_print(message, *, operation, verbosity):
     if (verbosity is not None) and ((operation in verbosity) or
                                     ("all"     in verbosity)):
         print(message, file=stderr)
+
+
+def literal_eval_str(string):
+    """literal_eval_str(string)
+
+    Equivalent to *ast.literal_eval*, but if *string* cannot be parsed,
+    returns the original string. Only accepts arguments of type *str*.
+
+    **Parameters**
+
+    string : str
+        Any string. If it can be parsed as a basic Python object literal, it
+        will be. See *ast.literal_eval* for supported objects.
+
+    **Returns**
+
+    obj : object
+        Original string, or the object literal it represents.
+    """
+    if not isinstance(string, str):
+        raise ValueError("input must be of type str")
+
+    try:
+        from ast import literal_eval
+        return literal_eval(string)
+    except ValueError:
+        return string
+
+
+def strlist_to_dict(lst):
+    """list_to_dict(lst)
+
+    Turn a list of strings with an even number of elements into a dictionary.
+    Any values which may be interpreted as basic Python object literals are
+    parsed as such. See *plotypus.literal_eval_str* for supported types.
+
+    **Parameters**
+
+    lst : list
+        A *list* or equivalent object with an even number of arguments, to be
+        interpreted as *[key1, val1, ..., keyN, valN]*.
+
+    **Returns**
+
+    dct : dict
+        A *dict* whose keys are the even elements of *lst* and values are the
+        odd elements.
+    """
+    if len(lst)%2:
+        raise ValueError("length of list must be even")
+
+    keys = lst[0::2]
+    vals = map(literal_eval_str, lst[1::2])
+
+    return dict(zip(keys, vals))
 
 
 def pmap(func, args, processes=None, callback=lambda *_, **__: None, **kwargs):
