@@ -5,8 +5,7 @@ from os import path, listdir
 import dill
 from argparse import ArgumentError, ArgumentParser, SUPPRESS
 from pandas import read_table
-from sklearn.linear_model import (LassoCV, LassoLarsCV, LassoLarsIC,
-                                  LinearRegression, RidgeCV, ElasticNetCV)
+import sklearn.linear_model
 from sklearn.grid_search import GridSearchCV
 from matplotlib import rc_params_from_file
 from collections import ChainMap
@@ -20,8 +19,9 @@ from plotypus.periodogram import (Lomb_Scargle, conditional_entropy,
                                   plot_periodogram)
 import plotypus
 from plotypus.preprocessing import Fourier
-from plotypus.utils import (colvec, mad, make_sure_path_exists, pmap,
-                            valid_basename, verbose_print)
+from plotypus.utils import (colvec, import_name, mad, make_sure_path_exists,
+                            pmap, strlist_to_dict, valid_basename,
+                            verbose_print)
 from plotypus.resources import matplotlibrc
 
 import pkg_resources # part of setuptools
@@ -60,6 +60,7 @@ def get_args():
     parallel_group   = parser.add_argument_group('Parallel')
     period_group     = parser.add_argument_group('Periodogram')
     fourier_group    = parser.add_argument_group('Fourier')
+    regressor_group  = parser.add_argument_group('Regressor')
     outlier_group    = parser.add_argument_group('Outlier Detection')
 #    regression_group = parser.add_argument_group('Regression')
 
@@ -276,12 +277,6 @@ def get_args():
         default=(2, 20), metavar=('MIN', 'MAX'),
         help='range of degrees of fourier fits to use '
              '(default = 2 20)')
-    fourier_group.add_argument('-r', '--regressor',
-        choices=['LassoCV', 'LassoLarsCV', 'LassoLarsIC', 'OLS', 'RidgeCV',
-                 'ElasticNetCV'],
-        default='LassoLarsIC',
-        help='type of regressor to use '
-             '(default = "Lasso")')
     fourier_group.add_argument('--selector',
         choices=['Baart', 'GridSearch'],
         default='GridSearch',
@@ -292,15 +287,23 @@ def get_args():
         help='form of Fourier series to use in coefficient output, '
              'does not affect the fit '
              '(default = "cos")')
-    fourier_group.add_argument('--max-iter', type=int,
-        default=1000, metavar='N',
-        help='maximum number of iterations in the regularization path '
-             '(default = 1000)')
-    fourier_group.add_argument('--regularization-cv', type=int,
-        default=None, metavar='N',
-        help='number of folds used in regularization regularization_cv '
-             'validation '
-             '(default = 3)')
+
+    ## Regressor Group #######################################################
+
+    fourier_group.add_argument('-r', '--regressor', type=import_name,
+        default=sklearn.linear_model.LassoLarsIC,
+        help='type of regressor to use, loads any Python object named like '
+             '*module.submodule.etc.object_name*, though it must behave like a '
+             'scikit-learn regressor '
+             '(default = "sklearn.linear_model.LassoLarsIC")')
+    regressor_group.add_argument('--regressor-options', type=str, nargs='+',
+        default=[], metavar="KEY VALUE",
+        help='list of key value pairs to pass to regressor object. '
+             'accepted keys depend on regressor. '
+             'values which form valid Python literals (e.g. 2, True, [1,2]) '
+             'are all parsed to their obvious type, or left as strings '
+             'otherwise '
+             '(default = None)')
 
     ## Outlier Group #########################################################
 
@@ -327,22 +330,9 @@ def get_args():
                                        fail_on_error=True)
         plotypus.lightcurve.matplotlib.rcParams = rcParams
 
-    regressor_choices = {
-        "LassoCV"             : LassoCV(max_iter=args.max_iter,
-                                        cv=args.regularization_cv,
-                                        fit_intercept=False),
-        "LassoLarsCV"         : LassoLarsCV(max_iter=args.max_iter,
-                                            cv=args.regularization_cv,
-                                            fit_intercept=False),
-        "LassoLarsIC"         : LassoLarsIC(max_iter=args.max_iter,
-                                            fit_intercept=False),
-        "OLS"                 : LinearRegression(fit_intercept=False),
-        "RidgeCV"             : RidgeCV(cv=args.regularization_cv,
-                                        fit_intercept=False),
-        "ElasticNetCV"        : ElasticNetCV(max_iter=args.max_iter,
-                                             cv=args.regularization_cv,
-                                             fit_intercept=False)
-    }
+    # parse regressor (TODO: and selector) options into a dict
+    regressor_options = strlist_to_dict(args.regressor_options)
+
     selector_choices = {
         "Baart"               : None,
         "GridSearch"          : GridSearchCV
@@ -363,7 +353,7 @@ def get_args():
         }
         args.scoring = scoring_choices[args.scoring]
 
-    args.regressor = regressor_choices[args.regressor]
+    args.regressor = args.regressor(**regressor_options)
     Selector = selector_choices[args.selector] or GridSearchCV
     args.periodogram = periodogram_choices[args.periodogram]
     args.sigma_clipping = sigma_clipping_choices[args.sigma_clipping]

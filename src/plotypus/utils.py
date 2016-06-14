@@ -8,6 +8,9 @@ from numpy import absolute, concatenate, isscalar, median, resize
 
 __all__ = [
     'verbose_print',
+    'import_name',
+    'literal_eval_str',
+    'strlist_to_dict',
     'pmap',
     'make_sure_path_exists',
     'valid_basename',
@@ -43,6 +46,106 @@ def verbose_print(message, *, operation, verbosity):
     if (verbosity is not None) and ((operation in verbosity) or
                                     ("all"     in verbosity)):
         print(message, file=stderr)
+
+
+def import_name(dotted_name):
+    """import_name(dotted_name)
+
+    Import an object from a module, and return the object. Does not affect the
+    encapsulating namespace.
+
+    **Parameters**
+
+    dotted_name : str
+        The fully-qualified name of the object to import, in the form
+        *module.submodule.etc.object_name*. Will error if *dotted_name* is
+        a top-level module (e.g. *module* and not *module.something*) or if
+        the object does not exist.
+
+    **Returns**
+
+    obj : object
+        The object specified by *dotted_name*.
+    """
+    # Separate `module.submodule.object` into `[module, submodule]` and `object`
+    *module_path_components, object_name = dotted_name.split(".")
+
+    # Ensure `object_name` is contained within a module, and is not a
+    # standalone module.
+    # In other words, make sure `dotted_name` is a module containing an object
+    # like `foo.bar.baz` and not just a module like `baz`
+    if len(module_path_components) == 0:
+        raise ValueError("must name object within a module, not just a module")
+
+    # Reinsert the dots into the module name, e.g. turn
+    # `[module, submodule]` back into `module.submodule`
+    module_name = ".".join(module_path_components)
+
+    # import the module
+    from importlib import import_module
+    module = import_module(module_name)
+
+    # return the desired object
+    try:
+        return getattr(module, object_name)
+    except AttributeError:
+        raise ImportError("module '{module}' has no object '{object_name}'"
+                          .format(module=module_name, object_name=object_name))
+
+
+def literal_eval_str(string):
+    """literal_eval_str(string)
+
+    Equivalent to *ast.literal_eval*, but if *string* cannot be parsed,
+    returns the original string. Only accepts arguments of type *str*.
+
+    **Parameters**
+
+    string : str
+        Any string. If it can be parsed as a basic Python object literal, it
+        will be. See *ast.literal_eval* for supported objects.
+
+    **Returns**
+
+    obj : object
+        Original string, or the object literal it represents.
+    """
+    if not isinstance(string, str):
+        raise ValueError("input must be of type str")
+
+    try:
+        from ast import literal_eval
+        return literal_eval(string)
+    except ValueError:
+        return string
+
+
+def strlist_to_dict(lst):
+    """list_to_dict(lst)
+
+    Turn a list of strings with an even number of elements into a dictionary.
+    Any values which may be interpreted as basic Python object literals are
+    parsed as such. See *plotypus.literal_eval_str* for supported types.
+
+    **Parameters**
+
+    lst : list
+        A *list* or equivalent object with an even number of arguments, to be
+        interpreted as *[key1, val1, ..., keyN, valN]*.
+
+    **Returns**
+
+    dct : dict
+        A *dict* whose keys are the even elements of *lst* and values are the
+        odd elements.
+    """
+    if len(lst)%2:
+        raise ValueError("length of list must be even")
+
+    keys = lst[0::2]
+    vals = map(literal_eval_str, lst[1::2])
+
+    return dict(zip(keys, vals))
 
 
 def pmap(func, args, processes=None, callback=lambda *_, **__: None, **kwargs):

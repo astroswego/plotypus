@@ -40,12 +40,12 @@ __all__ = [
 ]
 
 
-def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
+def make_predictor(regressor=LassoLarsIC(),
                    Selector=GridSearchCV, fourier_degree=(2, 25),
                    selector_processes=1,
                    use_baart=False, scoring='r2', scoring_cv=3,
                    **kwargs):
-    """make_predictor(regressor=LassoLarsIC(fit_intercept=False), Selector=GridSearchCV, fourier_degree=(2, 25), selector_processes=1, use_baart=False, scoring='r2', scoring_cv=3, **kwargs)
+    """make_predictor(regressor=LassoLarsIC(), Selector=GridSearchCV, fourier_degree=(2, 25), selector_processes=1, use_baart=False, scoring='r2', scoring_cv=3, **kwargs)
 
     Makes a predictor object for use in :func:`get_lightcurve`.
 
@@ -53,7 +53,7 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
 
     regressor : object with "fit" and "transform" methods, optional
         Regression object used for solving Fourier matrix
-        (default ``sklearn.linear_model.LassoLarsIC(fit_intercept=False)``).
+        (default ``sklearn.linear_model.LassoLarsIC()``).
     Selector : class with "fit" and "predict" methods, optional
         Model selection class used for finding the best fit
         (default :class:`sklearn.grid_search.GridSearchCV`).
@@ -328,10 +328,14 @@ def get_lightcurve(data, copy=False, name=None,
     # use rephased phase points from *data* in residuals
     residuals = np.ma.column_stack((time, phase, mag, residuals, err))
     data[:,0] = phase
-    # Grab the coefficients from the model
-    coefficients = predictor.named_steps['Regressor'].coef_ \
+    # grab the regressor used in the model
+    regressor = predictor.named_steps['Regressor'] \
         if isinstance(predictor, Pipeline) \
-        else predictor.best_estimator_.named_steps['Regressor'].coef_
+        else predictor.best_estimator_.named_steps['Regressor']
+    # Grab the coefficients from the model
+    coefficients = regressor.coef_
+    intercept    = regressor.intercept_
+    coefficients = np.insert(coefficients, 0, intercept)
 
     # compute R^2 and MSE if they haven't already been
     # (one or zero have been computed, depending on the predictor)
