@@ -3,6 +3,11 @@ CLI Intermediate Guide
 
 .. note::
 
+   This guide is out of date. Some of the CLI behavior has changed. Please bear
+   with us while we update the guide.
+
+.. note::
+
    This guide assumes you have already completed the
    `Beginner's Guide <cli-beginner.html>`_.
 
