@@ -30,7 +30,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body>
+  <body role="document">
   
   
 
@@ -48,7 +48,7 @@
 </div>
 
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -62,11 +62,11 @@
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../contents.html">docs</a> &raquo;</li>
 
-          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
 <ul>
   <li><a href="../../index.html">Documentation index</a><ul>
@@ -74,17 +74,14 @@
   </ul></li>
   </ul></li>
 </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -93,24 +90,25 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <h1>Source code for plotypus.preprocessing</h1><div class="highlight"><pre>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Preprocessors to light curve regression.</span>
 <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">Light curve space transformation preprocessors for regressing upon.</span>
-<span class="sd">&quot;&quot;&quot;</span>
-<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
 <span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">pi</span>
+<span class="kn">from</span> <span class="nn">sklearn.base</span> <span class="kn">import</span> <span class="n">BaseEstimator</span>
 <span class="kn">from</span> <span class="nn">sklearn.linear_model</span> <span class="kn">import</span> <span class="n">LinearRegression</span>
 <span class="kn">from</span> <span class="nn">sklearn.pipeline</span> <span class="kn">import</span> <span class="n">Pipeline</span>
 <span class="kn">from</span> <span class="nn">.utils</span> <span class="kn">import</span> <span class="n">autocorrelation</span><span class="p">,</span> <span class="n">rowvec</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s">&#39;Fourier&#39;</span>
+    <span class="s1">&#39;Fourier&#39;</span>
 <span class="p">]</span>
 
 
-<div class="viewcode-block" id="Fourier"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier">[docs]</a><span class="k">class</span> <span class="nc">Fourier</span><span class="p">():</span>
+<div class="viewcode-block" id="Fourier"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier">[docs]</a><span class="k">class</span> <span class="nc">Fourier</span><span class="p">(</span><span class="n">BaseEstimator</span><span class="p">):</span>
     <span class="sd">r&quot;&quot;&quot;</span>
 <span class="sd">    Transforms observed data from phase-space to Fourier-space.</span>
 
@@ -119,7 +117,7 @@
 <span class="sd">    .. math::</span>
 <span class="sd">        m(t) = A_0 + \sum_{k=1}^n (a_k \sin(k \omega t) + b_k \cos(k \omega t)),</span>
 
-<span class="sd">    phased time observations are transformed into a design matrix</span>
+<span class="sd">    time observations are transformed into a design matrix</span>
 <span class="sd">    :math:`\mathbf{X}` by :func:`Fourier.design_matrix`, such that linear</span>
 <span class="sd">    regression can be used to solve for coefficients</span>
 
@@ -159,16 +157,22 @@
 <span class="sd">    degree_range : 2-tuple or None, optional</span>
 <span class="sd">        Range of allowed *degree*\s to search via :func:`baart_criteria`, or</span>
 <span class="sd">        None if single provided *degree* is to be used (default None).</span>
+<span class="sd">    period : positive number, optional</span>
+<span class="sd">        Period to phase data by. Optional at instantiation time, but must be</span>
+<span class="sd">        assigned before &quot;fit&quot; or &quot;transform&quot; methods are called.</span>
 <span class="sd">    regressor : object with &quot;fit&quot; and &quot;transform&quot; methods, optional</span>
 <span class="sd">        Regression object used for fitting light curve when selecting *degree*</span>
 <span class="sd">        via :func:`baart_criteria`. Not used otherwise</span>
 <span class="sd">        (default</span>
 <span class="sd">        ``sklearn.linear_model.LinearRegression(fit_intercept=False)``).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">degree_range</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
-                 <span class="n">regressor</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">(</span><span class="n">fit_intercept</span><span class="o">=</span><span class="bp">False</span><span class="p">)):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">degree</span><span class="o">=</span><span class="mi">3</span><span class="p">,</span> <span class="n">degree_range</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">period</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span>
+                 <span class="n">regressor</span><span class="o">=</span><span class="n">LinearRegression</span><span class="p">()):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">degree</span> <span class="o">=</span> <span class="n">degree</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">degree_range</span> <span class="o">=</span> <span class="n">degree_range</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">period</span> <span class="o">=</span> <span class="n">period</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">regressor</span> <span class="o">=</span> <span class="n">regressor</span>
 
 <div class="viewcode-block" id="Fourier.fit"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.fit">[docs]</a>    <span class="k">def</span> <span class="nf">fit</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
@@ -187,10 +191,15 @@
 
 <span class="sd">        self : returns an instance of self</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">_validate_period</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="p">)</span>
+
+        <span class="c1"># if a range of degrees to search were not provided, use Baart&#39;s</span>
+        <span class="c1"># criteria to search for one</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">degree_range</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">degree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baart_criteria</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
-        <span class="k">return</span> <span class="bp">self</span>
-</div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">degree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baart_criteria</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span></div>
+
 <div class="viewcode-block" id="Fourier.transform"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.transform">[docs]</a>    <span class="k">def</span> <span class="nf">transform</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Transforms *X* from phase-space to Fourier-space, returning the design</span>
@@ -200,7 +209,7 @@
 <span class="sd">        **Parameters**</span>
 
 <span class="sd">        X : array-like, shape = [n_samples, 1]</span>
-<span class="sd">            Column vector of phases.</span>
+<span class="sd">            Column vector of times.</span>
 <span class="sd">        y : None, optional</span>
 <span class="sd">            Unused argument for conformity (default None).</span>
 
@@ -209,41 +218,11 @@
 <span class="sd">        design_matrix : array-like, shape = [n_samples, 2*degree+1]</span>
 <span class="sd">            Fourier design matrix produced by :func:`Fourier.design_matrix`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">data</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">dstack</span><span class="p">((</span><span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">X</span><span class="p">)</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">))))[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="n">phase</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">argsort</span><span class="p">()]</span><span class="o">.</span><span class="n">T</span>
-        <span class="n">design_matrix</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">design_matrix</span><span class="p">(</span><span class="n">phase</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">degree</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">design_matrix</span><span class="p">[</span><span class="n">order</span><span class="o">.</span><span class="n">argsort</span><span class="p">()]</span>
-</div>
-<div class="viewcode-block" id="Fourier.get_params"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">deep</span><span class="o">=</span><span class="bp">False</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Get parameters for this preprocessor.</span>
+        <span class="n">_validate_period</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="p">)</span>
 
-<span class="sd">        **Parameters**</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">design_matrix</span><span class="p">(</span><span class="n">rowvec</span><span class="p">(</span><span class="n">X</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">period</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">degree</span><span class="p">)</span></div>
 
-<span class="sd">        deep : boolean, optional</span>
-<span class="sd">            Only here for scikit-learn compliance. Ignore it (default False).</span>
-
-<span class="sd">        **Returns**</span>
-
-<span class="sd">        params : dict</span>
-<span class="sd">            Mapping of parameter name to value.</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">{</span><span class="s">&#39;degree&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">degree</span><span class="p">}</span>
-</div>
-<div class="viewcode-block" id="Fourier.set_params"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.set_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">params</span><span class="p">):</span>
-        <span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Set parameters for this preprocessor.</span>
-
-<span class="sd">        **Returns**</span>
-
-<span class="sd">        self : returns an instance of self</span>
-<span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="s">&#39;degree&#39;</span> <span class="ow">in</span> <span class="n">params</span><span class="p">:</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">degree</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="s">&#39;degree&#39;</span><span class="p">]</span>
-
-        <span class="k">return</span> <span class="bp">self</span>
-</div>
-<div class="viewcode-block" id="Fourier.baart_criteria"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.baart_criteria">[docs]</a>    <span class="k">def</span> <span class="nf">baart_criteria</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">):</span>
+<div class="viewcode-block" id="Fourier.baart_criteria"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.baart_criteria">[docs]</a>    <span class="k">def</span> <span class="nf">baart_criteria</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">period</span><span class="p">):</span>
         <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Returns the optimal Fourier series degree as determined by</span>
 <span class="sd">        `Baart&#39;s Criteria &lt;http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1986A%26A...170...59P&amp;amp;data_type=PDF_HIGH&amp;amp;whole_paper=YES&amp;amp;type=PRINTER&amp;amp;filetype=.pdf&gt;`_ [JOP]_.</span>
@@ -255,27 +234,40 @@
 <span class="sd">                 The uncertainties of Fourier decomposition parameters.&quot;,</span>
 <span class="sd">                 A&amp;A, Vol. 170, p. 59-69</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># degree_range should be a length two iterable:</span>
+        <span class="c1">#   (min_degree, max_degree)</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="n">min_degree</span><span class="p">,</span> <span class="n">max_degree</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">degree_range</span>
         <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s">&quot;Degree range must be a length two sequence&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Degree range must be a length two sequence&quot;</span><span class="p">)</span>
 
+        <span class="c1"># determine the Baart cutoff tolerance</span>
         <span class="n">cutoff</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">baart_tolerance</span><span class="p">(</span><span class="n">X</span><span class="p">)</span>
-        <span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s">&#39;Fourier&#39;</span><span class="p">,</span> <span class="n">Fourier</span><span class="p">()),</span>
-                             <span class="p">(</span><span class="s">&#39;Regressor&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">regressor</span><span class="p">)])</span>
-        <span class="n">sorted_X</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="n">X_sorting</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">rowvec</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+        <span class="c1"># create a simple pipeline for fitting a Fourier series, using the</span>
+        <span class="c1"># provided regressor</span>
+        <span class="n">pipeline</span> <span class="o">=</span> <span class="n">Pipeline</span><span class="p">([(</span><span class="s1">&#39;Fourier&#39;</span><span class="p">,</span> <span class="n">Fourier</span><span class="p">(</span><span class="n">period</span><span class="o">=</span><span class="n">period</span><span class="p">)),</span>
+                             <span class="p">(</span><span class="s1">&#39;Regressor&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">regressor</span><span class="p">)])</span>
+        <span class="c1"># do some probably unnecessary sorting</span>
+        <span class="n">sorted_X</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">X_sorting</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">argsort</span><span class="p">(</span><span class="n">rowvec</span><span class="p">(</span><span class="n">X</span><span class="p">))</span>
+        <span class="c1"># iterate over the range of degrees until the Baart cutoff is reached</span>
         <span class="k">for</span> <span class="n">degree</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">min_degree</span><span class="p">,</span> <span class="n">max_degree</span><span class="p">):</span>
+            <span class="c1"># edit the pipeline, such that it fits the desired Fourier degree</span>
             <span class="n">pipeline</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="n">Fourier__degree</span><span class="o">=</span><span class="n">degree</span><span class="p">)</span>
+            <span class="c1"># fit a &quot;degree&quot;-th order Fourier series to the data,</span>
+            <span class="c1"># use this model to predict the light curve at the observed times,</span>
+            <span class="c1"># and take the residuals between the observed and predicted values</span>
             <span class="n">pipeline</span><span class="o">.</span><span class="n">fit</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">y</span><span class="p">)</span>
             <span class="n">lc</span> <span class="o">=</span> <span class="n">pipeline</span><span class="o">.</span><span class="n">predict</span><span class="p">(</span><span class="n">sorted_X</span><span class="p">)</span>
             <span class="n">residuals</span> <span class="o">=</span> <span class="n">y</span><span class="p">[</span><span class="n">X_sorting</span><span class="p">]</span> <span class="o">-</span> <span class="n">lc</span>
+            <span class="c1"># compute the autocorrelation of the residuals, and if they are</span>
+            <span class="c1"># below the Baart cutoff tolerance, we have converged to a solution</span>
             <span class="n">p_c</span> <span class="o">=</span> <span class="n">autocorrelation</span><span class="p">(</span><span class="n">residuals</span><span class="p">)</span>
             <span class="k">if</span> <span class="nb">abs</span><span class="p">(</span><span class="n">p_c</span><span class="p">)</span> <span class="o">&lt;=</span> <span class="n">cutoff</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">degree</span>
-        <span class="c"># reached max_degree without reaching cutoff</span>
-        <span class="k">return</span> <span class="n">max_degree</span>
-</div>
+        <span class="c1"># reached max_degree without reaching cutoff</span>
+        <span class="k">return</span> <span class="n">max_degree</span></div>
+
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="Fourier.baart_tolerance"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.baart_tolerance">[docs]</a>    <span class="k">def</span> <span class="nf">baart_tolerance</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
         <span class="sd">r&quot;&quot;&quot;</span>
@@ -285,7 +277,7 @@
 <span class="sd">        .. math::</span>
 
 <span class="sd">            \frac{1}{\sqrt{2 (\operatorname{card}(\mathbf{X}) - 1)}}</span>
-<span class="sd">        </span>
+
 
 <span class="sd">        **Parameters**</span>
 
@@ -294,71 +286,81 @@
 
 <span class="sd">        **Returns**</span>
 
-<span class="sd">        </span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">return</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span>
-</div>
+        <span class="k">return</span> <span class="p">(</span><span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span><span class="o">**</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="o">/</span><span class="mi">2</span><span class="p">)</span></div>
+
     <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="Fourier.design_matrix"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.design_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">design_matrix</span><span class="p">(</span><span class="n">phases</span><span class="p">,</span> <span class="n">degree</span><span class="p">):</span>
+<div class="viewcode-block" id="Fourier.design_matrix"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.design_matrix">[docs]</a>    <span class="k">def</span> <span class="nf">design_matrix</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="n">period</span><span class="p">,</span> <span class="n">degree</span><span class="p">):</span>
         <span class="sd">r&quot;&quot;&quot;</span>
 <span class="sd">        Constructs an :math:`N \times 2n+1` matrix of the form:</span>
 
 <span class="sd">        .. math::</span>
 
 <span class="sd">            \begin{bmatrix}</span>
-<span class="sd">              1</span>
-<span class="sd">            &amp; \sin(1 \cdot 2\pi \cdot \phi_0)</span>
-<span class="sd">            &amp; \cos(1 \cdot 2\pi \cdot \phi_0)</span>
+<span class="sd">              \sin(1 \omega t_0)</span>
+<span class="sd">            &amp; \cos(1 \omega t_0)</span>
 <span class="sd">            &amp; \ldots</span>
-<span class="sd">            &amp; \sin(n \cdot 2\pi \cdot \phi_0)</span>
-<span class="sd">            &amp; \cos(n \cdot 2\pi \cdot \phi_0)</span>
+<span class="sd">            &amp; \sin(n \omega t_0)</span>
+<span class="sd">            &amp; \cos(n \omega t_0)</span>
 <span class="sd">            \\</span>
 <span class="sd">              \vdots</span>
-<span class="sd">            &amp; \vdots</span>
 <span class="sd">            &amp; \vdots</span>
 <span class="sd">            &amp; \ddots</span>
 <span class="sd">            &amp; \vdots</span>
 <span class="sd">            &amp; \vdots</span>
 <span class="sd">            \\</span>
-<span class="sd">              1</span>
-<span class="sd">            &amp; \sin(1 \cdot 2\pi \cdot \phi_N)</span>
-<span class="sd">            &amp; \cos(1 \cdot 2\pi \cdot \phi_N)</span>
+<span class="sd">              \sin(1 \omega t_N)</span>
+<span class="sd">            &amp; \cos(1 \omega t_N)</span>
 <span class="sd">            &amp; \ldots</span>
-<span class="sd">            &amp; \sin(n \cdot 2\pi \cdot \phi_N)</span>
-<span class="sd">            &amp; \cos(n \cdot 2\pi \cdot \phi_N)</span>
+<span class="sd">            &amp; \sin(n \omega t_N)</span>
+<span class="sd">            &amp; \cos(n \omega t_N)</span>
 <span class="sd">            \end{bmatrix}</span>
 
-<span class="sd">        where :math:`n =` *degree*, :math:`N =` *n_samples*, and</span>
-<span class="sd">        :math:`\phi_i =` *phases[i]*.</span>
+<span class="sd">        where</span>
+<span class="sd">        :math:`n =` *degree*,</span>
+<span class="sd">        :math:`N =` *n_samples*,</span>
+<span class="sd">        :math:`\omega = 2 \pi /` *period*, and</span>
+<span class="sd">        :math:`t_i =` *times[i]*.</span>
 
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        phases : array-like, shape = [n_samples]</span>
-<span class="sd">            </span>
+<span class="sd">        **Parameters**</span>
+
+<span class="sd">        times : array-like, shape = [n_samples]</span>
+
+<span class="sd">        period : positive number</span>
+
+<span class="sd">        degree : positive integer</span>
+
+<span class="sd">        **Returns**</span>
+
+<span class="sd">        design_matrix : array-like, shape = [n_samples, 2*degree]</span>
+
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">phases</span><span class="o">.</span><span class="n">size</span>
-        <span class="c"># initialize coefficient matrix</span>
-        <span class="n">M</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_samples</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">degree</span><span class="o">+</span><span class="mi">1</span><span class="p">))</span>
-        <span class="c"># indices</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">degree</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-        <span class="c"># initialize the Nxn matrix that is repeated within the</span>
-        <span class="c"># sine and cosine terms</span>
-        <span class="n">x</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">degree</span><span class="p">))</span>
-        <span class="c"># the Nxn matrix now has N copies of the same row, and each row is</span>
-        <span class="c"># integer multiples of pi counting from 1 to the degree</span>
-        <span class="n">x</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">i</span><span class="o">*</span><span class="mi">2</span><span class="o">*</span><span class="n">numpy</span><span class="o">.</span><span class="n">pi</span>
-        <span class="c"># multiply each row of x by the phases</span>
-        <span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="p">[:,:]</span> <span class="o">*=</span> <span class="n">phases</span>
-        <span class="c"># place 1&#39;s in the first column of the coefficient matrix</span>
-        <span class="n">M</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>    <span class="o">=</span> <span class="mi">1</span>
-        <span class="c"># the odd indices of the coefficient matrix have sine terms</span>
-        <span class="n">M</span><span class="p">[:,</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="c"># the even indices of the coefficient matrix have cosine terms</span>
-        <span class="n">M</span><span class="p">[:,</span><span class="mi">2</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">M</span>
-</div>
+        <span class="c1"># pre-compute number of samples</span>
+        <span class="n">n_samples</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">size</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
+        <span class="c1"># convert the period into angular frequency</span>
+        <span class="n">omega</span> <span class="o">=</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span> <span class="o">/</span> <span class="n">period</span>
+        <span class="c1"># initialize coefficient matrix</span>
+        <span class="n">M</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_samples</span><span class="p">,</span> <span class="mi">2</span><span class="o">*</span><span class="n">degree</span><span class="p">))</span>
+        <span class="c1"># indices</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">degree</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># initialize the Nxn matrix that is repeated within the</span>
+        <span class="c1"># sine and cosine terms</span>
+        <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">n_samples</span><span class="p">,</span> <span class="n">degree</span><span class="p">))</span>
+        <span class="c1"># the Nxn matrix now has N copies of the same row, and each row is</span>
+        <span class="c1"># integer multiples the angular frequency counting from 1 to the degree</span>
+        <span class="n">x</span><span class="p">[:,:]</span> <span class="o">=</span> <span class="n">i</span> <span class="o">*</span> <span class="n">omega</span>
+        <span class="c1"># multiply each row of x by the times</span>
+        <span class="n">x</span><span class="o">.</span><span class="n">T</span><span class="p">[:,:]</span> <span class="o">*=</span> <span class="n">times</span>
+        <span class="c1"># the even indices of the coefficient matrix have sine terms</span>
+        <span class="n">M</span><span class="p">[:,</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sin</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+        <span class="c1"># the odd indices of the coefficient matrix have cosine terms</span>
+        <span class="n">M</span><span class="p">[:,</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">cos</span><span class="p">(</span><span class="n">x</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">M</span></div>
+
     <span class="nd">@staticmethod</span>
-<div class="viewcode-block" id="Fourier.phase_shifted_coefficients"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.phase_shifted_coefficients">[docs]</a>    <span class="k">def</span> <span class="nf">phase_shifted_coefficients</span><span class="p">(</span><span class="n">amplitude_coefficients</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s">&#39;cos&#39;</span><span class="p">,</span>
+<div class="viewcode-block" id="Fourier.phase_shifted_coefficients"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.phase_shifted_coefficients">[docs]</a>    <span class="k">def</span> <span class="nf">phase_shifted_coefficients</span><span class="p">(</span><span class="n">amplitude_coefficients</span><span class="p">,</span> <span class="n">form</span><span class="o">=</span><span class="s1">&#39;cos&#39;</span><span class="p">,</span>
                                    <span class="n">shift</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
         <span class="sd">r&quot;&quot;&quot;</span>
 <span class="sd">        Converts Fourier coefficients from the amplitude form to the</span>
@@ -397,53 +399,53 @@
 <span class="sd">            Array of coefficients</span>
 <span class="sd">            :math:`[ A_0, A_1, \Phi_1, \ldots, A_n, \Phi_n ]`.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">form</span> <span class="o">!=</span> <span class="s">&#39;sin&#39;</span> <span class="ow">and</span> <span class="n">form</span> <span class="o">!=</span> <span class="s">&#39;cos&#39;</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">form</span> <span class="o">!=</span> <span class="s1">&#39;sin&#39;</span> <span class="ow">and</span> <span class="n">form</span> <span class="o">!=</span> <span class="s1">&#39;cos&#39;</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span>
-                <span class="s">&#39;Fourier series must have form sin or cos&#39;</span><span class="p">)</span>
+                <span class="s1">&#39;Fourier series must have form sin or cos&#39;</span><span class="p">)</span>
 
-        <span class="c"># separate array of coefficients into respective parts</span>
+        <span class="c1"># separate array of coefficients into respective parts</span>
         <span class="n">A_0</span> <span class="o">=</span> <span class="n">amplitude_coefficients</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
         <span class="n">a_k</span> <span class="o">=</span> <span class="n">amplitude_coefficients</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">b_k</span> <span class="o">=</span> <span class="n">amplitude_coefficients</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
 
         <span class="n">degree</span> <span class="o">=</span> <span class="n">a_k</span><span class="o">.</span><span class="n">size</span>
-        <span class="n">k</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">degree</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
-        <span class="c"># A_k and Phi_k are the angle and hypotenuse in the right triangles</span>
-        <span class="c"># pictured below. A_k is obtained with the Pythagorean theorem, and</span>
-        <span class="c"># Phi_k is obtained with the 2-argument inverse tangent.</span>
-        <span class="c"># The positions of a_k and b_k depend on whether it is a sin or cos</span>
-        <span class="c"># series.</span>
-        <span class="c">#</span>
-        <span class="c"># Cos series                Sin series</span>
-        <span class="c">#</span>
-        <span class="c">#    b_k                          /|</span>
-        <span class="c"># ---------                      / |</span>
-        <span class="c"># \ Φ_k |_|                     /  |</span>
-        <span class="c">#  \      |                A_k /   |</span>
-        <span class="c">#   \     |                   /    | b_k</span>
-        <span class="c">#    \    | a_k              /     |</span>
-        <span class="c"># A_k \   |                 /     _|</span>
-        <span class="c">#      \  |                / Φ_k | |</span>
-        <span class="c">#       \ |                ---------</span>
-        <span class="c">#        \|                   a_k</span>
-        <span class="c">#</span>
-        <span class="n">A_k</span>   <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">a_k</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">b_k</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
-        <span class="c"># phase coefficients are shifted to the left by optional ``shift``</span>
-        <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s">&#39;cos&#39;</span><span class="p">:</span>
-            <span class="n">Phi_k</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">a_k</span><span class="p">,</span> <span class="n">b_k</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="n">k</span><span class="o">*</span><span class="n">shift</span>
-        <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s">&#39;sin&#39;</span><span class="p">:</span>
-            <span class="n">Phi_k</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">b_k</span><span class="p">,</span> <span class="n">a_k</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="n">k</span><span class="o">*</span><span class="n">shift</span>
-        <span class="c"># constrain Phi between 0 and 2*pi</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">degree</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># A_k and Phi_k are the angle and hypotenuse in the right triangles</span>
+        <span class="c1"># pictured below. A_k is obtained with the Pythagorean theorem, and</span>
+        <span class="c1"># Phi_k is obtained with the 2-argument inverse tangent.</span>
+        <span class="c1"># The positions of a_k and b_k depend on whether it is a sin or cos</span>
+        <span class="c1"># series.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Cos series                Sin series</span>
+        <span class="c1">#</span>
+        <span class="c1">#    b_k                          /|</span>
+        <span class="c1"># ---------                      / |</span>
+        <span class="c1"># \ Φ_k |_|                     /  |</span>
+        <span class="c1">#  \      |                A_k /   |</span>
+        <span class="c1">#   \     |                   /    | b_k</span>
+        <span class="c1">#    \    | a_k              /     |</span>
+        <span class="c1"># A_k \   |                 /     _|</span>
+        <span class="c1">#      \  |                / Φ_k | |</span>
+        <span class="c1">#       \ |                ---------</span>
+        <span class="c1">#        \|                   a_k</span>
+        <span class="c1">#</span>
+        <span class="n">A_k</span>   <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sqrt</span><span class="p">(</span><span class="n">a_k</span><span class="o">**</span><span class="mi">2</span> <span class="o">+</span> <span class="n">b_k</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span>
+        <span class="c1"># phase coefficients are shifted to the left by optional ``shift``</span>
+        <span class="k">if</span> <span class="n">form</span> <span class="o">==</span> <span class="s1">&#39;cos&#39;</span><span class="p">:</span>
+            <span class="n">Phi_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="o">-</span><span class="n">a_k</span><span class="p">,</span> <span class="n">b_k</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="n">k</span><span class="o">*</span><span class="n">shift</span>
+        <span class="k">elif</span> <span class="n">form</span> <span class="o">==</span> <span class="s1">&#39;sin&#39;</span><span class="p">:</span>
+            <span class="n">Phi_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arctan2</span><span class="p">(</span><span class="n">b_k</span><span class="p">,</span> <span class="n">a_k</span><span class="p">)</span> <span class="o">+</span> <span class="mi">2</span><span class="o">*</span><span class="n">pi</span><span class="o">*</span><span class="n">k</span><span class="o">*</span><span class="n">shift</span>
+        <span class="c1"># constrain Phi between 0 and 2*pi</span>
         <span class="n">Phi_k</span> <span class="o">%=</span> <span class="mi">2</span><span class="o">*</span><span class="n">pi</span>
 
-        <span class="n">phase_shifted_coefficients_</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">amplitude_coefficients</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
-                                                  <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">phase_shifted_coefficients_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">amplitude_coefficients</span><span class="o">.</span><span class="n">shape</span><span class="p">,</span>
+                                               <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
         <span class="n">phase_shifted_coefficients_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>    <span class="o">=</span> <span class="n">A_0</span>
         <span class="n">phase_shifted_coefficients_</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">A_k</span>
         <span class="n">phase_shifted_coefficients_</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">Phi_k</span>
 
-        <span class="k">return</span> <span class="n">phase_shifted_coefficients_</span>
-</div>
+        <span class="k">return</span> <span class="n">phase_shifted_coefficients_</span></div>
+
     <span class="nd">@staticmethod</span>
 <div class="viewcode-block" id="Fourier.fourier_ratios"><a class="viewcode-back" href="../../api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.fourier_ratios">[docs]</a>    <span class="k">def</span> <span class="nf">fourier_ratios</span><span class="p">(</span><span class="n">phase_shifted_coeffs</span><span class="p">):</span>
         <span class="sd">r&quot;&quot;&quot;</span>
@@ -473,31 +475,37 @@
 
 
         <span class="n">n_coeff</span> <span class="o">=</span> <span class="n">phase_shifted_coeffs</span><span class="o">.</span><span class="n">size</span>
-        <span class="c"># n_coeff = 2*degree + 1 =&gt; degree = (n_coeff-1)/2</span>
+        <span class="c1"># n_coeff = 2*degree + 1 =&gt; degree = (n_coeff-1)/2</span>
         <span class="n">degree</span> <span class="o">=</span> <span class="p">(</span><span class="n">n_coeff</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">/</span> <span class="mi">2</span>
 
         <span class="n">amplitudes</span> <span class="o">=</span> <span class="n">phase_shifted_coeffs</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">phases</span> <span class="o">=</span> <span class="n">phase_shifted_coeffs</span><span class="p">[</span><span class="mi">2</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
 
-        <span class="c"># there are degree-1 amplitude ratios, and degree-1 phase deltas,</span>
-        <span class="c"># so altogether there are 2*(degree-1) values</span>
-        <span class="n">ratios</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="mi">2</span><span class="o">*</span><span class="p">(</span><span class="n">degree</span><span class="o">-</span><span class="mi">1</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-        <span class="n">amplitude_ratios</span> <span class="o">=</span> <span class="n">ratios</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span>
-        <span class="n">phase_deltas</span> <span class="o">=</span> <span class="n">ratios</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+        <span class="c1"># there are degree-1 amplitude ratios, and degree-1 phase deltas,</span>
+        <span class="c1"># so altogether there are 2*(degree-1) values</span>
+        <span class="n">ratios</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">degree</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
+        <span class="n">amplitude_ratios</span> <span class="o">=</span> <span class="n">ratios</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">phase_deltas</span> <span class="o">=</span> <span class="n">ratios</span><span class="o">.</span><span class="n">T</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
 
-        <span class="c"># amplitudes may be zero, so suppress division by zero warnings</span>
-        <span class="k">with</span> <span class="n">numpy</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s">&quot;ignore&quot;</span><span class="p">):</span>
+        <span class="c1"># amplitudes may be zero, so suppress division by zero warnings</span>
+        <span class="k">with</span> <span class="n">np</span><span class="o">.</span><span class="n">errstate</span><span class="p">(</span><span class="n">divide</span><span class="o">=</span><span class="s2">&quot;ignore&quot;</span><span class="p">):</span>
             <span class="n">amplitude_ratios</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">amplitudes</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
             <span class="n">amplitude_ratios</span>   <span class="o">/=</span> <span class="n">amplitudes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-        <span class="c"># indices for phase deltas</span>
-        <span class="n">i</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">degree</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1"># indices for phase deltas</span>
+        <span class="n">i</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="n">degree</span><span class="o">+</span><span class="mi">1</span><span class="p">)</span>
         <span class="n">phase_deltas</span><span class="p">[:]</span> <span class="o">=</span> <span class="n">phases</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
         <span class="n">phase_deltas</span>   <span class="o">-=</span> <span class="n">i</span><span class="o">*</span><span class="n">phases</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-        <span class="c"># constrain phase_deltas between 0 and 2*pi</span>
+        <span class="c1"># constrain phase_deltas between 0 and 2*pi</span>
         <span class="n">phase_deltas</span>   <span class="o">%=</span> <span class="mi">2</span><span class="o">*</span><span class="n">pi</span>
 
         <span class="k">return</span> <span class="n">ratios</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">_validate_period</span><span class="p">(</span><span class="n">period</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">period</span><span class="p">)</span> <span class="ow">or</span> <span class="n">period</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;period must be a positive number, not {}&quot;</span>
+                         <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">period</span><span class="p">))</span>
 </pre></div>
 
           </div>
@@ -507,7 +515,7 @@
     </div>
   <div class="footer">
     &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
-    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
   </div>
   
   </body>

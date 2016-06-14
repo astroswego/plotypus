@@ -29,7 +29,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body>
+  <body role="document">
   
   
 
@@ -47,7 +47,7 @@
 </div>
 
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -64,28 +64,27 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation index</a><ul>
   </ul></li>
 </ul>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/api/plotypus.utils.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/plotypus.utils.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -94,23 +93,23 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="module-plotypus.utils">
 <span id="plotypus-utils-module"></span><h1>plotypus.utils module<a class="headerlink" href="#module-plotypus.utils" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="plotypus.utils.verbose_print">
-<tt class="descclassname">plotypus.utils.</tt><tt class="descname">verbose_print</tt><big>(</big><em>message</em>, <em>*</em>, <em>operation</em>, <em>verbosity</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#verbose_print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.verbose_print" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.utils.</code><code class="descname">verbose_print</code><span class="sig-paren">(</span><em>message</em>, <em>*</em>, <em>operation</em>, <em>verbosity</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#verbose_print"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.verbose_print" title="Permalink to this definition">¶</a></dt>
 <dd><p>Prints <em>message</em> to stderr only if the given <em>operation</em> is in the list
 <em>verbosity</em>. If &#8220;all&#8221; is in <em>verbosity</em>, all operations are printed.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>message <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>The message to print.</dd>
-<dt>operation <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>The type of operation being performed.</dd>
-<dt>verbosity <span class="classifier-delimiter">:</span> <span class="classifier">[str] or None</span></dt>
-<dd>The list of operations to print <em>message</em> for. If &#8220;all&#8221; is contained
+<dt>message</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>The message to print.</dd>
+<dt>operation</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>The type of operation being performed.</dd>
+<dt>verbosity</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">[str] or None</span><dd>The list of operations to print <em>message</em> for. If &#8220;all&#8221; is contained
 in the list, then all operations are printed. If None, no operation is
 printed.</dd>
 </dl>
@@ -119,78 +118,148 @@ printed.</dd>
 </dd></dl>
 
 <dl class="function">
+<dt id="plotypus.utils.import_name">
+<code class="descclassname">plotypus.utils.</code><code class="descname">import_name</code><span class="sig-paren">(</span><em>dotted_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#import_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.import_name" title="Permalink to this definition">¶</a></dt>
+<dd><p>Import an object from a module, and return the object. Does not affect the
+encapsulating namespace.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>dotted_name</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>The fully-qualified name of the object to import, in the form
+<em>module.submodule.etc.object_name</em>. Will error if <em>dotted_name</em> is
+a top-level module (e.g. <em>module</em> and not <em>module.something</em>) or if
+the object does not exist.</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>obj</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">object</span><dd>The object specified by <em>dotted_name</em>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.literal_eval_str">
+<code class="descclassname">plotypus.utils.</code><code class="descname">literal_eval_str</code><span class="sig-paren">(</span><em>string</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#literal_eval_str"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.literal_eval_str" title="Permalink to this definition">¶</a></dt>
+<dd><p>Equivalent to <em>ast.literal_eval</em>, but if <em>string</em> cannot be parsed,
+returns the original string. Only accepts arguments of type <em>str</em>.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>string</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Any string. If it can be parsed as a basic Python object literal, it
+will be. See <em>ast.literal_eval</em> for supported objects.</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>obj</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">object</span><dd>Original string, or the object literal it represents.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.strlist_to_dict">
+<code class="descclassname">plotypus.utils.</code><code class="descname">strlist_to_dict</code><span class="sig-paren">(</span><em>lst</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#strlist_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.strlist_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>list_to_dict(lst)</p>
+<p>Turn a list of strings with an even number of elements into a dictionary.
+Any values which may be interpreted as basic Python object literals are
+parsed as such. See <em>plotypus.literal_eval_str</em> for supported types.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>lst</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list</span><dd>A <em>list</em> or equivalent object with an even number of arguments, to be
+interpreted as <em>[key1, val1, ..., keyN, valN]</em>.</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>dct</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>A <em>dict</em> whose keys are the even elements of <em>lst</em> and values are the
+odd elements.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
 <dt id="plotypus.utils.pmap">
-<tt class="descclassname">plotypus.utils.</tt><tt class="descname">pmap</tt><big>(</big><em>func</em>, <em>args</em>, <em>processes=None</em>, <em>callback=do_nothing</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#pmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.pmap" title="Permalink to this definition">¶</a></dt>
-<dd><p>Parallel equivalent of <tt class="docutils literal"><span class="pre">map(func,</span> <span class="pre">args)</span></tt>, with the additional ability of
+<code class="descclassname">plotypus.utils.</code><code class="descname">pmap</code><span class="sig-paren">(</span><em>func</em>, <em>args</em>, <em>processes=None</em>, <em>callback=do_nothing</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#pmap"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.pmap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parallel equivalent of <code class="docutils literal"><span class="pre">map(func,</span> <span class="pre">args)</span></code>, with the additional ability of
 providing keyword arguments to func, and a callback function which is
 applied to each element in the returned list. Unlike map, the output is a
 non-lazy list. If <em>processes</em> is 1, no thread pool is used.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>func <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
-<dd>The function to map.</dd>
-<dt>args <span class="classifier-delimiter">:</span> <span class="classifier">iterable</span></dt>
-<dd>The arguments to map <em>func</em> over.</dd>
-<dt>processes <span class="classifier-delimiter">:</span> <span class="classifier">int or None, optional</span></dt>
-<dd>The number of processes in the thread pool. If only 1, no thread pool
+<dt>func</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">function</span><dd>The function to map.</dd>
+<dt>args</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">iterable</span><dd>The arguments to map <em>func</em> over.</dd>
+<dt>processes</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int or None, optional</span><dd>The number of processes in the thread pool. If only 1, no thread pool
 is used to avoid useless overhead. If None, the number is chosen based
-on your system by <tt class="xref py py-class docutils literal"><span class="pre">multiprocessing.Pool</span></tt> (default None).</dd>
-<dt>callback <span class="classifier-delimiter">:</span> <span class="classifier">function, optional</span></dt>
-<dd>Function to call on the return value of <tt class="docutils literal"><span class="pre">func(arg)</span></tt> for each <em>arg</em>
+on your system by <code class="xref py py-class docutils literal"><span class="pre">multiprocessing.Pool</span></code> (default None).</dd>
+<dt>callback</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">function, optional</span><dd>Function to call on the return value of <code class="docutils literal"><span class="pre">func(arg)</span></code> for each <em>arg</em>
 in <em>args</em> (default do_nothing).</dd>
-<dt>kwargs <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
-<dd>Extra keyword arguments are unpacked in each call of <em>func</em>.</dd>
+<dt>kwargs</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>Extra keyword arguments are unpacked in each call of <em>func</em>.</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>results <span class="classifier-delimiter">:</span> <span class="classifier">list</span></dt>
-<dd>A list equivalent to <tt class="docutils literal"><span class="pre">[func(x,</span> <span class="pre">**kwargs)</span> <span class="pre">for</span> <span class="pre">x</span> <span class="pre">in</span> <span class="pre">args]</span></tt>.</dd>
+<dt>results</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list</span><dd>A list equivalent to <code class="docutils literal"><span class="pre">[func(x,</span> <span class="pre">**kwargs)</span> <span class="pre">for</span> <span class="pre">x</span> <span class="pre">in</span> <span class="pre">args]</span></code>.</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="plotypus.utils.make_sure_path_exists">
-<tt class="descclassname">plotypus.utils.</tt><tt class="descname">make_sure_path_exists</tt><big>(</big><em>path</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#make_sure_path_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.make_sure_path_exists" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.utils.</code><code class="descname">make_sure_path_exists</code><span class="sig-paren">(</span><em>path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#make_sure_path_exists"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.make_sure_path_exists" title="Permalink to this definition">¶</a></dt>
 <dd><p>Creates the supplied <em>path</em> if it does not exist.
 Raises <em>OSError</em> if the <em>path</em> cannot be created.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>path <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Path to create.</dd>
+<dt>path</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Path to create.</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <p>None</p>
 </dd></dl>
 
 <dl class="function">
+<dt id="plotypus.utils.valid_basename">
+<code class="descclassname">plotypus.utils.</code><code class="descname">valid_basename</code><span class="sig-paren">(</span><em>s</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#valid_basename"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.valid_basename" title="Permalink to this definition">¶</a></dt>
+<dd><p>Predicate function to check if the string <em>s</em> is a valid basename, meaning
+it is both a valid filename, and does not contain a directory.</p>
+<p><strong>Parameters</strong></p>
+<p>s : str</p>
+<p><strong>Returns</strong></p>
+<p>is_valid : bool</p>
+</dd></dl>
+
+<dl class="function">
 <dt id="plotypus.utils.get_signal">
-<tt class="descclassname">plotypus.utils.</tt><tt class="descname">get_signal</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#get_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.get_signal" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.utils.</code><code class="descname">get_signal</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#get_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.get_signal" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all of the values in <em>data</em> that are not outliers.</p>
 <p><strong>Parameters</strong></p>
 <p>data : masked array</p>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>signal <span class="classifier-delimiter">:</span> <span class="classifier">array</span></dt>
-<dd>Non-masked values in <em>data</em>.</dd>
+<dt>signal</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array</span><dd>Non-masked values in <em>data</em>.</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="plotypus.utils.get_noise">
-<tt class="descclassname">plotypus.utils.</tt><tt class="descname">get_noise</tt><big>(</big><em>data</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#get_noise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.get_noise" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.utils.</code><code class="descname">get_noise</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#get_noise"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.get_noise" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns all identified outliers in <em>data</em>.</p>
 <p><strong>Parameters</strong></p>
 <p>data : masked array</p>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>noise <span class="classifier-delimiter">:</span> <span class="classifier">array</span></dt>
-<dd>Masked values in <em>data</em>.</dd>
+<dt>noise</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array</span><dd>Masked values in <em>data</em>.</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="plotypus.utils.colvec">
-<tt class="descclassname">plotypus.utils.</tt><tt class="descname">colvec</tt><big>(</big><em>X</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#colvec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.colvec" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.utils.</code><code class="descname">colvec</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#colvec"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.colvec" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts a row-vector <em>X</em> into a column-vector.</p>
 <p><strong>Parameters</strong></p>
 <p>X : array-like, shape = [n_samples]</p>
@@ -200,7 +269,7 @@ Raises <em>OSError</em> if the <em>path</em> cannot be created.</p>
 
 <dl class="function">
 <dt id="plotypus.utils.mad">
-<tt class="descclassname">plotypus.utils.</tt><tt class="descname">mad</tt><big>(</big><em>data</em>, <em>axis=None</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#mad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.mad" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.utils.</code><code class="descname">mad</code><span class="sig-paren">(</span><em>data</em>, <em>axis=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#mad"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.mad" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the median absolute deviation of <em>data</em> along a given <em>axis</em>.
 See <a class="reference external" href="https://en.wikipedia.org/wiki/Median_absolute_deviation">link</a> for
 details.</p>
@@ -212,7 +281,7 @@ details.</p>
 
 <dl class="function">
 <dt id="plotypus.utils.autocorrelation">
-<tt class="descclassname">plotypus.utils.</tt><tt class="descname">autocorrelation</tt><big>(</big><em>X</em>, <em>lag=1</em><big>)</big><a class="reference internal" href="../_modules/plotypus/utils.html#autocorrelation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.autocorrelation" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.utils.</code><code class="descname">autocorrelation</code><span class="sig-paren">(</span><em>X</em>, <em>lag=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#autocorrelation"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.autocorrelation" title="Permalink to this definition">¶</a></dt>
 <dd><p>Computes the autocorrelation of <em>X</em> with the given <em>lag</em>.
 Autocorrelation is simply
 autocovariance(X) / covariance(X-mean, X-mean),
@@ -222,9 +291,31 @@ covariance((X-mean)[:-lag], (X-mean)[lag:]).</p>
 <p><strong>Parameters</strong></p>
 <p>X : array-like, shape = [n_samples]</p>
 <dl class="docutils">
-<dt>lag <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
-<dd>Index difference between points being compared (default 1).</dd>
+<dt>lag</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span><dd>Index difference between points being compared (default 1).</dd>
 </dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.round_up">
+<code class="descclassname">plotypus.utils.</code><code class="descname">round_up</code><span class="sig-paren">(</span><em>x</em>, <em>factor</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#round_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.round_up" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rounds <em>x</em> up to the nearest multiple of <em>factor</em>.</p>
+<p><strong>Parameters</strong></p>
+<p>x : number
+factor : number</p>
+<p><strong>Returns</strong></p>
+<p>rounded : number</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.utils.round_down">
+<code class="descclassname">plotypus.utils.</code><code class="descname">round_down</code><span class="sig-paren">(</span><em>x</em>, <em>factor</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/utils.html#round_down"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.utils.round_down" title="Permalink to this definition">¶</a></dt>
+<dd><p>Rounds <em>x</em> down to the nearest multiple of <em>factor</em>.</p>
+<p><strong>Parameters</strong></p>
+<p>x : number
+factor : number</p>
+<p><strong>Returns</strong></p>
+<p>rounded : number</p>
 </dd></dl>
 
 </div>
@@ -237,7 +328,7 @@ covariance((X-mean)[:-lag], (X-mean)[lag:]).</p>
     </div>
   <div class="footer">
     &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
-    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
   </div>
   
   </body>

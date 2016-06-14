@@ -12,7 +12,8 @@ should be installed to your path. To see a list of available options, run::
 
    >> plotypus --help
 
-For the sake of this tutorial, create an empty folder named *plotypus-tutorial*, and enter that directory::
+For the sake of this tutorial, create an empty folder named *plotypus-tutorial*,
+and enter that directory::
 
    >> mkdir plotypus-tutorial
    >> cd plotypus-tutorial
@@ -48,23 +49,16 @@ Now try running it on the entire directory::
 
    >> plotypus -i ogle-sample0/ --min-period 3.0 --max-period 6.0
 
-This time you should see a table like before, but with two entries. Let's run
-this same command again, but this time, redirect the results to a file. ::
+This time you should see a table like before, but with two entries, one for ``OGLE-LMC-CEP-0002`` and one for ``OGLE-LMC-CEP-0005``. Let's run this same command again, but this time, redirect the results to a file. ::
 
-   >> plotypus -i ogle-sample0/ --min-period 3.0 --max-period 6.0 > output.dat
-
-Notice that the first and second columns contain the name and period of the
-stars? Why don't we extract those columns, and save them to a file, so that we
-don't have to wait for the period to be found every time. ::
-
-   >> cut -f 1,2 --output-delimiter="  " output.dat | tail -n +2 > periods.dat
+   >> plotypus -i ogle-sample0/ --min-period 3.0 --max-period 6.0 > parameters.dat
 
 Now we can run plotypus as before, but instead of providing a period range,
-we will provide the periods file::
+we will provide the parameters file, to avoid re-computing the periods::
 
-   >> plotypus -i ogle-sample0 --periods periods.dat
+   >> plotypus -i ogle-sample0 --parameters parameters.dat
 
-Much faster than before, right? We'll use the periods file for the rest of the
+Much faster than before, right? We'll use the parameters file for the rest of the
 tutorial.
 
 Now you've seen how to process a single file, or an entire directory of files,
@@ -86,14 +80,14 @@ Take a peek inside *names.txt*::
 To tell plotypus to process the files named in this list, you can do one of
 two things.
 
-1. Provide the file with the ``-i`` switch as before, but prefix the file with
+1. Provide the file with the ``-i`` option as before, but prefix the file with
    an ``@`` symbol::
 
-   >> plotypus -i @names.dat --periods periods.dat
+   >> plotypus -i @names.dat --parameters parameters.dat
 
 2. Pipe the file to plotypus via standard input, and omit the ``-i`` option::
 
-   >> cat names.dat | plotypus --periods periods.dat
+   >> plotypus --parameters parameters.dat < names.dat
 
 You should see the same exact output as when you gave plotypus the directory
 as input.
@@ -102,10 +96,10 @@ Now let's generate some plots (it isn't called **plot**\ypus for nothing).
 Run plotypus in any of the ways you did before, but this time add the ``-o``
 switch, and provide an output directory. We will do it like this::
 
-   >> plotypus -i @names.dat -o plots/ --periods periods.dat
+   >> plotypus -i @names.dat -o output/ --parameters parameters.dat
 
-You will see the same table output as before, but now a new directory and some
-plots have been created. Your directory should look like this::
+You will see the same table output as before, but now new directories and files
+have been created. Your directory should look like this::
 
     plotypus-tutorial/
     ├── names.dat
@@ -113,18 +107,43 @@ plots have been created. Your directory should look like this::
     │   ├── OGLE-LMC-CEP-0002.dat
     │   └── OGLE-LMC-CEP-0005.dat
     ├── ogle-sample0.tar.gz
-    ├── output.dat
-    ├── periods.dat
-    └── plots
-        ├── OGLE-LMC-CEP-0002.png
-        └── OGLE-LMC-CEP-0005.png
+    ├── output
+    │   ├── OGLE-LMC-CEP-0002
+    │   │   ├── fourier_coeffs.dat
+    │   │   ├── fourier_ratios.dat
+    │   │   ├── lightcurve.dat
+    │   │   ├── lightcurve.png
+    │   │   ├── residual.dat
+    │   │   └── residual.png
+    │   └── OGLE-LMC-CEP-0005
+    │       ├── fourier_coeffs.dat
+    │       ├── fourier_ratios.dat
+    │       ├── lightcurve.dat
+    │       ├── lightcurve.png
+    │       ├── residual.dat
+    │       └── residual.png
+    └── parameters.dat
 
-Using your image viewing software of choice, take a look at the two plots you
+A directory named ``output`` has been created, and within it, a directory has
+been made for each object, ``OGLE-LMC-CEP-0002`` and ``OGLE-LMC-CEP-0005``.
+``lightcurve.png`` displays the fitted light curve for the given star, while
+``residual.png`` displays the difference between the fit and the input data.
+``lightcurve.dat`` outputs the fit as a table of points, and ``residual.dat``
+outputs the residuals as a table of points. ``fourier_coeffs.dat`` contains a
+table of the Fourier coefficients, which can be used to reproduce the fit.
+``fourier_ratios.dat`` contains a table of the ratios and differences between
+different Fourier coefficients, which is useful in classifying variable stars.
+
+Using your image viewing software of choice, take a look at the plots you
 just created. They should look something like this:
 
-.. image:: images/OGLE-LMC-CEP-0002.png
+.. image:: images/OGLE-LMC-CEP-0002-lightcurve.png
 
-.. image:: images/OGLE-LMC-CEP-0005.png
+.. image:: images/OGLE-LMC-CEP-0005-lightcurve.png
+
+.. image:: images/OGLE-LMC-CEP-0002-residual.png
+
+.. image:: images/OGLE-LMC-CEP-0005-residual.png
 
 That covers all of the basic functionality of plotypus. Continue on to the
 `Intermediate Guide <cli-intermediate.html>`_.

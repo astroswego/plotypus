@@ -30,7 +30,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body>
+  <body role="document">
   
   
 
@@ -48,7 +48,7 @@
 </div>
 
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -62,11 +62,11 @@
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../contents.html">docs</a> &raquo;</li>
 
-          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
 <ul>
   <li><a href="../../index.html">Documentation index</a><ul>
@@ -74,17 +74,14 @@
   </ul></li>
   </ul></li>
 </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -93,29 +90,38 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <h1>Source code for plotypus.utils</h1><div class="highlight"><pre>
-<span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">makedirs</span>
-<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">join</span><span class="p">,</span> <span class="n">isdir</span>
+<span></span><span class="kn">from</span> <span class="nn">os</span> <span class="kn">import</span> <span class="n">makedirs</span>
+<span class="kn">from</span> <span class="nn">os.path</span> <span class="kn">import</span> <span class="n">basename</span><span class="p">,</span> <span class="n">join</span><span class="p">,</span> <span class="n">isdir</span>
 <span class="kn">from</span> <span class="nn">sys</span> <span class="kn">import</span> <span class="n">stderr</span>
 <span class="kn">from</span> <span class="nn">multiprocessing</span> <span class="kn">import</span> <span class="n">Pool</span>
-<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">absolute</span><span class="p">,</span> <span class="n">concatenate</span><span class="p">,</span> <span class="n">median</span><span class="p">,</span> <span class="n">resize</span>
+<span class="kn">import</span> <span class="nn">numbers</span>
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
+<span class="kn">from</span> <span class="nn">numpy</span> <span class="kn">import</span> <span class="n">absolute</span><span class="p">,</span> <span class="n">concatenate</span><span class="p">,</span> <span class="n">isscalar</span><span class="p">,</span> <span class="n">median</span><span class="p">,</span> <span class="n">resize</span>
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s">&#39;verbose_print&#39;</span><span class="p">,</span>
-    <span class="s">&#39;pmap&#39;</span><span class="p">,</span>
-    <span class="s">&#39;make_sure_path_exists&#39;</span><span class="p">,</span>
-    <span class="s">&#39;get_signal&#39;</span><span class="p">,</span>
-    <span class="s">&#39;get_noise&#39;</span><span class="p">,</span>
-    <span class="s">&#39;colvec&#39;</span><span class="p">,</span>
-    <span class="s">&#39;mad&#39;</span><span class="p">,</span>
-    <span class="s">&#39;autocorrelation&#39;</span>
+    <span class="s1">&#39;verbose_print&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;import_name&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;literal_eval_str&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;strlist_to_dict&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;pmap&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;make_sure_path_exists&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;valid_basename&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;get_signal&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;get_noise&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;colvec&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;mad&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;autocorrelation&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;round_up&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;round_down&#39;</span>
 <span class="p">]</span>
 
 
 <div class="viewcode-block" id="verbose_print"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.verbose_print">[docs]</a><span class="k">def</span> <span class="nf">verbose_print</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">operation</span><span class="p">,</span> <span class="n">verbosity</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;verbose_print(message, *, operation, verbosity)</span>
+
 <span class="sd">    Prints *message* to stderr only if the given *operation* is in the list</span>
 <span class="sd">    *verbosity*. If &quot;all&quot; is in *verbosity*, all operations are printed.</span>
 
@@ -135,10 +141,110 @@
 <span class="sd">    None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">if</span> <span class="p">(</span><span class="n">verbosity</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">)</span> <span class="ow">and</span> <span class="p">((</span><span class="n">operation</span> <span class="ow">in</span> <span class="n">verbosity</span><span class="p">)</span> <span class="ow">or</span>
-                                    <span class="p">(</span><span class="s">&quot;all&quot;</span>     <span class="ow">in</span> <span class="n">verbosity</span><span class="p">)):</span>
-        <span class="k">print</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="nb">file</span><span class="o">=</span><span class="n">stderr</span><span class="p">)</span>
+                                    <span class="p">(</span><span class="s2">&quot;all&quot;</span>     <span class="ow">in</span> <span class="n">verbosity</span><span class="p">)):</span>
+        <span class="k">print</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="nb">file</span><span class="o">=</span><span class="n">stderr</span><span class="p">)</span></div>
 
-</div>
+
+<div class="viewcode-block" id="import_name"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.import_name">[docs]</a><span class="k">def</span> <span class="nf">import_name</span><span class="p">(</span><span class="n">dotted_name</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;import_name(dotted_name)</span>
+
+<span class="sd">    Import an object from a module, and return the object. Does not affect the</span>
+<span class="sd">    encapsulating namespace.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    dotted_name : str</span>
+<span class="sd">        The fully-qualified name of the object to import, in the form</span>
+<span class="sd">        *module.submodule.etc.object_name*. Will error if *dotted_name* is</span>
+<span class="sd">        a top-level module (e.g. *module* and not *module.something*) or if</span>
+<span class="sd">        the object does not exist.</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    obj : object</span>
+<span class="sd">        The object specified by *dotted_name*.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Separate `module.submodule.object` into `[module, submodule]` and `object`</span>
+    <span class="o">*</span><span class="n">module_path_components</span><span class="p">,</span> <span class="n">object_name</span> <span class="o">=</span> <span class="n">dotted_name</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Ensure `object_name` is contained within a module, and is not a</span>
+    <span class="c1"># standalone module.</span>
+    <span class="c1"># In other words, make sure `dotted_name` is a module containing an object</span>
+    <span class="c1"># like `foo.bar.baz` and not just a module like `baz`</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">module_path_components</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;must name object within a module, not just a module&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Reinsert the dots into the module name, e.g. turn</span>
+    <span class="c1"># `[module, submodule]` back into `module.submodule`</span>
+    <span class="n">module_name</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">module_path_components</span><span class="p">)</span>
+
+    <span class="c1"># import the module</span>
+    <span class="kn">from</span> <span class="nn">importlib</span> <span class="kn">import</span> <span class="n">import_module</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="n">import_module</span><span class="p">(</span><span class="n">module_name</span><span class="p">)</span>
+
+    <span class="c1"># return the desired object</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="k">return</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">module</span><span class="p">,</span> <span class="n">object_name</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ImportError</span><span class="p">(</span><span class="s2">&quot;module &#39;{module}&#39; has no object &#39;{object_name}&#39;&quot;</span>
+                          <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">module</span><span class="o">=</span><span class="n">module_name</span><span class="p">,</span> <span class="n">object_name</span><span class="o">=</span><span class="n">object_name</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="literal_eval_str"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.literal_eval_str">[docs]</a><span class="k">def</span> <span class="nf">literal_eval_str</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;literal_eval_str(string)</span>
+
+<span class="sd">    Equivalent to *ast.literal_eval*, but if *string* cannot be parsed,</span>
+<span class="sd">    returns the original string. Only accepts arguments of type *str*.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    string : str</span>
+<span class="sd">        Any string. If it can be parsed as a basic Python object literal, it</span>
+<span class="sd">        will be. See *ast.literal_eval* for supported objects.</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    obj : object</span>
+<span class="sd">        Original string, or the object literal it represents.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">string</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;input must be of type str&quot;</span><span class="p">)</span>
+
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">ast</span> <span class="kn">import</span> <span class="n">literal_eval</span>
+        <span class="k">return</span> <span class="n">literal_eval</span><span class="p">(</span><span class="n">string</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">string</span></div>
+
+
+<div class="viewcode-block" id="strlist_to_dict"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.strlist_to_dict">[docs]</a><span class="k">def</span> <span class="nf">strlist_to_dict</span><span class="p">(</span><span class="n">lst</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;list_to_dict(lst)</span>
+
+<span class="sd">    Turn a list of strings with an even number of elements into a dictionary.</span>
+<span class="sd">    Any values which may be interpreted as basic Python object literals are</span>
+<span class="sd">    parsed as such. See *plotypus.literal_eval_str* for supported types.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    lst : list</span>
+<span class="sd">        A *list* or equivalent object with an even number of arguments, to be</span>
+<span class="sd">        interpreted as *[key1, val1, ..., keyN, valN]*.</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    dct : dict</span>
+<span class="sd">        A *dict* whose keys are the even elements of *lst* and values are the</span>
+<span class="sd">        odd elements.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lst</span><span class="p">)</span><span class="o">%</span><span class="mi">2</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;length of list must be even&quot;</span><span class="p">)</span>
+
+    <span class="n">keys</span> <span class="o">=</span> <span class="n">lst</span><span class="p">[</span><span class="mi">0</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span>
+    <span class="n">vals</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="n">literal_eval_str</span><span class="p">,</span> <span class="n">lst</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">])</span>
+
+    <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">vals</span><span class="p">))</span></div>
+
+
 <div class="viewcode-block" id="pmap"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.pmap">[docs]</a><span class="k">def</span> <span class="nf">pmap</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">processes</span><span class="o">=</span><span class="bp">None</span><span class="p">,</span> <span class="n">callback</span><span class="o">=</span><span class="k">lambda</span> <span class="o">*</span><span class="n">_</span><span class="p">,</span> <span class="o">**</span><span class="n">__</span><span class="p">:</span> <span class="bp">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;pmap(func, args, processes=None, callback=do_nothing, **kwargs)</span>
 
@@ -168,24 +274,55 @@
 <span class="sd">    results : list</span>
 <span class="sd">        A list equivalent to ``[func(x, **kwargs) for x in args]``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1">######################</span>
+    <span class="c1">## Input Validation ##</span>
+    <span class="c1">######################</span>
+    <span class="c1"># processes=None is a special case, and avoids all the following checks</span>
+    <span class="k">if</span> <span class="p">(</span><span class="n">processes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="bp">None</span><span class="p">):</span>
+        <span class="c1"># processes must be scalar, not an array, list, etc</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">isscalar</span><span class="p">(</span><span class="n">processes</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Number of processes must be scalar, not &#39;{}&#39;&quot;</span>
+                            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">processes</span><span class="p">))</span>
+        <span class="c1"># processes must be an integer</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">processes</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Number of processes must be an integer, not &#39;{}&#39;&quot;</span>
+                            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">processes</span><span class="p">))</span>
+        <span class="c1"># processes must be at least 1</span>
+        <span class="k">elif</span> <span class="n">processes</span> <span class="o">&lt;</span> <span class="mi">1</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Number of processes must be positive, not &#39;{}&#39;&quot;</span>
+                            <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">processes</span><span class="p">))</span>
+
+    <span class="c1"># if only one process is used, avoid the overhead of a thread pool, while</span>
+    <span class="c1"># emulating the behavior of a `multiprocessing.apply_async`</span>
     <span class="k">if</span> <span class="n">processes</span> <span class="ow">is</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="c1"># initialize a list of results</span>
         <span class="n">results</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="c1"># map the function over the arguments,</span>
+        <span class="c1"># run the callback function on each result,</span>
+        <span class="c1"># and append the results to a list</span>
         <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
             <span class="n">result</span> <span class="o">=</span> <span class="n">func</span><span class="p">(</span><span class="n">arg</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">results</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
             <span class="n">callback</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
-
+        <span class="c1"># return the list of results</span>
         <span class="k">return</span> <span class="n">results</span>
+    <span class="c1"># if more than one process is used, use a thread pool</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">with</span> <span class="n">Pool</span><span class="p">()</span> <span class="k">if</span> <span class="n">processes</span> <span class="ow">is</span> <span class="bp">None</span> <span class="k">else</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+        <span class="c1"># create a thread pool with the number of processes specified,</span>
+        <span class="c1"># or use the number of CPUs if processes=None</span>
+        <span class="k">with</span> <span class="n">Pool</span><span class="p">(</span><span class="n">processes</span><span class="p">)</span> <span class="k">as</span> <span class="n">p</span><span class="p">:</span>
+            <span class="c1"># create a list of futures, holding the results of calling the</span>
+            <span class="c1"># function on each argument</span>
             <span class="n">results</span> <span class="o">=</span> <span class="p">[</span><span class="n">p</span><span class="o">.</span><span class="n">apply_async</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="p">(</span><span class="n">arg</span><span class="p">,),</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">callback</span><span class="p">)</span>
                        <span class="k">for</span> <span class="n">arg</span> <span class="ow">in</span> <span class="n">args</span><span class="p">]</span>
+            <span class="c1"># evaluate each of the results and store them in a list,</span>
+            <span class="c1"># return the list</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span></div>
 
-            <span class="k">return</span> <span class="p">[</span><span class="n">result</span><span class="o">.</span><span class="n">get</span><span class="p">()</span> <span class="k">for</span> <span class="n">result</span> <span class="ow">in</span> <span class="n">results</span><span class="p">]</span>
 
-</div>
 <div class="viewcode-block" id="make_sure_path_exists"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.make_sure_path_exists">[docs]</a><span class="k">def</span> <span class="nf">make_sure_path_exists</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;make_sure_path_exists(path)</span>
+
 <span class="sd">    Creates the supplied *path* if it does not exist.</span>
 <span class="sd">    Raises *OSError* if the *path* cannot be created.</span>
 
@@ -202,11 +339,29 @@
         <span class="n">makedirs</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
     <span class="k">except</span> <span class="ne">OSError</span><span class="p">:</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">isdir</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
-            <span class="k">raise</span>
+            <span class="k">raise</span></div>
 
-</div>
+
+<div class="viewcode-block" id="valid_basename"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.valid_basename">[docs]</a><span class="k">def</span> <span class="nf">valid_basename</span><span class="p">(</span><span class="n">s</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;valid_basename(s)</span>
+
+<span class="sd">    Predicate function to check if the string *s* is a valid basename, meaning</span>
+<span class="sd">    it is both a valid filename, and does not contain a directory.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    s : str</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    is_valid : bool</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">s</span> <span class="o">==</span> <span class="n">basename</span><span class="p">(</span><span class="n">s</span><span class="p">)</span></div>
+
+
 <div class="viewcode-block" id="get_signal"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.get_signal">[docs]</a><span class="k">def</span> <span class="nf">get_signal</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;get_signal(data)</span>
+
 <span class="sd">    Returns all of the values in *data* that are not outliers.</span>
 
 <span class="sd">    **Parameters**</span>
@@ -218,11 +373,12 @@
 <span class="sd">    signal : array</span>
 <span class="sd">        Non-masked values in *data*.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="o">~</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
 
-</div>
+
 <div class="viewcode-block" id="get_noise"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.get_noise">[docs]</a><span class="k">def</span> <span class="nf">get_noise</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;get_noise(data)</span>
+
 <span class="sd">    Returns all identified outliers in *data*.</span>
 
 <span class="sd">    **Parameters**</span>
@@ -234,11 +390,12 @@
 <span class="sd">    noise : array</span>
 <span class="sd">        Masked values in *data*.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="n">data</span><span class="o">.</span><span class="n">mask</span><span class="p">]</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="n">data</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
 
-</div>
+
 <div class="viewcode-block" id="colvec"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.colvec">[docs]</a><span class="k">def</span> <span class="nf">colvec</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;colvec(X)</span>
+
 <span class="sd">    Converts a row-vector *X* into a column-vector.</span>
 
 <span class="sd">    **Parameters**</span>
@@ -249,11 +406,15 @@
 
 <span class="sd">    out : array-like, shape = [n_samples, 1]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">resize</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="p">(</span><span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="mi">1</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;input array must be a row vector&quot;</span><span class="p">)</span>
 
-</div>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">))</span></div>
+
+
 <span class="k">def</span> <span class="nf">rowvec</span><span class="p">(</span><span class="n">X</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;rowvec(X)</span>
+
 <span class="sd">    Converts a column-vector *X* into a row-vector.</span>
 
 <span class="sd">    **Parameters**</span>
@@ -264,11 +425,17 @@
 
 <span class="sd">    out : array-like, shape = [n_samples]</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">resize</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">X</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]))[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="c1"># a column vector must be 2-dimensional  (ndim(X)     == 2),</span>
+    <span class="c1"># and have shape (n_rows, 1)             (shape(X)[1] == 1)</span>
+    <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">ndim</span><span class="p">(</span><span class="n">X</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span> <span class="ow">or</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">X</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;input array must be a column vector&quot;</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="mad"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.mad">[docs]</a><span class="k">def</span> <span class="nf">mad</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="bp">None</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;mad(data, axis=None)</span>
+
 <span class="sd">    Computes the median absolute deviation of *data* along a given *axis*.</span>
 <span class="sd">    See `link &lt;https://en.wikipedia.org/wiki/Median_absolute_deviation&gt;`_ for</span>
 <span class="sd">    details.</span>
@@ -281,11 +448,12 @@
 
 <span class="sd">    mad : number or array-like</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="k">return</span> <span class="n">median</span><span class="p">(</span><span class="n">absolute</span><span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">median</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="p">)),</span> <span class="n">axis</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">median</span><span class="p">(</span><span class="n">absolute</span><span class="p">(</span><span class="n">data</span> <span class="o">-</span> <span class="n">median</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">axis</span><span class="p">)),</span> <span class="n">axis</span><span class="p">)</span></div>
 
-</div>
+
 <div class="viewcode-block" id="autocorrelation"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.autocorrelation">[docs]</a><span class="k">def</span> <span class="nf">autocorrelation</span><span class="p">(</span><span class="n">X</span><span class="p">,</span> <span class="n">lag</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-    <span class="sd">&quot;&quot;&quot;</span>
+    <span class="sd">&quot;&quot;&quot;autocorrelation(X, lag=1)</span>
+
 <span class="sd">    Computes the autocorrelation of *X* with the given *lag*.</span>
 <span class="sd">    Autocorrelation is simply</span>
 <span class="sd">    autocovariance(X) / covariance(X-mean, X-mean),</span>
@@ -306,6 +474,77 @@
                                           <span class="n">differences</span><span class="p">[:</span><span class="n">lag</span><span class="p">]))</span>
 
     <span class="k">return</span> <span class="n">products</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span> <span class="o">/</span> <span class="p">(</span><span class="n">differences</span><span class="o">**</span><span class="mi">2</span><span class="p">)</span><span class="o">.</span><span class="n">sum</span><span class="p">()</span></div>
+
+<span class="n">_latex_replacements</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">,</span> <span class="s1">&#39;</span><span class="se">\\\\</span><span class="s1">&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;{&#39;</span><span class="p">,</span>  <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">{&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;{&#39;</span><span class="p">,</span>  <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">}&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;$&#39;</span><span class="p">,</span>  <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">$&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;&amp;&#39;</span><span class="p">,</span>  <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&amp;&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;#&#39;</span><span class="p">,</span>  <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">#&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;^&#39;</span><span class="p">,</span>  <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">textasciicircum{}&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;_&#39;</span><span class="p">,</span>  <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">textunderscore{}&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;~&#39;</span><span class="p">,</span>  <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">~&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;%&#39;</span><span class="p">,</span>  <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">%&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;&lt;&#39;</span><span class="p">,</span>  <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">textless{}&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;&gt;&#39;</span><span class="p">,</span>  <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">textgreater{}&#39;</span><span class="p">),</span>
+    <span class="p">(</span><span class="s1">&#39;|&#39;</span><span class="p">,</span>  <span class="s1">&#39;</span><span class="se">\\</span><span class="s1">textbar{}&#39;</span><span class="p">)</span>
+<span class="p">]</span>
+
+<span class="k">def</span> <span class="nf">sanitize_latex</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;sanitize_latex(string)</span>
+
+<span class="sd">    Sanitize a string for input to LaTeX.</span>
+
+<span class="sd">    Replacements taken from `Stack Overflow</span>
+<span class="sd">    &lt;http://stackoverflow.com/questions/2627135/how-do-i-sanitize-latex-input&gt;`_</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    string: str</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    sanitized_string: str</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sanitized_string</span> <span class="o">=</span> <span class="n">string</span>
+    <span class="k">for</span> <span class="n">old</span><span class="p">,</span> <span class="n">new</span> <span class="ow">in</span> <span class="n">_latex_replacements</span><span class="p">:</span>
+        <span class="n">sanitized_string</span> <span class="o">=</span> <span class="n">sanitized_string</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">old</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sanitized_string</span>
+
+
+<div class="viewcode-block" id="round_up"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.round_up">[docs]</a><span class="k">def</span> <span class="nf">round_up</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;round_up(x, factor)</span>
+
+<span class="sd">    Rounds *x* up to the nearest multiple of *factor*.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    x : number</span>
+<span class="sd">    factor : number</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    rounded : number</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">ceil</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span></div>
+
+
+<div class="viewcode-block" id="round_down"><a class="viewcode-back" href="../../api/plotypus.utils.html#plotypus.utils.round_down">[docs]</a><span class="k">def</span> <span class="nf">round_down</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">factor</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;round_down(x, factor)</span>
+
+<span class="sd">    Rounds *x* down to the nearest multiple of *factor*.</span>
+
+<span class="sd">    **Parameters**</span>
+
+<span class="sd">    x : number</span>
+<span class="sd">    factor : number</span>
+
+<span class="sd">    **Returns**</span>
+
+<span class="sd">    rounded : number</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="n">x</span> <span class="o">/</span> <span class="n">factor</span><span class="p">)</span> <span class="o">*</span> <span class="n">factor</span></div>
 </pre></div>
 
           </div>
@@ -315,7 +554,7 @@
     </div>
   <div class="footer">
     &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
-    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
   </div>
   
   </body>

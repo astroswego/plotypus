@@ -34,7 +34,7 @@ Take a look through the `API <api/index.html>`_, the `User's Guide <user_guide/i
 Citing plotypus
 ---------------
 
-plotypus was created by `Earl Bellinger <ebelling@indiana.edu>`_ and `Daniel Wysocki <dwysocki@oswego.edu>`_, with advisement from `Dr. Shashi Kanbur <shashi.kanbur@oswego.edu>`_. If plotypus is used in a project that leads to a scientific publication, please cite us. You can use this `citation entry <citing.html>`_.
+plotypus was created by `Earl Bellinger <earlbellinger.com>`_ and `Daniel Wysocki <dwysocki.github.io>`_, with advisement from `Dr. Shashi Kanbur <oswego.edu/~kanbur>`_. If plotypus is used in a project that leads to a scientific publication, please cite us. You can use this `citation entry <citing.html>`_.
 
 
 Open source

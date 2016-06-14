@@ -29,7 +29,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body>
+  <body role="document">
   
   
   <div class="indexwrapper">
@@ -49,7 +49,7 @@
 </div>
 
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -66,7 +66,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
   <h3><a href="#">Table Of Contents</a></h3>
   <ul>
@@ -85,22 +85,21 @@
   <li><a href="#">Documentation index</a><ul>
   </ul></li>
 </ul>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="_sources/index.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/index.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -109,7 +108,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="introduction">
 <h1>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h1>
@@ -132,7 +131,7 @@
 </div>
 <div class="section" id="citing-plotypus">
 <h2>Citing plotypus<a class="headerlink" href="#citing-plotypus" title="Permalink to this headline">¶</a></h2>
-<p>plotypus was created by <a class="reference external" href="http://earlbellinger.com">Earl Bellinger</a> and <a class="reference external" href="http://dwysocki.github.io">Daniel Wysocki</a>, with advisement from <a class="reference external" href="http://oswego.edu/~kanbur">Dr<span>&#46;</span> Shashi Kanbur</a>. If plotypus is used in a project that leads to a scientific publication, please cite us. You can use this <a class="reference external" href="citing.html">citation entry</a>.</p>
+<p>plotypus was created by <a class="reference external" href="earlbellinger.com">Earl Bellinger</a> and <a class="reference external" href="dwysocki.github.io">Daniel Wysocki</a>, with advisement from <a class="reference external" href="oswego.edu/~kanbur">Dr. Shashi Kanbur</a>. If plotypus is used in a project that leads to a scientific publication, please cite us. You can use this <a class="reference external" href="citing.html">citation entry</a>.</p>
 </div>
 <div class="section" id="open-source">
 <h2>Open source<a class="headerlink" href="#open-source" title="Permalink to this headline">¶</a></h2>
@@ -153,7 +152,7 @@
     </div>
   <div class="footer">
     &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
-    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
   </div>
   
   </div>

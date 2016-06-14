@@ -30,7 +30,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body>
+  <body role="document">
   
   
 
@@ -48,7 +48,7 @@
 </div>
 
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -65,7 +65,7 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper">
 
    <h3>Related Topics</h3>
@@ -74,17 +74,14 @@
   </ul></li>
 </ul>
 
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -93,7 +90,7 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
 
 <h1 id="index">Index</h1>
@@ -105,6 +102,7 @@
  | <a href="#D"><strong>D</strong></a>
  | <a href="#F"><strong>F</strong></a>
  | <a href="#G"><strong>G</strong></a>
+ | <a href="#I"><strong>I</strong></a>
  | <a href="#L"><strong>L</strong></a>
  | <a href="#M"><strong>M</strong></a>
  | <a href="#P"><strong>P</strong></a>
@@ -157,6 +155,10 @@
   <dt><a href="api/plotypus.periodogram.html#plotypus.periodogram.conditional_entropy">conditional_entropy() (in module plotypus.periodogram)</a>
   </dt>
 
+      
+  <dt><a href="api/plotypus.periodogram.html#plotypus.periodogram.count_periods">count_periods() (in module plotypus.periodogram)</a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -202,10 +204,6 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="api/plotypus.plotypus.html#plotypus.plotypus.get_args">get_args() (in module plotypus.plotypus)</a>
-  </dt>
-
-      
   <dt><a href="api/plotypus.lightcurve.html#plotypus.lightcurve.get_lightcurve">get_lightcurve() (in module plotypus.lightcurve)</a>
   </dt>
 
@@ -220,10 +218,6 @@
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.get_params">get_params() (plotypus.preprocessing.Fourier method)</a>
-  </dt>
-
-      
   <dt><a href="api/plotypus.periodogram.html#plotypus.periodogram.get_phase">get_phase() (in module plotypus.periodogram)</a>
   </dt>
 
@@ -234,8 +228,24 @@
   </dl></td>
 </tr></table>
 
+<h2 id="I">I</h2>
+<table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="api/plotypus.utils.html#plotypus.utils.import_name">import_name() (in module plotypus.utils)</a>
+  </dt>
+
+  </dl></td>
+</tr></table>
+
 <h2 id="L">L</h2>
 <table style="width: 100%" class="indextable genindextable"><tr>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="api/plotypus.utils.html#plotypus.utils.literal_eval_str">literal_eval_str() (in module plotypus.utils)</a>
+  </dt>
+
+  </dl></td>
   <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api/plotypus.periodogram.html#plotypus.periodogram.Lomb_Scargle">Lomb_Scargle() (in module plotypus.periodogram)</a>
@@ -252,15 +262,11 @@
   </dt>
 
       
-  <dt><a href="api/plotypus.plotypus.html#plotypus.plotypus.main">main() (in module plotypus.plotypus)</a>
+  <dt><a href="api/plotypus.lightcurve.html#plotypus.lightcurve.make_predictor">make_predictor() (in module plotypus.lightcurve)</a>
   </dt>
 
   </dl></td>
   <td style="width: 33%" valign="top"><dl>
-      
-  <dt><a href="api/plotypus.lightcurve.html#plotypus.lightcurve.make_predictor">make_predictor() (in module plotypus.lightcurve)</a>
-  </dt>
-
       
   <dt><a href="api/plotypus.utils.html#plotypus.utils.make_sure_path_exists">make_sure_path_exists() (in module plotypus.utils)</a>
   </dt>
@@ -280,6 +286,40 @@
   </dt>
 
       
+  <dt><a href="api/plotypus.lightcurve.html#plotypus.lightcurve.plot_lightcurve_mpl">plot_lightcurve_mpl() (in module plotypus.lightcurve)</a>
+  </dt>
+
+      
+  <dt><a href="api/plotypus.lightcurve.html#plotypus.lightcurve.plot_lightcurve_tikz">plot_lightcurve_tikz() (in module plotypus.lightcurve)</a>
+  </dt>
+
+      
+  <dt><a href="api/plotypus.periodogram.html#plotypus.periodogram.plot_periodogram">plot_periodogram() (in module plotypus.periodogram)</a>
+  </dt>
+
+      
+  <dt><a href="api/plotypus.periodogram.html#plotypus.periodogram.plot_periodogram_mpl">plot_periodogram_mpl() (in module plotypus.periodogram)</a>
+  </dt>
+
+      
+  <dt><a href="api/plotypus.periodogram.html#plotypus.periodogram.plot_periodogram_tikz">plot_periodogram_tikz() (in module plotypus.periodogram)</a>
+  </dt>
+
+      
+  <dt><a href="api/plotypus.lightcurve.html#plotypus.lightcurve.plot_residual">plot_residual() (in module plotypus.lightcurve)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="api/plotypus.lightcurve.html#plotypus.lightcurve.plot_residual_mpl">plot_residual_mpl() (in module plotypus.lightcurve)</a>
+  </dt>
+
+      
+  <dt><a href="api/plotypus.lightcurve.html#plotypus.lightcurve.plot_residual_tikz">plot_residual_tikz() (in module plotypus.lightcurve)</a>
+  </dt>
+
+      
   <dt><a href="api/plotypus.lightcurve.html#module-plotypus.lightcurve">plotypus.lightcurve (module)</a>
   </dt>
 
@@ -287,12 +327,6 @@
   <dt><a href="api/plotypus.periodogram.html#module-plotypus.periodogram">plotypus.periodogram (module)</a>
   </dt>
 
-      
-  <dt><a href="api/plotypus.plotypus.html#module-plotypus.plotypus">plotypus.plotypus (module)</a>
-  </dt>
-
-  </dl></td>
-  <td style="width: 33%" valign="top"><dl>
       
   <dt><a href="api/plotypus.preprocessing.html#module-plotypus.preprocessing">plotypus.preprocessing (module)</a>
   </dt>
@@ -309,10 +343,6 @@
   <dt><a href="api/plotypus.utils.html#plotypus.utils.pmap">pmap() (in module plotypus.utils)</a>
   </dt>
 
-      
-  <dt><a href="api/plotypus.plotypus.html#plotypus.plotypus.process_star">process_star() (in module plotypus.plotypus)</a>
-  </dt>
-
   </dl></td>
 </tr></table>
 
@@ -323,6 +353,16 @@
   <dt><a href="api/plotypus.periodogram.html#plotypus.periodogram.rephase">rephase() (in module plotypus.periodogram)</a>
   </dt>
 
+      
+  <dt><a href="api/plotypus.utils.html#plotypus.utils.round_down">round_down() (in module plotypus.utils)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="api/plotypus.utils.html#plotypus.utils.round_up">round_up() (in module plotypus.utils)</a>
+  </dt>
+
   </dl></td>
 </tr></table>
 
@@ -330,7 +370,13 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
-  <dt><a href="api/plotypus.preprocessing.html#plotypus.preprocessing.Fourier.set_params">set_params() (plotypus.preprocessing.Fourier method)</a>
+  <dt><a href="api/plotypus.lightcurve.html#plotypus.lightcurve.savetxt_lightcurve">savetxt_lightcurve() (in module plotypus.lightcurve)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
+  <dt><a href="api/plotypus.utils.html#plotypus.utils.strlist_to_dict">strlist_to_dict() (in module plotypus.utils)</a>
   </dt>
 
   </dl></td>
@@ -350,6 +396,12 @@
 <table style="width: 100%" class="indextable genindextable"><tr>
   <td style="width: 33%" valign="top"><dl>
       
+  <dt><a href="api/plotypus.utils.html#plotypus.utils.valid_basename">valid_basename() (in module plotypus.utils)</a>
+  </dt>
+
+  </dl></td>
+  <td style="width: 33%" valign="top"><dl>
+      
   <dt><a href="api/plotypus.utils.html#plotypus.utils.verbose_print">verbose_print() (in module plotypus.utils)</a>
   </dt>
 
@@ -365,7 +417,7 @@
     </div>
   <div class="footer">
     &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
-    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
   </div>
   
   </body>

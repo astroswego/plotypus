@@ -29,7 +29,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body>
+  <body role="document">
   
   
 
@@ -47,7 +47,7 @@
 </div>
 
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -64,28 +64,27 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation index</a><ul>
   </ul></li>
 </ul>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/api/plotypus.lightcurve.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/plotypus.lightcurve.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -94,33 +93,33 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="module-plotypus.lightcurve">
 <span id="plotypus-lightcurve-module"></span><h1>plotypus.lightcurve module<a class="headerlink" href="#module-plotypus.lightcurve" title="Permalink to this headline">¶</a></h1>
 <p>Light curve fitting and plotting functions.</p>
 <dl class="function">
 <dt id="plotypus.lightcurve.make_predictor">
-<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">make_predictor</tt><big>(</big><em>regressor=LassoLarsIC(fit_intercept=False)</em>, <em>Selector=GridSearchCV</em>, <em>fourier_degree=(2</em>, <em>25)</em>, <em>selector_processes=1</em>, <em>use_baart=False</em>, <em>scoring='r2'</em>, <em>scoring_cv=3</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#make_predictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.make_predictor" title="Permalink to this definition">¶</a></dt>
-<dd><p>Makes a predictor object for use in <a class="reference internal" href="#plotypus.lightcurve.get_lightcurve" title="plotypus.lightcurve.get_lightcurve"><tt class="xref py py-func docutils literal"><span class="pre">get_lightcurve()</span></tt></a>.</p>
+<code class="descclassname">plotypus.lightcurve.</code><code class="descname">make_predictor</code><span class="sig-paren">(</span><em>regressor=LassoLarsIC()</em>, <em>Selector=GridSearchCV</em>, <em>fourier_degree=(2</em>, <em>25)</em>, <em>selector_processes=1</em>, <em>use_baart=False</em>, <em>scoring='r2'</em>, <em>scoring_cv=3</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/lightcurve.html#make_predictor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.make_predictor" title="Permalink to this definition">¶</a></dt>
+<dd><p>Makes a predictor object for use in <a class="reference internal" href="#plotypus.lightcurve.get_lightcurve" title="plotypus.lightcurve.get_lightcurve"><code class="xref py py-func docutils literal"><span class="pre">get_lightcurve()</span></code></a>.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>regressor <span class="classifier-delimiter">:</span> <span class="classifier">object with &#8220;fit&#8221; and &#8220;transform&#8221; methods, optional</span></dt>
-<dd>Regression object used for solving Fourier matrix
-(default <tt class="docutils literal"><span class="pre">sklearn.linear_model.LassoLarsIC(fit_intercept=False)</span></tt>).</dd>
-<dt>Selector <span class="classifier-delimiter">:</span> <span class="classifier">class with &#8220;fit&#8221; and &#8220;predict&#8221; methods, optional</span></dt>
-<dd>Model selection class used for finding the best fit
-(default <tt class="xref py py-class docutils literal"><span class="pre">sklearn.grid_search.GridSearchCV</span></tt>).</dd>
-<dt>selector_processes <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span></dt>
-<dd>Number of processes to use for <em>Selector</em> (default 1).</dd>
-<dt>use_baart <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
-<dd>If True, ignores <em>Selector</em> and uses Baart&#8217;s Criteria to find
+<dt>regressor</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">object with &#8220;fit&#8221; and &#8220;transform&#8221; methods, optional</span><dd>Regression object used for solving Fourier matrix
+(default <code class="docutils literal"><span class="pre">sklearn.linear_model.LassoLarsIC()</span></code>).</dd>
+<dt>Selector</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">class with &#8220;fit&#8221; and &#8220;predict&#8221; methods, optional</span><dd>Model selection class used for finding the best fit
+(default <code class="xref py py-class docutils literal"><span class="pre">sklearn.grid_search.GridSearchCV</span></code>).</dd>
+<dt>selector_processes</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span><dd>Number of processes to use for <em>Selector</em> (default 1).</dd>
+<dt>use_baart</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span><dd>If True, ignores <em>Selector</em> and uses Baart&#8217;s Criteria to find
 the Fourier degree, within the boundaries (default False).</dd>
-<dt>fourier_degree <span class="classifier-delimiter">:</span> <span class="classifier">2-tuple, optional</span></dt>
-<dd>Tuple containing lower and upper bounds on Fourier degree, in that
+<dt>fourier_degree</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">2-tuple, optional</span><dd>Tuple containing lower and upper bounds on Fourier degree, in that
 order (default (2, 25)).</dd>
-<dt>scoring <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
-<dd><dl class="first last docutils">
+<dt>scoring</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span><dd><dl class="first last docutils">
 <dt>Scoring method to use for <em>Selector</em>. This parameter can be:</dt>
 <dd><ul class="first last simple">
 <li>&#8220;r2&#8221;, in which case use <img class="math" src="../_images/math/4f58a3b2897df3c0b9d53a442ae896516ecdeaa0.png" alt="R^2"/> (the default)</li>
@@ -129,54 +128,54 @@ order (default (2, 25)).</dd>
 </dd>
 </dl>
 </dd>
-<dt>scoring_cv <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span></dt>
-<dd>Number of cross validation folds used in scoring (default 3).</dd>
+<dt>scoring_cv</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span><dd>Number of cross validation folds used in scoring (default 3).</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">object with &#8220;fit&#8221; and &#8220;predict&#8221; methods</span></dt>
-<dd>The created predictor object.</dd>
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">object with &#8220;fit&#8221; and &#8220;predict&#8221; methods</span><dd>The created predictor object.</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="plotypus.lightcurve.get_lightcurve">
-<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">get_lightcurve</tt><big>(</big><em>data</em>, <em>copy=False</em>, <em>name=None</em>, <em>predictor=None</em>, <em>periodogram=Lomb_Scargle</em>, <em>sigma_clipping=mad</em>, <em>scoring='r2'</em>, <em>scoring_cv=3</em>, <em>scoring_processes=1</em>, <em>period=None</em>, <em>min_period=0.2</em>, <em>max_period=32</em>, <em>coarse_precision=1e-5</em>, <em>fine_precision=1e-9</em>, <em>period_processes=1</em>, <em>sigma=20</em>, <em>shift=None</em>, <em>min_phase_cover=0.0</em>, <em>n_phases=100</em>, <em>verbosity=None</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#get_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.get_lightcurve" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.lightcurve.</code><code class="descname">get_lightcurve</code><span class="sig-paren">(</span><em>data</em>, <em>copy=False</em>, <em>name=None</em>, <em>predictor=None</em>, <em>periodogram=Lomb_Scargle</em>, <em>sigma_clipping=mad</em>, <em>scoring='r2'</em>, <em>scoring_cv=3</em>, <em>scoring_processes=1</em>, <em>period=None</em>, <em>min_period=0.2</em>, <em>max_period=32</em>, <em>coarse_precision=1e-5</em>, <em>fine_precision=1e-9</em>, <em>period_processes=1</em>, <em>sigma=20</em>, <em>fourier_form=&quot;sin_cos&quot;</em>, <em>shift=None</em>, <em>min_phase_cover=0.0</em>, <em>n_phases=100</em>, <em>verbosity=None</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/lightcurve.html#get_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.get_lightcurve" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fits a light curve to the given <cite>data</cite> using the specified methods,
 with default behavior defined for all methods.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
-<dd>Photometry array with columns <em>time</em>, <em>magnitude</em>, and (optional)
+<dt>data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span><dd>Photometry array with columns <em>time</em>, <em>magnitude</em>, and (optional)
 <em>error</em>. <em>time</em> should be unphased.</dd>
-<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">string or None, optional</span></dt>
-<dd>Name of star being processed.</dd>
-<dt>predictor <span class="classifier-delimiter">:</span> <span class="classifier">object that has &#8220;fit&#8221; and &#8220;predict&#8221; methods, optional</span></dt>
-<dd>Object which fits the light curve obtained from <em>data</em> after rephasing
-(default <tt class="docutils literal"><span class="pre">make_predictor(scoring=scoring,</span> <span class="pre">scoring_cv=scoring_cv)</span></tt>).</dd>
-<dt>periodogram <span class="classifier-delimiter">:</span> <span class="classifier">function, optional</span></dt>
-<dd>Function which finds one or more <em>period</em>s. If <em>period</em> is already
+<dt>name</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">string or None, optional</span><dd>Name of star being processed.</dd>
+<dt>predictor</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">object that has &#8220;fit&#8221; and &#8220;predict&#8221; methods, optional</span><dd>Object which fits the light curve obtained from <em>data</em> after rephasing
+(default <code class="docutils literal"><span class="pre">make_predictor(scoring=scoring,</span> <span class="pre">scoring_cv=scoring_cv)</span></code>).</dd>
+<dt>periodogram</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">function, optional</span><dd>Function which finds one or more <em>period</em>s. If <em>period</em> is already
 provided, the function is not used. Defaults to
-<a class="reference internal" href="plotypus.periodogram.html#plotypus.periodogram.Lomb_Scargle" title="plotypus.periodogram.Lomb_Scargle"><tt class="xref py py-func docutils literal"><span class="pre">plotypus.periodogram.Lomb_Scargle()</span></tt></a></dd>
-<dt>sigma_clipping <span class="classifier-delimiter">:</span> <span class="classifier">function, optional</span></dt>
-<dd>Function which takes an array and assigns sigma scores to each element.
-Defaults to <a class="reference internal" href="plotypus.utils.html#plotypus.utils.mad" title="plotypus.utils.mad"><tt class="xref py py-func docutils literal"><span class="pre">plotypus.utils.mad()</span></tt></a>.</dd>
-<dt>scoring <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
-<dd><dl class="first last docutils">
+<a class="reference internal" href="plotypus.periodogram.html#plotypus.periodogram.Lomb_Scargle" title="plotypus.periodogram.Lomb_Scargle"><code class="xref py py-func docutils literal"><span class="pre">plotypus.periodogram.Lomb_Scargle()</span></code></a></dd>
+<dt>sigma_clipping</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">function, optional</span><dd>Function which takes an array and assigns sigma scores to each element.
+Defaults to <a class="reference internal" href="plotypus.utils.html#plotypus.utils.mad" title="plotypus.utils.mad"><code class="xref py py-func docutils literal"><span class="pre">plotypus.utils.mad()</span></code></a>.</dd>
+<dt>scoring</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span><dd><dl class="first last docutils">
 <dt>Scoring method used by <em>predictor</em>. This parameter can be</dt>
 <dd><ul class="first last simple">
-<li>&#8220;r2&#8221;, in which case use <tt class="xref py py-func docutils literal"><span class="pre">R^2()</span></tt> (the default)</li>
+<li>&#8220;r2&#8221;, in which case use <code class="xref py py-func docutils literal"><span class="pre">R^2()</span></code> (the default)</li>
 <li>&#8220;mse&#8221;, in which case use mean square error</li>
 </ul>
 </dd>
 </dl>
 </dd>
-<dt>scoring_cv <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span></dt>
-<dd>Number of cross validation folds used in scoring (default 3).</dd>
-<dt>scoring_processes <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span></dt>
-<dd>Number of processes to use for scoring cross validation (default 1).</dd>
-<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number or None, optional</span></dt>
-<dd><dl class="first last docutils">
+<dt>scoring_cv</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span><dd>Number of cross validation folds used in scoring (default 3).</dd>
+<dt>scoring_processes</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span><dd>Number of processes to use for scoring cross validation (default 1).</dd>
+<dt>period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number or None, optional</span><dd><dl class="first last docutils">
 <dt>Period of oscillation used in the fit. This parameter can be:</dt>
 <dd><ul class="first last simple">
 <li>None, in which case the period is obtained with the given
@@ -186,107 +185,131 @@ Defaults to <a class="reference internal" href="plotypus.utils.html#plotypus.uti
 </dd>
 </dl>
 </dd>
-<dt>min_period <span class="classifier-delimiter">:</span> <span class="classifier">non-negative number, optional</span></dt>
-<dd>Lower bound on period obtained by <em>periodogram</em> (default 0.2).</dd>
-<dt>max_period <span class="classifier-delimiter">:</span> <span class="classifier">non-negative number, optional</span></dt>
-<dd>Upper bound on period obtained by <em>periodogram</em> (default 32.0).</dd>
-<dt>course_precision <span class="classifier-delimiter">:</span> <span class="classifier">positive number, optional</span></dt>
-<dd>Precision used in first period search sweep (default 1e-5).</dd>
-<dt>fine_precision <span class="classifier-delimiter">:</span> <span class="classifier">positive number, optional</span></dt>
-<dd>Precision used in second period search sweep (default 1e-9).</dd>
-<dt>period_processes <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span></dt>
-<dd>Number of processes to use for period finding (default 1).</dd>
-<dt>sigma <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
-<dd>Upper bound on score obtained by <em>sigma_clipping</em> for a point to be
+<dt>min_period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">non-negative number, optional</span><dd>Lower bound on period obtained by <em>periodogram</em> (default 0.2).</dd>
+<dt>max_period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">non-negative number, optional</span><dd>Upper bound on period obtained by <em>periodogram</em> (default 32.0).</dd>
+<dt>course_precision</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">positive number, optional</span><dd>Precision used in first period search sweep (default 1e-5).</dd>
+<dt>fine_precision</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">positive number, optional</span><dd>Precision used in second period search sweep (default 1e-9).</dd>
+<dt>period_processes</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">positive integer, optional</span><dd>Number of processes to use for period finding (default 1).</dd>
+<dt>sigma</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span><dd>Upper bound on score obtained by <em>sigma_clipping</em> for a point to be
 considered an inlier.</dd>
-<dt>shift <span class="classifier-delimiter">:</span> <span class="classifier">number or None, optional</span></dt>
-<dd>Phase shift to apply to light curve if provided. Light curve is shifted
-such that max light occurs at <tt class="docutils literal"><span class="pre">phase[0]</span></tt> if None given (default None).</dd>
-<dt>min_phase_cover <span class="classifier-delimiter">:</span> <span class="classifier">number on interval [0, 1], optional</span></dt>
-<dd>Fraction of binned light curve that must contain points in order to
+<dt>fourier_form</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span><dd><p class="first">Return coefficients for the Fourier series of the given form
+Form of coefficients in Fourier series</p>
+<blockquote class="last">
+<div><ul class="simple">
+<li>&#8220;sin_cos&#8221;, a_k sin(kwt) + b_k cos(kwt) (the default)</li>
+<li>&#8220;sin&#8221;, A_k sin(kwt + Phi_k)</li>
+<li>&#8220;cos&#8221;, A_k cos(kwt + Phi_k)</li>
+</ul>
+</div></blockquote>
+</dd>
+<dt>shift</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number or None, optional</span><dd>Phase shift to apply to light curve if provided. Light curve is shifted
+such that max light occurs at <code class="docutils literal"><span class="pre">phase[0]</span></code> if None given (default None).</dd>
+<dt>min_phase_cover</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number on interval [0, 1], optional</span><dd>Fraction of binned light curve that must contain points in order to
 proceed. If light curve has insufficient coverage, a warning is
 printed if &#8220;outlier&#8221; <em>verbosity</em> is on, and None is returned
 (default 0.0).</dd>
-<dt>n_phases <span class="classifier-delimiter">:</span> <span class="classifier">positive integer</span></dt>
-<dd>Number of equally spaced phases to predict magnitudes at (default 100)</dd>
-<dt>verbosity <span class="classifier-delimiter">:</span> <span class="classifier">list or None, optional</span></dt>
-<dd>Verbosity level. See <a class="reference internal" href="plotypus.utils.html#plotypus.utils.verbose_print" title="plotypus.utils.verbose_print"><tt class="xref py py-func docutils literal"><span class="pre">plotypus.utils.verbose_print()</span></tt></a>.</dd>
+<dt>n_phases</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">positive integer</span><dd>Number of equally spaced phases to predict magnitudes at (default 100)</dd>
+<dt>verbosity</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">list or None, optional</span><dd>Verbosity level. See <a class="reference internal" href="plotypus.utils.html#plotypus.utils.verbose_print" title="plotypus.utils.verbose_print"><code class="xref py py-func docutils literal"><span class="pre">plotypus.utils.verbose_print()</span></code></a>.</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
-<dd><dl class="first last docutils">
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd><dl class="first last docutils">
 <dt>Results of the fit in a dictionary. The keys are:</dt>
 <dd><ul class="first last">
 <li><dl class="first docutils">
-<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">str or None</span></dt>
-<dd><p class="first last">The name of the star.</p>
+<dt>name</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str or None</span><dd><p class="first last">The name of the star.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd><p class="first last">The star&#8217;s period.</p>
+<dt>period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd><p class="first last">The star&#8217;s period.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>lightcurve <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_phases]</span></dt>
-<dd><p class="first last">Magnitudes of fitted light curve sampled at sample phases.</p>
+<dt>lightcurve</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_phases]</span><dd><p class="first last">Magnitudes of fitted light curve sampled at sample phases.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>coefficients <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_coeffs]</span></dt>
-<dd><p class="first last">Fitted light curve coefficients.</p>
+<dt>coefficients</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [degree+1, 2]</span><dd><p class="first last">Fitted light curve coefficients.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>dA_0 <span class="classifier-delimiter">:</span> <span class="classifier">non-negative number</span></dt>
-<dd><p class="first last">Error on mean magnitude.</p>
+<dt>coefficient_errors</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [degree+1, 2]</span><dd><p class="first last">Errors in coefficients</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>phased_data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span></dt>
-<dd><p class="first last"><em>data</em> transformed from temporal to phase space.</p>
+<dt>fourier_ratios</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [degree-1, 2]</span><dd><p class="first last">Ratios and phase deltas in Fourier coefficients,
+e.g. <img class="math" src="../_images/math/c07c644f6305288d5fc736d5b81c26779241d865.png" alt="R_{21}"/> and <img class="math" src="../_images/math/a44ef7ab0457860079776fe4b1ceb819dfdfa232.png" alt="\Phi_{21}"/></p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>model <span class="classifier-delimiter">:</span> <span class="classifier">predictor object</span></dt>
-<dd><p class="first last">The predictor used to fit the light curve.</p>
+<dt>fourier_ratio_errors</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [degree+1, 2]</span><dd><p class="first last">Errors in fourier_ratios</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>R2 <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd><p class="first last">The <img class="math" src="../_images/math/4f58a3b2897df3c0b9d53a442ae896516ecdeaa0.png" alt="R^2"/> score of the fit.</p>
+<dt>phased_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span><dd><p class="first last"><em>data</em> transformed from temporal to phase space.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>MSE <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd><p class="first last">The mean square error of the fit.</p>
+<dt>model</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">predictor object</span><dd><p class="first last">The predictor used to fit the light curve.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>degree <span class="classifier-delimiter">:</span> <span class="classifier">positive integer</span></dt>
-<dd><p class="first last">The degree of the Fourier fit.</p>
+<dt>R2</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd><p class="first last">The <img class="math" src="../_images/math/4f58a3b2897df3c0b9d53a442ae896516ecdeaa0.png" alt="R^2"/> score of the fit.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>shift <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd><p class="first last">The phase shift applied.</p>
+<dt>MSE</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd><p class="first last">The mean square error of the fit.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="first docutils">
-<dt>coverage <span class="classifier-delimiter">:</span> <span class="classifier">number on interval [0, 1]</span></dt>
-<dd><p class="first last">The light curve coverage.</p>
+<dt>degree</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">positive integer</span><dd><p class="first last">The degree of the Fourier fit.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>shift</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd><p class="first last">The phase shift applied.</p>
+</dd>
+</dl>
+</li>
+<li><dl class="first docutils">
+<dt>coverage</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number on interval [0, 1]</span><dd><p class="first last">The light curve coverage.</p>
 </dd>
 </dl>
 </li>
@@ -296,83 +319,232 @@ printed if &#8220;outlier&#8221; <em>verbosity</em> is on, and None is returned
 </dd>
 </dl>
 <p><strong>See also</strong></p>
-<p><a class="reference internal" href="#plotypus.lightcurve.get_lightcurve_from_file" title="plotypus.lightcurve.get_lightcurve_from_file"><tt class="xref py py-func docutils literal"><span class="pre">get_lightcurve_from_file()</span></tt></a></p>
+<p><a class="reference internal" href="#plotypus.lightcurve.get_lightcurve_from_file" title="plotypus.lightcurve.get_lightcurve_from_file"><code class="xref py py-func docutils literal"><span class="pre">get_lightcurve_from_file()</span></code></a></p>
 </dd></dl>
 
 <dl class="function">
 <dt id="plotypus.lightcurve.get_lightcurve_from_file">
-<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">get_lightcurve_from_file</tt><big>(</big><em>file</em>, <em>*args</em>, <em>use_cols=None</em>, <em>skiprows=0</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#get_lightcurve_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.get_lightcurve_from_file" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.lightcurve.</code><code class="descname">get_lightcurve_from_file</code><span class="sig-paren">(</span><em>file</em>, <em>*args</em>, <em>use_cols=None</em>, <em>skiprows=0</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/lightcurve.html#get_lightcurve_from_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.get_lightcurve_from_file" title="Permalink to this definition">¶</a></dt>
 <dd><p>Fits a light curve to the data contained in <em>file</em> using
-<a class="reference internal" href="#plotypus.lightcurve.get_lightcurve" title="plotypus.lightcurve.get_lightcurve"><tt class="xref py py-func docutils literal"><span class="pre">get_lightcurve()</span></tt></a>.</p>
+<a class="reference internal" href="#plotypus.lightcurve.get_lightcurve" title="plotypus.lightcurve.get_lightcurve"><code class="xref py py-func docutils literal"><span class="pre">get_lightcurve()</span></code></a>.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>file <span class="classifier-delimiter">:</span> <span class="classifier">str or file</span></dt>
-<dd>File or filename to load data from.</dd>
-<dt>use_cols <span class="classifier-delimiter">:</span> <span class="classifier">iterable or None, optional</span></dt>
-<dd>Iterable of columns to read from data file, or None to read all columns
+<dt>file</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str or file</span><dd>File or filename to load data from.</dd>
+<dt>use_cols</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">iterable or None, optional</span><dd>Iterable of columns to read from data file, or None to read all columns
 (default None).</dd>
-<dt>skiprows <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
-<dd>Number of rows to skip at beginning of <em>file</em> (default 0)</dd>
+<dt>skiprows</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span><dd>Number of rows to skip at beginning of <em>file</em> (default 0)</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
-<dd>See <a class="reference internal" href="#plotypus.lightcurve.get_lightcurve" title="plotypus.lightcurve.get_lightcurve"><tt class="xref py py-func docutils literal"><span class="pre">get_lightcurve()</span></tt></a>.</dd>
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">dict</span><dd>See <a class="reference internal" href="#plotypus.lightcurve.get_lightcurve" title="plotypus.lightcurve.get_lightcurve"><code class="xref py py-func docutils literal"><span class="pre">get_lightcurve()</span></code></a>.</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="plotypus.lightcurve.find_outliers">
-<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">find_outliers</tt><big>(</big><em>data</em>, <em>predictor</em>, <em>sigma</em>, <em>method=mad</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#find_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.find_outliers" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.lightcurve.</code><code class="descname">find_outliers</code><span class="sig-paren">(</span><em>data</em>, <em>predictor</em>, <em>sigma</em>, <em>method=mad</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/lightcurve.html#find_outliers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.find_outliers" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns a boolean array indicating the outliers in the given <em>data</em> array.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
-<dd>Photometry array containing columns <em>phase</em>, <em>magnitude</em>, and
-(optional) <em>error</em>.</dd>
-<dt>predictor <span class="classifier-delimiter">:</span> <span class="classifier">object that has &#8220;fit&#8221; and &#8220;predict&#8221; methods, optional</span></dt>
-<dd>Object which fits the light curve obtained from <em>data</em> after rephasing.</dd>
-<dt>sigma <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>Outlier cutoff criteria.</dd>
-<dt>method <span class="classifier-delimiter">:</span> <span class="classifier">function, optional</span></dt>
-<dd>Function to score residuals for outlier detection
-(default <a class="reference internal" href="plotypus.utils.html#plotypus.utils.mad" title="plotypus.utils.mad"><tt class="xref py py-func docutils literal"><span class="pre">plotypus.utils.mad()</span></tt></a>).</dd>
+<dt>data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span><dd>Photometry array containing columns <em>phase</em>, <em>magnitude</em>, and (optional)
+<em>error</em>.</dd>
+<dt>predictor</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">object that has &#8220;fit&#8221; and &#8220;predict&#8221; methods, optional</span><dd>Object which fits the light curve obtained from <em>data</em> after rephasing.</dd>
+<dt>sigma</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>Outlier cutoff criteria.</dd>
+<dt>method</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">function, optional</span><dd>Function to score residuals for outlier detection
+(default <a class="reference internal" href="plotypus.utils.html#plotypus.utils.mad" title="plotypus.utils.mad"><code class="xref py py-func docutils literal"><span class="pre">plotypus.utils.mad()</span></code></a>).</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = data.shape</span></dt>
-<dd>Boolean array indicating the outliers in the given <em>data</em> array.</dd>
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = data.shape</span><dd>Boolean array indicating the outliers in the given <em>data</em> array.</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
-<dt id="plotypus.lightcurve.plot_lightcurve">
-<tt class="descclassname">plotypus.lightcurve.</tt><tt class="descname">plot_lightcurve</tt><big>(</big><em>name</em>, <em>lightcurve</em>, <em>period</em>, <em>data</em>, <em>output='.'</em>, <em>legend=False</em>, <em>color=True</em>, <em>n_phases=100</em>, <em>err_const=0.0004</em>, <em>**kwargs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/lightcurve.html#plot_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.plot_lightcurve" title="Permalink to this definition">¶</a></dt>
-<dd><p>Save a plot of the given <em>lightcurve</em> to directory <em>output</em>.</p>
+<dt id="plotypus.lightcurve.savetxt_lightcurve">
+<code class="descclassname">plotypus.lightcurve.</code><code class="descname">savetxt_lightcurve</code><span class="sig-paren">(</span><em>filename</em>, <em>phased_magnitudes</em>, <em>fmt</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/lightcurve.html#savetxt_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.savetxt_lightcurve" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a phased lightcurve to a text file.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>name <span class="classifier-delimiter">:</span> <span class="classifier">str</span></dt>
-<dd>Name of the star. Used in filename and plot title.</dd>
-<dt>lightcurve <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span></dt>
-<dd>Fitted lightcurve.</dd>
-<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>Period to phase time by.</dd>
-<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
-<dd>Photometry array containing columns <em>time</em>, <em>magnitude</em>, and
-(optional) <em>error</em>. <em>time</em> should be unphased.</dd>
-<dt>output <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
-<dd>Directory to save plot to (default &#8216;.&#8217;).</dd>
-<dt>legend <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
-<dd>Whether or not to display legend on plot (default False).</dd>
-<dt>color <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
-<dd>Whether or not to display color in plot (default True).</dd>
-<dt>n_phases <span class="classifier-delimiter">:</span> <span class="classifier">integer, optional</span></dt>
-<dd>Number of phase points in fit (default 100).</dd>
-<dt>err_const <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
-<dd>Constant to use in absence of error (default 0.0004).</dd>
+<dt>filename</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>File to save lightcurve table to. Directory must exist.</dd>
+<dt>phased_magnitudes: array-like, shape = [n_samples]</dt>
+<dd>Array of phased magnitudes.</dd>
+<dt>fmt</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Number format string, as understood by <code class="xref py py-func docutils literal"><span class="pre">np.savetxt()</span></code>.</dd>
 </dl>
 <p><strong>Returns</strong></p>
-<p>None</p>
+<blockquote>
+<div>None</div></blockquote>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.lightcurve.plot_lightcurve">
+<code class="descclassname">plotypus.lightcurve.</code><code class="descname">plot_lightcurve</code><span class="sig-paren">(</span><em>*args</em>, <em>engine='mpl'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/lightcurve.html#plot_lightcurve"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.plot_lightcurve" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>engine</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span><dd>Engine to use for plotting, choices are &#8220;mpl&#8221; and &#8220;tikz&#8221;
+(default &#8220;mpl&#8221;)</dd>
+<dt>kwargs :</dt>
+<dd>See <a class="reference internal" href="#plotypus.lightcurve.plot_lightcurve_mpl" title="plotypus.lightcurve.plot_lightcurve_mpl"><code class="xref py py-func docutils literal"><span class="pre">plot_lightcurve_mpl()</span></code></a> and <a class="reference internal" href="#plotypus.lightcurve.plot_lightcurve_tikz" title="plotypus.lightcurve.plot_lightcurve_tikz"><code class="xref py py-func docutils literal"><span class="pre">plot_lightcurve_tikz()</span></code></a>,
+depending on <em>engine</em> specified.</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>plot</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">object</span><dd>Plot object. Type depends on <em>engine</em> used. &#8220;mpl&#8221; engine returns a
+<cite>matplotlib.pyplot.Figure</cite> object, and &#8220;tikz&#8221; engine returns a <cite>str</cite>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.lightcurve.plot_lightcurve_mpl">
+<code class="descclassname">plotypus.lightcurve.</code><code class="descname">plot_lightcurve_mpl</code><span class="sig-paren">(</span><em>name</em>, <em>data</em>, <em>data_smooth</em>, <em>period=None</em>, <em>periodic=False</em>, <em>shift=0.0</em>, <em>cycles=2.0</em>, <em>output=None</em>, <em>legend=False</em>, <em>sanitize_latex=False</em>, <em>color=True</em>, <em>n_phases=100</em>, <em>err_const=0.005</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/lightcurve.html#plot_lightcurve_mpl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.plot_lightcurve_mpl" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot_lightcurve(name, lightcurve, period, phased_data, output=None, legend=False, color=True, n_phases=100, err_const=0.005, <a href="#id1"><span class="problematic" id="id2">**</span></a>kwargs)</p>
+<p>Save a plot of the given <em>lightcurve</em> to file <em>output</em>, using
+matplotlib and return the resulting plot object.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>name</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Name of the star. Used in plot title.</dd>
+<dt>data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span><dd>Photometry array containing columns <em>time</em>, <em>magnitude</em>, and
+(optional) <em>error</em>. <em>time</em> should be unphased.</dd>
+<dt>data_smooth</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span><dd>Fitted lightcurve.</dd>
+<dt>period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span><dd>Period to phase time by, or no period if data are to be left in the
+time domain..</dd>
+<dt>shift</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span><dd>Phase shift to apply, (default 0.0).</dd>
+<dt>cycles</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span><dd>Number of period cycles to display (default 2.0).</dd>
+<dt>output</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span><dd>File to save plot to (default None).</dd>
+<dt>legend</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span><dd>Whether or not to display legend on plot (default False).</dd>
+<dt>color</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span><dd>Whether or not to display color in plot (default True).</dd>
+<dt>n_phases</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">integer, optional</span><dd>Number of phase points in fit (default 100).</dd>
+<dt>err_const</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span><dd>Constant to use in absence of error (default 0.005).</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>plot</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">matplotlib.pyplot.Figure</span><dd>Matplotlib Figure object which contains the plot.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.lightcurve.plot_lightcurve_tikz">
+<code class="descclassname">plotypus.lightcurve.</code><code class="descname">plot_lightcurve_tikz</code><span class="sig-paren">(</span><em>name</em>, <em>data</em>, <em>lightcurve</em>, <em>period</em>, <em>coefficients</em>, <em>shift=0.0</em>, <em>cycles=2.0</em>, <em>output=None</em>, <em>legend=False</em>, <em>sanitize_latex=False</em>, <em>color=True</em>, <em>n_phases=100</em>, <em>err_const=0.005</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/lightcurve.html#plot_lightcurve_tikz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.plot_lightcurve_tikz" title="Permalink to this definition">¶</a></dt>
+<dd><p>plot_lightcurve(name, lightcurve, period, phased_data, output=None, legend=False, color=True, n_phases=100, err_const=0.005, <a href="#id3"><span class="problematic" id="id4">**</span></a>kwargs)</p>
+<p>Save TikZ source code for a plot of the given <em>lightcurve</em> to file
+<em>output</em>, and return the string holding the source code.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>name</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Name of the star. Used in plot title.</dd>
+<dt>lightcurve</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span><dd>Fitted lightcurve.</dd>
+<dt>period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>Period to phase time by.</dd>
+<dt>phased_data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span><dd>Photometry array containing columns <em>time</em>, <em>magnitude</em>, and
+(optional) <em>error</em>. <em>time</em> should be unphased.</dd>
+<dt>output</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span><dd>File to save plot to (default None).</dd>
+<dt>legend</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span><dd>Whether or not to display legend on plot (default False).</dd>
+<dt>color</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span><dd>Whether or not to display color in plot (default True).</dd>
+<dt>n_phases</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">integer, optional</span><dd>Number of phase points in fit (default 100).</dd>
+<dt>err_const</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span><dd>Constant to use in absence of error (default 0.005).</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>plot</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>String containing the TikZ source code for the plot.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.lightcurve.plot_residual">
+<code class="descclassname">plotypus.lightcurve.</code><code class="descname">plot_residual</code><span class="sig-paren">(</span><em>*args</em>, <em>engine='mpl'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/lightcurve.html#plot_residual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.plot_residual" title="Permalink to this definition">¶</a></dt>
+<dd><p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>engine</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span><dd>Engine to use for plotting, choices are &#8220;mpl&#8221; and &#8220;tikz&#8221;
+(default &#8220;mpl&#8221;)</dd>
+<dt>kwargs :</dt>
+<dd>See <code class="xref py py-func docutils literal"><span class="pre">plot_residuals_mpl()</span></code> and <code class="xref py py-func docutils literal"><span class="pre">plot_residuals_tikz()</span></code>,
+depending on <em>engine</em> specified.</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>plot</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">object</span><dd>Plot object. Type depends on <em>engine</em> used. &#8220;mpl&#8221; engine returns a
+<cite>matplotlib.pyplot.Figure</cite> object, and &#8220;tikz&#8221; engine returns a <cite>str</cite>.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.lightcurve.plot_residual_mpl">
+<code class="descclassname">plotypus.lightcurve.</code><code class="descname">plot_residual_mpl</code><span class="sig-paren">(</span><em>name</em>, <em>residuals</em>, <em>period</em>, <em>output='.'</em>, <em>sanitize_latex=False</em>, <em>color=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/lightcurve.html#plot_residual_mpl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.plot_residual_mpl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save a plot of the given <em>residuals</em> to file <em>output</em>, using
+matplotlib and return the resulting plot object.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>name</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Name of the star. Used in plot title.</dd>
+<dt>residuals</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span><dd>Residuals between fitted lightcurve and observations.</dd>
+<dt>output</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span><dd>File to save plot to (default None).</dd>
+<dt>color</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span><dd>Whether or not to display color in plot (default True).</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>plot</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">matplotlib.pyplot.Figure</span><dd>Matplotlib Figure object which contains the plot.</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="plotypus.lightcurve.plot_residual_tikz">
+<code class="descclassname">plotypus.lightcurve.</code><code class="descname">plot_residual_tikz</code><span class="sig-paren">(</span><em>name</em>, <em>residuals</em>, <em>period</em>, <em>output=None</em>, <em>sanitize_latex=False</em>, <em>color=True</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/lightcurve.html#plot_residual_tikz"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.lightcurve.plot_residual_tikz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Save TikZ source code for a plot of the given <em>residuals</em> to file
+<em>output</em>, and return the string holding the source code.</p>
+<p><strong>Parameters</strong></p>
+<dl class="docutils">
+<dt>name</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str</span><dd>Name of the star. Used in plot title.</dd>
+<dt>residuals</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span><dd>Residuals between fitted lightcurve and observations.</dd>
+<dt>output</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span><dd>File to save plot to (default None).</dd>
+<dt>color</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span><dd>Whether or not to display color in plot (default True).</dd>
+</dl>
+<p><strong>Returns</strong></p>
+<dl class="docutils">
+<dt>plot</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">matplotlib.pyplot.Figure</span><dd>Matplotlib Figure object which contains the plot.</dd>
+</dl>
 </dd></dl>
 
 </div>
@@ -385,7 +557,7 @@ printed if &#8220;outlier&#8221; <em>verbosity</em> is on, and None is returned
     </div>
   <div class="footer">
     &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
-    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
   </div>
   
   </body>

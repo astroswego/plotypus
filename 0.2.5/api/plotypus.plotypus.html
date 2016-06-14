@@ -29,7 +29,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body>
+  <body role="document">
   
   
 
@@ -47,7 +47,7 @@
 </div>
 
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -64,28 +64,27 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation index</a><ul>
   </ul></li>
 </ul>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/api/plotypus.plotypus.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/plotypus.plotypus.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -94,23 +93,23 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="module-plotypus.plotypus">
 <span id="plotypus-plotypus-module"></span><h1>plotypus.plotypus module<a class="headerlink" href="#module-plotypus.plotypus" title="Permalink to this headline">¶</a></h1>
 <dl class="function">
 <dt id="plotypus.plotypus.get_args">
-<tt class="descclassname">plotypus.plotypus.</tt><tt class="descname">get_args</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/plotypus/plotypus.html#get_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.plotypus.get_args" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.plotypus.</code><code class="descname">get_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/plotypus.html#get_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.plotypus.get_args" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="plotypus.plotypus.main">
-<tt class="descclassname">plotypus.plotypus.</tt><tt class="descname">main</tt><big>(</big><big>)</big><a class="reference internal" href="../_modules/plotypus/plotypus.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.plotypus.main" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.plotypus.</code><code class="descname">main</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/plotypus.html#main"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.plotypus.main" title="Permalink to this definition">¶</a></dt>
 <dd></dd></dl>
 
 <dl class="function">
 <dt id="plotypus.plotypus.process_star">
-<tt class="descclassname">plotypus.plotypus.</tt><tt class="descname">process_star</tt><big>(</big><em>filename</em>, <em>output</em>, <em>periods={}</em>, <em>shifts={}</em>, <em>**ops</em><big>)</big><a class="reference internal" href="../_modules/plotypus/plotypus.html#process_star"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.plotypus.process_star" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.plotypus.</code><code class="descname">process_star</code><span class="sig-paren">(</span><em>filename</em>, <em>output</em>, <em>*</em>, <em>extension</em>, <em>star_name</em>, <em>period</em>, <em>shift</em>, <em>parameters</em>, <em>period_label</em>, <em>shift_label</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/plotypus.html#process_star"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.plotypus.process_star" title="Permalink to this definition">¶</a></dt>
 <dd><p>Processes a star&#8217;s lightcurve, prints its coefficients, and saves
 its plotted lightcurve to a file. Returns the result of get_lightcurve.</p>
 </dd></dl>
@@ -125,7 +124,7 @@ its plotted lightcurve to a file. Returns the result of get_lightcurve.</p>
     </div>
   <div class="footer">
     &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
-    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
   </div>
   
   </body>

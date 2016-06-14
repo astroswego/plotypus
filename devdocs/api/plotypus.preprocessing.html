@@ -29,7 +29,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body>
+  <body role="document">
   
   
 
@@ -47,7 +47,7 @@
 </div>
 
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -64,28 +64,27 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation index</a><ul>
   </ul></li>
 </ul>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/api/plotypus.preprocessing.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/plotypus.preprocessing.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -94,24 +93,24 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="module-plotypus.preprocessing">
 <span id="plotypus-preprocessing-module"></span><h1>plotypus.preprocessing module<a class="headerlink" href="#module-plotypus.preprocessing" title="Permalink to this headline">¶</a></h1>
-<p>Light curve space transformation preprocessors for regressing upon.</p>
+<p>Preprocessors to light curve regression.</p>
 <dl class="class">
 <dt id="plotypus.preprocessing.Fourier">
-<em class="property">class </em><tt class="descclassname">plotypus.preprocessing.</tt><tt class="descname">Fourier</tt><big>(</big><em>degree=3</em>, <em>degree_range=None</em>, <em>regressor=LinearRegression(copy_X=True</em>, <em>fit_intercept=False</em>, <em>normalize=False)</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier" title="Permalink to this definition">¶</a></dt>
-<dd><p>Bases: <tt class="xref py py-class docutils literal"><span class="pre">builtins.object</span></tt></p>
+<em class="property">class </em><code class="descclassname">plotypus.preprocessing.</code><code class="descname">Fourier</code><span class="sig-paren">(</span><em>degree=3</em>, <em>degree_range=None</em>, <em>period=None</em>, <em>regressor=LinearRegression(copy_X=True</em>, <em>fit_intercept=True</em>, <em>n_jobs=1</em>, <em>normalize=False)</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">sklearn.base.BaseEstimator</span></code></p>
 <p>Transforms observed data from phase-space to Fourier-space.</p>
 <p>In order to represent a light curve as a Fourier series of the form</p>
 <div class="math">
-<p><img src="../_images/math/76d81dd477f2c9bca885ab468d5c06c326ec9a2a.png" alt="m(t) = A_0 + \sum_{k=1}^n (a_k \sin(k \omega t) + b_k \cos(k \omega t)),"/></p>
-</div><p>phased time observations are transformed into a design matrix
-<img class="math" src="../_images/math/7a9b78bdb36f2fbd5ca087212e58fc74dde40e86.png" alt="\mathbf{X}"/> by <a class="reference internal" href="#plotypus.preprocessing.Fourier.design_matrix" title="plotypus.preprocessing.Fourier.design_matrix"><tt class="xref py py-func docutils literal"><span class="pre">Fourier.design_matrix()</span></tt></a>, such that linear
+<p><img src="../_images/math/d772c41593417ba31ebc9d81b426039e39dee23a.png" alt="m(t) = A_0 + \sum_{k=1}^n (a_k \sin(k \omega t) + b_k \cos(k \omega t)),"/></p>
+</div><p>time observations are transformed into a design matrix
+<img class="math" src="../_images/math/7a9b78bdb36f2fbd5ca087212e58fc74dde40e86.png" alt="\mathbf{X}"/> by <a class="reference internal" href="#plotypus.preprocessing.Fourier.design_matrix" title="plotypus.preprocessing.Fourier.design_matrix"><code class="xref py py-func docutils literal"><span class="pre">Fourier.design_matrix()</span></code></a>, such that linear
 regression can be used to solve for coefficients</p>
 <div class="math">
-<p><img src="../_images/math/4fd7cf69c626f261ff118df6d1812ce3b60a3011.png" alt="\hat{b} = \begin{bmatrix}
+<p><img src="../_images/math/3c3c47e2681095342b6a15ed960f018370159bae.png" alt="\hat{b} = \begin{bmatrix}
             A_0    \\
             a_1    \\
             b_1    \\
@@ -121,34 +120,37 @@ regression can be used to solve for coefficients</p>
           \end{bmatrix}"/></p>
 </div><p>in the matrix equation</p>
 <div class="math">
-<p><img src="../_images/math/439c3349a31e2ac8d8d2b628a7fb20a13cd11aee.png" alt="\mathbf{X} \hat{b} = \hat{y}"/></p>
+<p><img src="../_images/math/3e2fc13132b378e09fbb981f236cea811ba000b7.png" alt="\mathbf{X} \hat{b} = \hat{y}"/></p>
 </div><p>where <img class="math" src="../_images/math/9d5c04e54679fcffa27fea6e29fe90f73209e4de.png" alt="\vec{y}"/> is the vector of observed magnitudes</p>
 <div class="math">
-<p><img src="../_images/math/8bd12f695fcd248585560aeeac906d06e2be0840.png" alt="\hat{y} = \begin{bmatrix}
+<p><img src="../_images/math/3f9723f1b60a4c86d0b285697718fc5145af1505.png" alt="\hat{y} = \begin{bmatrix}
             m_0    \\
             m_1    \\
             \vdots \\
             m_n
           \end{bmatrix}"/></p>
 </div><p>If <em>degree_range</em> is not None, <em>degree</em> is selected via
-<a class="reference internal" href="#plotypus.preprocessing.Fourier.baart_criteria" title="plotypus.preprocessing.Fourier.baart_criteria"><tt class="xref py py-func docutils literal"><span class="pre">baart_criteria()</span></tt></a>. Otherwise the provided <em>degree</em> is used.</p>
+<a class="reference internal" href="#plotypus.preprocessing.Fourier.baart_criteria" title="plotypus.preprocessing.Fourier.baart_criteria"><code class="xref py py-func docutils literal"><span class="pre">baart_criteria()</span></code></a>. Otherwise the provided <em>degree</em> is used.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>degree <span class="classifier-delimiter">:</span> <span class="classifier">positive int, optional</span></dt>
-<dd>Degree of Fourier series to use, assuming <em>degree_range</em> is None
+<dt>degree</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">positive int, optional</span><dd>Degree of Fourier series to use, assuming <em>degree_range</em> is None
 (default 3).</dd>
-<dt>degree_range <span class="classifier-delimiter">:</span> <span class="classifier">2-tuple or None, optional</span></dt>
-<dd>Range of allowed <em>degree</em>s to search via <a class="reference internal" href="#plotypus.preprocessing.Fourier.baart_criteria" title="plotypus.preprocessing.Fourier.baart_criteria"><tt class="xref py py-func docutils literal"><span class="pre">baart_criteria()</span></tt></a>, or
+<dt>degree_range</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">2-tuple or None, optional</span><dd>Range of allowed <em>degree</em>s to search via <a class="reference internal" href="#plotypus.preprocessing.Fourier.baart_criteria" title="plotypus.preprocessing.Fourier.baart_criteria"><code class="xref py py-func docutils literal"><span class="pre">baart_criteria()</span></code></a>, or
 None if single provided <em>degree</em> is to be used (default None).</dd>
-<dt>regressor <span class="classifier-delimiter">:</span> <span class="classifier">object with &#8220;fit&#8221; and &#8220;transform&#8221; methods, optional</span></dt>
-<dd>Regression object used for fitting light curve when selecting <em>degree</em>
-via <a class="reference internal" href="#plotypus.preprocessing.Fourier.baart_criteria" title="plotypus.preprocessing.Fourier.baart_criteria"><tt class="xref py py-func docutils literal"><span class="pre">baart_criteria()</span></tt></a>. Not used otherwise
+<dt>period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">positive number, optional</span><dd>Period to phase data by. Optional at instantiation time, but must be
+assigned before &#8220;fit&#8221; or &#8220;transform&#8221; methods are called.</dd>
+<dt>regressor</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">object with &#8220;fit&#8221; and &#8220;transform&#8221; methods, optional</span><dd>Regression object used for fitting light curve when selecting <em>degree</em>
+via <a class="reference internal" href="#plotypus.preprocessing.Fourier.baart_criteria" title="plotypus.preprocessing.Fourier.baart_criteria"><code class="xref py py-func docutils literal"><span class="pre">baart_criteria()</span></code></a>. Not used otherwise
 (default
-<tt class="docutils literal"><span class="pre">sklearn.linear_model.LinearRegression(fit_intercept=False)</span></tt>).</dd>
+<code class="docutils literal"><span class="pre">sklearn.linear_model.LinearRegression(fit_intercept=False)</span></code>).</dd>
 </dl>
 <dl class="method">
 <dt id="plotypus.preprocessing.Fourier.baart_criteria">
-<tt class="descname">baart_criteria</tt><big>(</big><em>X</em>, <em>y</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.baart_criteria"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.baart_criteria" title="Permalink to this definition">¶</a></dt>
+<code class="descname">baart_criteria</code><span class="sig-paren">(</span><em>X</em>, <em>y</em>, <em>period</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.baart_criteria"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.baart_criteria" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the optimal Fourier series degree as determined by
 <a class="reference external" href="http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1986A%26A...170...59P&amp;amp;data_type=PDF_HIGH&amp;amp;whole_paper=YES&amp;amp;type=PRINTER&amp;amp;filetype=.pdf">Baart&#8217;s Criteria</a> <a class="reference internal" href="#jop" id="id1">[JOP]</a>.</p>
 <p><strong>Citations</strong></p>
@@ -165,62 +167,67 @@ A&amp;A, Vol. 170, p. 59-69</td></tr>
 
 <dl class="staticmethod">
 <dt id="plotypus.preprocessing.Fourier.baart_tolerance">
-<em class="property">static </em><tt class="descname">baart_tolerance</tt><big>(</big><em>X</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.baart_tolerance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.baart_tolerance" title="Permalink to this definition">¶</a></dt>
-<dd><p>Returns the autocorrelation cutoff of <em>X</em> for <a class="reference internal" href="#plotypus.preprocessing.Fourier.baart_criteria" title="plotypus.preprocessing.Fourier.baart_criteria"><tt class="xref py py-func docutils literal"><span class="pre">baart_criteria()</span></tt></a>,
+<em class="property">static </em><code class="descname">baart_tolerance</code><span class="sig-paren">(</span><em>X</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.baart_tolerance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.baart_tolerance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns the autocorrelation cutoff of <em>X</em> for <a class="reference internal" href="#plotypus.preprocessing.Fourier.baart_criteria" title="plotypus.preprocessing.Fourier.baart_criteria"><code class="xref py py-func docutils literal"><span class="pre">baart_criteria()</span></code></a>,
 as given by</p>
 <div class="math">
-<p><img src="../_images/math/188506d4f92bb24b78d667c75f8b79e70ccdc0ee.png" alt="\frac{1}{\sqrt{2 (\operatorname{card}(\mathbf{X}) - 1)}}"/></p>
+<p><img src="../_images/math/e80bf766f40dc64fbb17053b1815deb9a53d4633.png" alt="\frac{1}{\sqrt{2 (\operatorname{card}(\mathbf{X}) - 1)}}"/></p>
 </div><p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 1]</span></dt>
-<dd>Column vector of phases</dd>
+<dt>X</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 1]</span><dd>Column vector of phases</dd>
 </dl>
 <p><strong>Returns</strong></p>
 </dd></dl>
 
 <dl class="staticmethod">
 <dt id="plotypus.preprocessing.Fourier.design_matrix">
-<em class="property">static </em><tt class="descname">design_matrix</tt><big>(</big><em>phases</em>, <em>degree</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.design_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.design_matrix" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">design_matrix</code><span class="sig-paren">(</span><em>times</em>, <em>period</em>, <em>degree</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.design_matrix"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.design_matrix" title="Permalink to this definition">¶</a></dt>
 <dd><p>Constructs an <img class="math" src="../_images/math/6b8f363f302382c8a1ff5a0f12be3305dc11c25d.png" alt="N \times 2n+1"/> matrix of the form:</p>
 <div class="math">
-<p><img src="../_images/math/1cd2d57d7bdf8d06648b5a4abfd97b7cc965d240.png" alt="\begin{bmatrix}
-  1
-&amp; \sin(1 \cdot 2\pi \cdot \phi_0)
-&amp; \cos(1 \cdot 2\pi \cdot \phi_0)
+<p><img src="../_images/math/4a4cfb54277e0bec87a6541cb4c9cce09f1e6125.png" alt="\begin{bmatrix}
+  \sin(1 \omega t_0)
+&amp; \cos(1 \omega t_0)
 &amp; \ldots
-&amp; \sin(n \cdot 2\pi \cdot \phi_0)
-&amp; \cos(n \cdot 2\pi \cdot \phi_0)
+&amp; \sin(n \omega t_0)
+&amp; \cos(n \omega t_0)
 \\
   \vdots
-&amp; \vdots
 &amp; \vdots
 &amp; \ddots
 &amp; \vdots
 &amp; \vdots
 \\
-  1
-&amp; \sin(1 \cdot 2\pi \cdot \phi_N)
-&amp; \cos(1 \cdot 2\pi \cdot \phi_N)
+  \sin(1 \omega t_N)
+&amp; \cos(1 \omega t_N)
 &amp; \ldots
-&amp; \sin(n \cdot 2\pi \cdot \phi_N)
-&amp; \cos(n \cdot 2\pi \cdot \phi_N)
+&amp; \sin(n \omega t_N)
+&amp; \cos(n \omega t_N)
 \end{bmatrix}"/></p>
-</div><p>where <img class="math" src="../_images/math/f53e4106b4fac6475d5a39804d7faec0ff3779c3.png" alt="n ="/> <em>degree</em>, <img class="math" src="../_images/math/418de2a459f0fd36e410213e458626cb9c0ab34a.png" alt="N ="/> <em>n_samples</em>, and
-<img class="math" src="../_images/math/5a4d54f930b9b067a2f691d2e1134fc244da2312.png" alt="\phi_i ="/> <em>phases[i]</em>.</p>
-<p>phases : array-like, shape = [n_samples]</p>
+</div><p>where
+<img class="math" src="../_images/math/f53e4106b4fac6475d5a39804d7faec0ff3779c3.png" alt="n ="/> <em>degree</em>,
+<img class="math" src="../_images/math/418de2a459f0fd36e410213e458626cb9c0ab34a.png" alt="N ="/> <em>n_samples</em>,
+<img class="math" src="../_images/math/c6921e303594b55814d02c0360d8dc032d37c58d.png" alt="\omega = 2 \pi /"/> <em>period</em>, and
+<img class="math" src="../_images/math/185404c5217304a56111a9cc124b56647d124264.png" alt="t_i ="/> <em>times[i]</em>.</p>
+<p><strong>Parameters</strong></p>
+<p>times : array-like, shape = [n_samples]</p>
+<p>period : positive number</p>
+<p>degree : positive integer</p>
+<p><strong>Returns</strong></p>
+<p>design_matrix : array-like, shape = [n_samples, 2*degree]</p>
 </dd></dl>
 
 <dl class="method">
 <dt id="plotypus.preprocessing.Fourier.fit">
-<tt class="descname">fit</tt><big>(</big><em>X</em>, <em>y=None</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.fit" title="Permalink to this definition">¶</a></dt>
-<dd><p>Sets <em>self.degree</em> according to <a class="reference internal" href="#plotypus.preprocessing.Fourier.baart_criteria" title="plotypus.preprocessing.Fourier.baart_criteria"><tt class="xref py py-func docutils literal"><span class="pre">baart_criteria()</span></tt></a> if <em>degree_range</em>
+<code class="descname">fit</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.fit"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.fit" title="Permalink to this definition">¶</a></dt>
+<dd><p>Sets <em>self.degree</em> according to <a class="reference internal" href="#plotypus.preprocessing.Fourier.baart_criteria" title="plotypus.preprocessing.Fourier.baart_criteria"><code class="xref py py-func docutils literal"><span class="pre">baart_criteria()</span></code></a> if <em>degree_range</em>
 is not None, otherwise does nothing.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 1]</span></dt>
-<dd>Column vector of phases.</dd>
-<dt>y <span class="classifier-delimiter">:</span> <span class="classifier">array-like or None, shape = [n_samples], optional</span></dt>
-<dd>Row vector of magnitudes (default None).</dd>
+<dt>X</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 1]</span><dd>Column vector of phases.</dd>
+<dt>y</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like or None, shape = [n_samples], optional</span><dd>Row vector of magnitudes (default None).</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <p>self : returns an instance of self</p>
@@ -228,102 +235,78 @@ is not None, otherwise does nothing.</p>
 
 <dl class="staticmethod">
 <dt id="plotypus.preprocessing.Fourier.fourier_ratios">
-<em class="property">static </em><tt class="descname">fourier_ratios</tt><big>(</big><em>phase_shifted_coeffs</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.fourier_ratios"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.fourier_ratios" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">fourier_ratios</code><span class="sig-paren">(</span><em>phase_shifted_coeffs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.fourier_ratios"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.fourier_ratios" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the <img class="math" src="../_images/math/d5bb1704d3ce6074b5566426f3357c182cb9a4e0.png" alt="R_{j1}"/> and <img class="math" src="../_images/math/d24d63012ea86787d7e82497867ee9388171bb9a.png" alt="\phi_{j1}"/> values for the given
 phase-shifted coefficients.</p>
 <div class="math">
-<p><img src="../_images/math/b2f4c2779420107c848d8dccc82f73fd937d8f33.png" alt="R_{j1} = A_j / A_1"/></p>
+<p><img src="../_images/math/2b511f7bd530a90fc27427980749b0d6eee5f225.png" alt="R_{j1} = A_j / A_1"/></p>
 </div><div class="math">
-<p><img src="../_images/math/5815029b0635099adfb72f64fad6f644af665466.png" alt="\phi_{j1} = \phi_j - j \phi_1"/></p>
+<p><img src="../_images/math/a9a6d0dc4687ea0f500098b75e7b7074950d6d42.png" alt="\phi_{j1} = \phi_j - j \phi_1"/></p>
 </div><p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>phase_shifted_coeffs <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<img class="math" src="../_images/math/555a757d6d006f9dbbf1c4f6e016b6e7f9808a33.png" alt="2n+1"/>]</span></dt>
-<dd>Fourier sine or cosine series coefficients.
+<dt>phase_shifted_coeffs</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<img class="math" src="../_images/math/555a757d6d006f9dbbf1c4f6e016b6e7f9808a33.png" alt="2n+1"/>]</span><dd>Fourier sine or cosine series coefficients.
 <img class="math" src="../_images/math/0d525c565a388826ead09f536c931646a56b3bb5.png" alt="[ A_0, A_1, \Phi_1, \ldots, A_n, \Phi_n ]"/>.</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<img class="math" src="../_images/math/555a757d6d006f9dbbf1c4f6e016b6e7f9808a33.png" alt="2n+1"/>]</span></dt>
-<dd>Fourier ratios
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<img class="math" src="../_images/math/555a757d6d006f9dbbf1c4f6e016b6e7f9808a33.png" alt="2n+1"/>]</span><dd>Fourier ratios
 <img class="math" src="../_images/math/15cb0c05f9d9d2b7585e3751a1b4e0c04c91ef07.png" alt="[ R_{21}, \phi_{21}, \ldots, R_{n1}, \phi_{n1} ]"/>.</dd>
-</dl>
-</dd></dl>
-
-<dl class="method">
-<dt id="plotypus.preprocessing.Fourier.get_params">
-<tt class="descname">get_params</tt><big>(</big><em>deep=False</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.get_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Get parameters for this preprocessor.</p>
-<p><strong>Parameters</strong></p>
-<dl class="docutils">
-<dt>deep <span class="classifier-delimiter">:</span> <span class="classifier">boolean, optional</span></dt>
-<dd>Only here for scikit-learn compliance. Ignore it (default False).</dd>
-</dl>
-<p><strong>Returns</strong></p>
-<dl class="docutils">
-<dt>params <span class="classifier-delimiter">:</span> <span class="classifier">dict</span></dt>
-<dd>Mapping of parameter name to value.</dd>
 </dl>
 </dd></dl>
 
 <dl class="staticmethod">
 <dt id="plotypus.preprocessing.Fourier.phase_shifted_coefficients">
-<em class="property">static </em><tt class="descname">phase_shifted_coefficients</tt><big>(</big><em>amplitude_coefficients</em>, <em>form='cos'</em>, <em>shift=0.0</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.phase_shifted_coefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.phase_shifted_coefficients" title="Permalink to this definition">¶</a></dt>
+<em class="property">static </em><code class="descname">phase_shifted_coefficients</code><span class="sig-paren">(</span><em>amplitude_coefficients</em>, <em>form='cos'</em>, <em>shift=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.phase_shifted_coefficients"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.phase_shifted_coefficients" title="Permalink to this definition">¶</a></dt>
 <dd><p>Converts Fourier coefficients from the amplitude form to the
 phase-shifted form, as either a sine or cosine series.</p>
 <p>Amplitude form:</p>
 <div class="math">
-<p><img src="../_images/math/526814cb69d44d11fabee5103f1d4393ff1c3272.png" alt="m(t) = A_0 + \sum_{k=1}^n (a_k \sin(k \omega t)
+<p><img src="../_images/math/d939f46bb4596927649a9dfc2dbb9ca3a6cccaf8.png" alt="m(t) = A_0 + \sum_{k=1}^n (a_k \sin(k \omega t)
                          + b_k \cos(k \omega t))"/></p>
 </div><p>Sine form:</p>
 <div class="math">
-<p><img src="../_images/math/89954d9437252ee5aba7fa3080f4ba717f6fd56e.png" alt="m(t) = A_0 + \sum_{k=1}^n A_k \sin(k \omega t + \Phi_k)"/></p>
+<p><img src="../_images/math/7fa1f632e811fc9425da81ce2bad4f6de6d407a9.png" alt="m(t) = A_0 + \sum_{k=1}^n A_k \sin(k \omega t + \Phi_k)"/></p>
 </div><p>Cosine form:</p>
 <div class="math">
-<p><img src="../_images/math/2f15697196d7cf3f080242af1998823d75ced454.png" alt="m(t) = A_0 + \sum_{k=1}^n A_k \cos(k \omega t + \Phi_k)"/></p>
+<p><img src="../_images/math/fca9ed1bc7f183f61d4b44a05c1d362ad96571c5.png" alt="m(t) = A_0 + \sum_{k=1}^n A_k \cos(k \omega t + \Phi_k)"/></p>
 </div><p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>amplitude_coefficients <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<img class="math" src="../_images/math/555a757d6d006f9dbbf1c4f6e016b6e7f9808a33.png" alt="2n+1"/>]</span></dt>
-<dd>Array of coefficients
+<dt>amplitude_coefficients</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<img class="math" src="../_images/math/555a757d6d006f9dbbf1c4f6e016b6e7f9808a33.png" alt="2n+1"/>]</span><dd>Array of coefficients
 <img class="math" src="../_images/math/124aef2cd3f74de17229992bb1f13736166811b6.png" alt="[ A_0, a_1, b_1, \ldots a_n, b_n ]"/>.</dd>
-<dt>form <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span></dt>
-<dd>Form of output coefficients, must be one of &#8216;sin&#8217; or &#8216;cos&#8217;
+<dt>form</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">str, optional</span><dd>Form of output coefficients, must be one of &#8216;sin&#8217; or &#8216;cos&#8217;
 (default &#8216;cos&#8217;).</dd>
-<dt>shift <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
-<dd>Shift to apply to light curve (default 0.0).</dd>
+<dt>shift</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span><dd>Shift to apply to light curve (default 0.0).</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>out <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<img class="math" src="../_images/math/555a757d6d006f9dbbf1c4f6e016b6e7f9808a33.png" alt="2n+1"/>]</span></dt>
-<dd>Array of coefficients
+<dt>out</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [<img class="math" src="../_images/math/555a757d6d006f9dbbf1c4f6e016b6e7f9808a33.png" alt="2n+1"/>]</span><dd>Array of coefficients
 <img class="math" src="../_images/math/0d525c565a388826ead09f536c931646a56b3bb5.png" alt="[ A_0, A_1, \Phi_1, \ldots, A_n, \Phi_n ]"/>.</dd>
 </dl>
 </dd></dl>
 
 <dl class="method">
-<dt id="plotypus.preprocessing.Fourier.set_params">
-<tt class="descname">set_params</tt><big>(</big><em>**params</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.set_params" title="Permalink to this definition">¶</a></dt>
-<dd><p>Set parameters for this preprocessor.</p>
-<p><strong>Returns</strong></p>
-<p>self : returns an instance of self</p>
-</dd></dl>
-
-<dl class="method">
 <dt id="plotypus.preprocessing.Fourier.transform">
-<tt class="descname">transform</tt><big>(</big><em>X</em>, <em>y=None</em>, <em>**params</em><big>)</big><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.transform" title="Permalink to this definition">¶</a></dt>
+<code class="descname">transform</code><span class="sig-paren">(</span><em>X</em>, <em>y=None</em>, <em>**params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/preprocessing.html#Fourier.transform"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.preprocessing.Fourier.transform" title="Permalink to this definition">¶</a></dt>
 <dd><p>Transforms <em>X</em> from phase-space to Fourier-space, returning the design
-matrix produced by <a class="reference internal" href="#plotypus.preprocessing.Fourier.design_matrix" title="plotypus.preprocessing.Fourier.design_matrix"><tt class="xref py py-func docutils literal"><span class="pre">Fourier.design_matrix()</span></tt></a> for input to a
+matrix produced by <a class="reference internal" href="#plotypus.preprocessing.Fourier.design_matrix" title="plotypus.preprocessing.Fourier.design_matrix"><code class="xref py py-func docutils literal"><span class="pre">Fourier.design_matrix()</span></code></a> for input to a
 regressor.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>X <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 1]</span></dt>
-<dd>Column vector of phases.</dd>
-<dt>y <span class="classifier-delimiter">:</span> <span class="classifier">None, optional</span></dt>
-<dd>Unused argument for conformity (default None).</dd>
+<dt>X</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 1]</span><dd>Column vector of times.</dd>
+<dt>y</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">None, optional</span><dd>Unused argument for conformity (default None).</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>design_matrix <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2*degree+1]</span></dt>
-<dd>Fourier design matrix produced by <a class="reference internal" href="#plotypus.preprocessing.Fourier.design_matrix" title="plotypus.preprocessing.Fourier.design_matrix"><tt class="xref py py-func docutils literal"><span class="pre">Fourier.design_matrix()</span></tt></a>.</dd>
+<dt>design_matrix</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2*degree+1]</span><dd>Fourier design matrix produced by <a class="reference internal" href="#plotypus.preprocessing.Fourier.design_matrix" title="plotypus.preprocessing.Fourier.design_matrix"><code class="xref py py-func docutils literal"><span class="pre">Fourier.design_matrix()</span></code></a>.</dd>
 </dl>
 </dd></dl>
 
@@ -339,7 +322,7 @@ regressor.</p>
     </div>
   <div class="footer">
     &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
-    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
   </div>
   
   </body>

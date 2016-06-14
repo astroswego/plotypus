@@ -29,7 +29,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body>
+  <body role="document">
   
   
 
@@ -47,7 +47,7 @@
 </div>
 
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -64,28 +64,27 @@
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
 <ul>
   <li><a href="../index.html">Documentation index</a><ul>
   </ul></li>
 </ul>
-  <h3>This Page</h3>
-  <ul class="this-page-menu">
-    <li><a href="../_sources/api/plotypus.periodogram.txt"
-           rel="nofollow">Show Source</a></li>
-  </ul>
-<div id="searchbox" style="display: none">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/api/plotypus.periodogram.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -94,71 +93,71 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <div class="section" id="module-plotypus.periodogram">
 <span id="plotypus-periodogram-module"></span><h1>plotypus.periodogram module<a class="headerlink" href="#module-plotypus.periodogram" title="Permalink to this headline">¶</a></h1>
 <p>Period finding and rephasing functions.</p>
 <dl class="function">
 <dt id="plotypus.periodogram.find_period">
-<tt class="descclassname">plotypus.periodogram.</tt><tt class="descname">find_period</tt><big>(</big><em>data</em>, <em>min_period=0.2</em>, <em>max_period=32.0</em>, <em>coarse_precision=1e-5</em>, <em>fine_precision=1e-9</em>, <em>periodogram=Lomb_Scargle</em>, <em>period_jobs=1</em><big>)</big><a class="reference internal" href="../_modules/plotypus/periodogram.html#find_period"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.find_period" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.periodogram.</code><code class="descname">find_period</code><span class="sig-paren">(</span><em>data</em>, <em>min_period=0.2</em>, <em>max_period=32.0</em>, <em>coarse_precision=1e-5</em>, <em>fine_precision=1e-9</em>, <em>periodogram=Lomb_Scargle</em>, <em>period_jobs=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/periodogram.html#find_period"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.find_period" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the period of <em>data</em> according to the given <em>periodogram</em>,
 searching first with a coarse precision, and then a fine precision.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
-<dd>Array containing columns <em>time</em>, <em>mag</em>, and (optional) <em>error</em>.</dd>
-<dt>min_period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>Minimum period in search-space.</dd>
-<dt>max_period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>Maximum period in search-space.</dd>
-<dt>coarse_precision <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>Distance between contiguous frequencies in search-space during first
+<dt>data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span><dd>Array containing columns <em>time</em>, <em>mag</em>, and (optional) <em>error</em>.</dd>
+<dt>min_period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>Minimum period in search-space.</dd>
+<dt>max_period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>Maximum period in search-space.</dd>
+<dt>coarse_precision</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>Distance between contiguous frequencies in search-space during first
 sweep.</dd>
-<dt>fine_precision <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>Distance between contiguous frequencies in search-space during second
+<dt>fine_precision</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>Distance between contiguous frequencies in search-space during second
 sweep.</dd>
-<dt>periodogram <span class="classifier-delimiter">:</span> <span class="classifier">function</span></dt>
-<dd>A function with arguments <em>data</em>, <em>precision</em>, <em>min_period</em>,
+<dt>periodogram</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">function</span><dd>A function with arguments <em>data</em>, <em>precision</em>, <em>min_period</em>,
 <em>max_period</em>, and <em>period_jobs</em>, and return value <em>period</em>.</dd>
-<dt>period_jobs <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
-<dd>Number of simultaneous processes to use while searching (default 1).</dd>
+<dt>period_jobs</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span><dd>Number of simultaneous processes to use while searching (default 1).</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>The period of <em>data</em>.</dd>
+<dt>period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>The period of <em>data</em>.</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="plotypus.periodogram.conditional_entropy">
-<tt class="descclassname">plotypus.periodogram.</tt><tt class="descname">conditional_entropy</tt><big>(</big><em>data</em>, <em>precision</em>, <em>min_period</em>, <em>max_period</em>, <em>xbins=10</em>, <em>ybins=5</em>, <em>period_jobs=1</em><big>)</big><a class="reference internal" href="../_modules/plotypus/periodogram.html#conditional_entropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.conditional_entropy" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.periodogram.</code><code class="descname">conditional_entropy</code><span class="sig-paren">(</span><em>data</em>, <em>precision</em>, <em>min_period</em>, <em>max_period</em>, <em>xbins=10</em>, <em>ybins=5</em>, <em>period_jobs=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/periodogram.html#conditional_entropy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.conditional_entropy" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the period of <em>data</em> by minimizing conditional entropy.
 See <a class="reference external" href="http://arxiv.org/pdf/1306.6664v2.pdf">link</a> [GDDMD] for details.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
-<dd>Array containing columns <em>time</em>, <em>mag</em>, and (optional) <em>error</em>.</dd>
-<dt>precision <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>Distance between contiguous frequencies in search-space.</dd>
-<dt>min_period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>Minimum period in search-space.</dd>
-<dt>max_period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>Maximum period in search-space.</dd>
-<dt>xbins <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
-<dd>Number of phase bins for each trial period (default 10).</dd>
-<dt>ybins <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
-<dd>Number of magnitude bins for each trial period (default 5).</dd>
-<dt>period_jobs <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
-<dd>Number of simultaneous processes to use while searching. Only one
+<dt>data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span><dd>Array containing columns <em>time</em>, <em>mag</em>, and (optional) <em>error</em>.</dd>
+<dt>precision</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>Distance between contiguous frequencies in search-space.</dd>
+<dt>min_period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>Minimum period in search-space.</dd>
+<dt>max_period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>Maximum period in search-space.</dd>
+<dt>xbins</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span><dd>Number of phase bins for each trial period (default 10).</dd>
+<dt>ybins</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span><dd>Number of magnitude bins for each trial period (default 5).</dd>
+<dt>period_jobs</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span><dd>Number of simultaneous processes to use while searching. Only one
 process will ever be used, but argument is included to conform to
-<em>periodogram</em> standards of <a class="reference internal" href="#plotypus.periodogram.find_period" title="plotypus.periodogram.find_period"><tt class="xref py py-func docutils literal"><span class="pre">find_period()</span></tt></a> (default 1).</dd>
+<em>periodogram</em> standards of <a class="reference internal" href="#plotypus.periodogram.find_period" title="plotypus.periodogram.find_period"><code class="xref py py-func docutils literal"><span class="pre">find_period()</span></code></a> (default 1).</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>The period of <em>data</em>.</dd>
+<dt>period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>The period of <em>data</em>.</dd>
 </dl>
 <p><strong>Citations</strong></p>
 <table class="docutils citation" frame="void" id="gddmd" rules="none">
@@ -174,94 +173,94 @@ Volume 434, Issue 3, p.2629-2635</td></tr>
 
 <dl class="function">
 <dt id="plotypus.periodogram.CE">
-<tt class="descclassname">plotypus.periodogram.</tt><tt class="descname">CE</tt><big>(</big><em>period</em>, <em>data</em>, <em>xbins=10</em>, <em>ybins=5</em><big>)</big><a class="reference internal" href="../_modules/plotypus/periodogram.html#CE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.CE" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.periodogram.</code><code class="descname">CE</code><span class="sig-paren">(</span><em>period</em>, <em>data</em>, <em>xbins=10</em>, <em>ybins=5</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/periodogram.html#CE"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.CE" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the conditional entropy of <em>data</em> rephased with <em>period</em>.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>The period to rephase <em>data</em> by.</dd>
-<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
-<dd>Array containing columns <em>time</em>, <em>mag</em>, and (optional) <em>error</em>.</dd>
-<dt>xbins <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
-<dd>Number of phase bins (default 10).</dd>
-<dt>ybins <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
-<dd>Number of magnitude bins (default 5).</dd>
+<dt>period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>The period to rephase <em>data</em> by.</dd>
+<dt>data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span><dd>Array containing columns <em>time</em>, <em>mag</em>, and (optional) <em>error</em>.</dd>
+<dt>xbins</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span><dd>Number of phase bins (default 10).</dd>
+<dt>ybins</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span><dd>Number of magnitude bins (default 5).</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="plotypus.periodogram.Lomb_Scargle">
-<tt class="descclassname">plotypus.periodogram.</tt><tt class="descname">Lomb_Scargle</tt><big>(</big><em>data</em>, <em>precision</em>, <em>min_period</em>, <em>max_period</em>, <em>period_jobs=1</em><big>)</big><a class="reference internal" href="../_modules/plotypus/periodogram.html#Lomb_Scargle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.Lomb_Scargle" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.periodogram.</code><code class="descname">Lomb_Scargle</code><span class="sig-paren">(</span><em>data</em>, <em>precision</em>, <em>min_period</em>, <em>max_period</em>, <em>period_jobs=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/periodogram.html#Lomb_Scargle"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.Lomb_Scargle" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns the period of <em>data</em> according to the
 <a class="reference external" href="https://en.wikipedia.org/wiki/Least-squares_spectral_analysis#The_Lomb.E2.80.93Scargle_periodogram">Lomb-Scargle periodogram</a>.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span></dt>
-<dd>Array containing columns <em>time</em>, <em>mag</em>, and (optional) <em>error</em>.</dd>
-<dt>precision <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>Distance between contiguous frequencies in search-space.</dd>
-<dt>min_period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>Minimum period in search-space.</dd>
-<dt>max_period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>Maximum period in search-space.</dd>
-<dt>period_jobs <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
-<dd>Number of simultaneous processes to use while searching. Only one
+<dt>data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, 2] or [n_samples, 3]</span><dd>Array containing columns <em>time</em>, <em>mag</em>, and (optional) <em>error</em>.</dd>
+<dt>precision</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>Distance between contiguous frequencies in search-space.</dd>
+<dt>min_period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>Minimum period in search-space.</dd>
+<dt>max_period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>Maximum period in search-space.</dd>
+<dt>period_jobs</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span><dd>Number of simultaneous processes to use while searching. Only one
 process will ever be used, but argument is included to conform to
-<em>periodogram</em> standards of <a class="reference internal" href="#plotypus.periodogram.find_period" title="plotypus.periodogram.find_period"><tt class="xref py py-func docutils literal"><span class="pre">find_period()</span></tt></a> (default 1).</dd>
+<em>periodogram</em> standards of <a class="reference internal" href="#plotypus.periodogram.find_period" title="plotypus.periodogram.find_period"><code class="xref py py-func docutils literal"><span class="pre">find_period()</span></code></a> (default 1).</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number</span></dt>
-<dd>The period of <em>data</em>.</dd>
+<dt>period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number</span><dd>The period of <em>data</em>.</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="plotypus.periodogram.rephase">
-<tt class="descclassname">plotypus.periodogram.</tt><tt class="descname">rephase</tt><big>(</big><em>data</em>, <em>period=1.0</em>, <em>shift=0.0</em>, <em>col=0</em>, <em>copy=True</em><big>)</big><a class="reference internal" href="../_modules/plotypus/periodogram.html#rephase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.rephase" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.periodogram.</code><code class="descname">rephase</code><span class="sig-paren">(</span><em>data</em>, <em>period=1.0</em>, <em>shift=0.0</em>, <em>col=0</em>, <em>copy=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/periodogram.html#rephase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.rephase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <em>data</em> (or a copy) phased with <em>period</em>, and shifted by a
 phase-shift <em>shift</em>.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>data <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, n_cols]</span></dt>
-<dd>Array containing the time or phase values to be rephased in column
+<dt>data</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, n_cols]</span><dd>Array containing the time or phase values to be rephased in column
 <em>col</em>.</dd>
-<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
-<dd>Period to phase <em>data</em> by (default 1.0).</dd>
-<dt>shift <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
-<dd>Phase shift to apply to phases (default 0.0).</dd>
-<dt>col <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span></dt>
-<dd>Column in <em>data</em> containing the time or phase values to be rephased
+<dt>period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span><dd>Period to phase <em>data</em> by (default 1.0).</dd>
+<dt>shift</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span><dd>Phase shift to apply to phases (default 0.0).</dd>
+<dt>col</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">int, optional</span><dd>Column in <em>data</em> containing the time or phase values to be rephased
 (default 0).</dd>
-<dt>copy <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span></dt>
-<dd>If True, a new array is returned, otherwise <em>data</em> is rephased
+<dt>copy</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">bool, optional</span><dd>If True, a new array is returned, otherwise <em>data</em> is rephased
 in-place (default True).</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>rephased <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, n_cols]</span></dt>
-<dd>Array containing the rephased <em>data</em>.</dd>
+<dt>rephased</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples, n_cols]</span><dd>Array containing the rephased <em>data</em>.</dd>
 </dl>
 </dd></dl>
 
 <dl class="function">
 <dt id="plotypus.periodogram.get_phase">
-<tt class="descclassname">plotypus.periodogram.</tt><tt class="descname">get_phase</tt><big>(</big><em>time</em>, <em>period=1.0</em>, <em>shift=0.0</em><big>)</big><a class="reference internal" href="../_modules/plotypus/periodogram.html#get_phase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.get_phase" title="Permalink to this definition">¶</a></dt>
+<code class="descclassname">plotypus.periodogram.</code><code class="descname">get_phase</code><span class="sig-paren">(</span><em>time</em>, <em>period=1.0</em>, <em>shift=0.0</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plotypus/periodogram.html#get_phase"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#plotypus.periodogram.get_phase" title="Permalink to this definition">¶</a></dt>
 <dd><p>Returns <em>time</em> transformed to phase-space with <em>period</em>, after applying a
 phase-shift <em>shift</em>.</p>
 <p><strong>Parameters</strong></p>
 <dl class="docutils">
-<dt>time <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span></dt>
-<dd>The times to transform.</dd>
-<dt>period <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
-<dd>The period to phase by (default 1.0).</dd>
-<dt>shift <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span></dt>
-<dd>The phase-shift to apply to the phases (default 0.0).</dd>
+<dt>time</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span><dd>The times to transform.</dd>
+<dt>period</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span><dd>The period to phase by (default 1.0).</dd>
+<dt>shift</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">number, optional</span><dd>The phase-shift to apply to the phases (default 0.0).</dd>
 </dl>
 <p><strong>Returns</strong></p>
 <dl class="docutils">
-<dt>phase <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span></dt>
-<dd><em>time</em> transformed into phase-space with <em>period</em>, after applying a
+<dt>phase</dt>
+ <span class="classifier-delimiter">:</span> <span class="classifier">array-like, shape = [n_samples]</span><dd><em>time</em> transformed into phase-space with <em>period</em>, after applying a
 phase-shift <em>shift</em>.</dd>
 </dl>
 </dd></dl>
@@ -276,7 +275,7 @@ phase-shift <em>shift</em>.</dd>
     </div>
   <div class="footer">
     &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
-    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
   </div>
   
   </body>

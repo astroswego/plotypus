@@ -30,7 +30,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9">
 
   </head>
-  <body>
+  <body role="document">
   
   
 
@@ -48,7 +48,7 @@
 </div>
 
 
-    <div class="related">
+    <div class="related" role="navigation" aria-label="related navigation">
       <h3>Navigation</h3>
       <ul>
         <li class="right" style="margin-right: 10px">
@@ -62,11 +62,11 @@
         <li><a href="../../examples/index.html">examples</a>|&nbsp;</li>
         <li><a href="../../contents.html">docs</a> &raquo;</li>
 
-          <li><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
+          <li class="nav-item nav-item-1"><a href="../index.html" accesskey="U">Module code</a> &raquo;</li> 
       </ul>
     </div>
 
-      <div class="sphinxsidebar">
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
         <div class="sphinxsidebarwrapper"><h3>Related Topics</h3>
 <ul>
   <li><a href="../../index.html">Documentation index</a><ul>
@@ -74,17 +74,14 @@
   </ul></li>
   </ul></li>
 </ul>
-<div id="searchbox" style="display: none">
+<div id="searchbox" style="display: none" role="search">
   <h3>Quick search</h3>
     <form class="search" action="../../search.html" method="get">
-      <input type="text" name="q" />
-      <input type="submit" value="Go" />
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
       <input type="hidden" name="check_keywords" value="yes" />
       <input type="hidden" name="area" value="default" />
     </form>
-    <p class="searchtip" style="font-size: 90%">
-    Enter search terms or a module, class or function name.
-    </p>
 </div>
 <script type="text/javascript">$('#searchbox').show(0);</script>
         </div>
@@ -93,10 +90,10 @@
     <div class="document">
       <div class="documentwrapper">
         <div class="bodywrapper">
-          <div class="body">
+          <div class="body" role="main">
             
   <h1>Source code for plotypus.periodogram</h1><div class="highlight"><pre>
-<span class="sd">&quot;&quot;&quot;</span>
+<span></span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Period finding and rephasing functions.</span>
 <span class="sd">&quot;&quot;&quot;</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="kn">as</span> <span class="nn">np</span>
@@ -106,12 +103,12 @@
 
 
 <span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s">&#39;find_period&#39;</span><span class="p">,</span>
-    <span class="s">&#39;conditional_entropy&#39;</span><span class="p">,</span>
-    <span class="s">&#39;CE&#39;</span><span class="p">,</span>
-    <span class="s">&#39;Lomb_Scargle&#39;</span><span class="p">,</span>
-    <span class="s">&#39;rephase&#39;</span><span class="p">,</span>
-    <span class="s">&#39;get_phase&#39;</span>
+    <span class="s1">&#39;find_period&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;conditional_entropy&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;CE&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;Lomb_Scargle&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;rephase&#39;</span><span class="p">,</span>
+    <span class="s1">&#39;get_phase&#39;</span>
 <span class="p">]</span>
 
 
@@ -146,9 +143,9 @@
     <span class="n">freqs</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">minf</span><span class="p">,</span> <span class="n">maxf</span><span class="p">,</span> <span class="n">precision</span><span class="p">)</span>
     <span class="n">pgram</span> <span class="o">=</span> <span class="n">lombscargle</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">scaled_mags</span><span class="p">,</span> <span class="n">freqs</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">freqs</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">pgram</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="mi">2</span><span class="o">*</span><span class="n">np</span><span class="o">.</span><span class="n">pi</span><span class="o">/</span><span class="n">freqs</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmax</span><span class="p">(</span><span class="n">pgram</span><span class="p">)]</span></div>
 
-</div>
+
 <div class="viewcode-block" id="conditional_entropy"><a class="viewcode-back" href="../../api/plotypus.periodogram.html#plotypus.periodogram.conditional_entropy">[docs]</a><span class="k">def</span> <span class="nf">conditional_entropy</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">precision</span><span class="p">,</span> <span class="n">min_period</span><span class="p">,</span> <span class="n">max_period</span><span class="p">,</span>
                         <span class="n">xbins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">ybins</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span> <span class="n">period_jobs</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
@@ -194,9 +191,9 @@
     <span class="n">m</span> <span class="o">=</span> <span class="nb">map</span> <span class="k">if</span> <span class="n">period_jobs</span> <span class="o">&lt;=</span> <span class="mi">1</span> <span class="k">else</span> <span class="n">Pool</span><span class="p">(</span><span class="n">period_jobs</span><span class="p">)</span><span class="o">.</span><span class="n">map</span>
     <span class="n">entropies</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">m</span><span class="p">(</span><span class="n">partial_job</span><span class="p">,</span> <span class="n">periods</span><span class="p">))</span>
 
-    <span class="k">return</span> <span class="n">periods</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">entropies</span><span class="p">)]</span>
+    <span class="k">return</span> <span class="n">periods</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">argmin</span><span class="p">(</span><span class="n">entropies</span><span class="p">)]</span></div>
 
-</div>
+
 <div class="viewcode-block" id="CE"><a class="viewcode-back" href="../../api/plotypus.periodogram.html#plotypus.periodogram.CE">[docs]</a><span class="k">def</span> <span class="nf">CE</span><span class="p">(</span><span class="n">period</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">xbins</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">ybins</span><span class="o">=</span><span class="mi">5</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns the conditional entropy of *data* rephased with *period*.</span>
@@ -219,47 +216,49 @@
     <span class="n">bins</span><span class="p">,</span> <span class="o">*</span><span class="n">_</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">histogram2d</span><span class="p">(</span><span class="n">r</span><span class="p">[:,</span><span class="mi">0</span><span class="p">],</span> <span class="n">r</span><span class="p">[:,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="n">xbins</span><span class="p">,</span> <span class="n">ybins</span><span class="p">],</span> <span class="p">[[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">],</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span><span class="mi">1</span><span class="p">]])</span>
     <span class="n">size</span> <span class="o">=</span> <span class="n">r</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<span class="c"># The following code was once more readable, but much slower.</span>
-<span class="c"># Here is what it used to be:</span>
-<span class="c"># -----------------------------------------------------------------------</span>
-<span class="c">#    return np.sum((lambda p: p * np.log(np.sum(bins[i,:]) / size / p) \</span>
-<span class="c">#                             if p &gt; 0 else 0)(bins[i][j] / size)</span>
-<span class="c">#                  for i in np.arange(0, xbins)</span>
-<span class="c">#                  for j in np.arange(0, ybins)) if size &gt; 0 else np.PINF</span>
-<span class="c"># -----------------------------------------------------------------------</span>
-<span class="c"># TODO: replace this comment with something that&#39;s not old code</span>
+<span class="c1"># The following code was once more readable, but much slower.</span>
+<span class="c1"># Here is what it used to be:</span>
+<span class="c1"># -----------------------------------------------------------------------</span>
+<span class="c1">#    return np.sum((lambda p: p * np.log(np.sum(bins[i,:]) / size / p) \</span>
+<span class="c1">#                             if p &gt; 0 else 0)(bins[i][j] / size)</span>
+<span class="c1">#                  for i in np.arange(0, xbins)</span>
+<span class="c1">#                  for j in np.arange(0, ybins)) if size &gt; 0 else np.PINF</span>
+<span class="c1"># -----------------------------------------------------------------------</span>
+<span class="c1"># TODO: replace this comment with something that&#39;s not old code</span>
     <span class="k">if</span> <span class="n">size</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
-        <span class="c"># bins[i,j] / size</span>
+        <span class="c1"># bins[i,j] / size</span>
         <span class="n">divided_bins</span> <span class="o">=</span> <span class="n">bins</span> <span class="o">/</span> <span class="n">size</span>
-        <span class="c"># indices where that is positive</span>
-        <span class="c"># to avoid division by zero</span>
+        <span class="c1"># indices where that is positive</span>
+        <span class="c1"># to avoid division by zero</span>
         <span class="n">arg_positive</span> <span class="o">=</span> <span class="n">divided_bins</span> <span class="o">&gt;</span> <span class="mi">0</span>
 
-        <span class="c"># array containing the sums of each column in the bins array</span>
-        <span class="n">column_sums</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">divided_bins</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
-        <span class="c"># array is repeated row-wise, so that it can be sliced by arg_positive</span>
-        <span class="n">column_sums</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">column_sums</span><span class="p">,</span> <span class="p">(</span><span class="mi">1</span><span class="p">,</span><span class="o">-</span><span class="mi">1</span><span class="p">)),</span> <span class="n">xbins</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="c1"># array containing the sums of each column in the bins array</span>
+        <span class="n">column_sums</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">divided_bins</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span> <span class="c1">#changed 0 by 1</span>
+        <span class="c1"># array is repeated row-wise, so that it can be sliced by arg_positive</span>
+        <span class="n">column_sums</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">repeat</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span><span class="n">column_sums</span><span class="p">,</span> <span class="p">(</span><span class="n">xbins</span><span class="p">,</span><span class="mi">1</span><span class="p">)),</span> <span class="n">ybins</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
+        <span class="c1">#column_sums = np.repeat(np.reshape(column_sums, (1,-1)), xbins, axis=0)</span>
 
-        <span class="c"># select only the elements in both arrays which correspond to a</span>
-        <span class="c"># positive bin</span>
+
+        <span class="c1"># select only the elements in both arrays which correspond to a</span>
+        <span class="c1"># positive bin</span>
         <span class="n">select_divided_bins</span> <span class="o">=</span> <span class="n">divided_bins</span><span class="p">[</span><span class="n">arg_positive</span><span class="p">]</span>
         <span class="n">select_column_sums</span>  <span class="o">=</span> <span class="n">column_sums</span><span class="p">[</span><span class="n">arg_positive</span><span class="p">]</span>
 
-        <span class="c"># initialize the result array</span>
+        <span class="c1"># initialize the result array</span>
         <span class="n">A</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">xbins</span><span class="p">,</span> <span class="n">ybins</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">float</span><span class="p">)</span>
-        <span class="c"># store at every index [i,j] in A which corresponds to a positive bin:</span>
-        <span class="c"># bins[i,j]/size * log(bins[i,:] / size / (bins[i,j]/size))</span>
+        <span class="c1"># store at every index [i,j] in A which corresponds to a positive bin:</span>
+        <span class="c1"># bins[i,j]/size * log(bins[i,:] / size / (bins[i,j]/size))</span>
         <span class="n">A</span><span class="p">[</span> <span class="n">arg_positive</span><span class="p">]</span> <span class="o">=</span> <span class="n">select_divided_bins</span> \
                          <span class="o">*</span> <span class="n">np</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">select_column_sums</span> <span class="o">/</span> <span class="n">select_divided_bins</span><span class="p">)</span>
-        <span class="c"># store 0 at every index in A which corresponds to a non-positive bin</span>
+        <span class="c1"># store 0 at every index in A which corresponds to a non-positive bin</span>
         <span class="n">A</span><span class="p">[</span><span class="o">~</span><span class="n">arg_positive</span><span class="p">]</span> <span class="o">=</span> <span class="mi">0</span>
 
-        <span class="c"># return the summation</span>
+        <span class="c1"># return the summation</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">A</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">PINF</span>
+        <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">PINF</span></div>
 
-</div>
+
 <div class="viewcode-block" id="find_period"><a class="viewcode-back" href="../../api/plotypus.periodogram.html#plotypus.periodogram.find_period">[docs]</a><span class="k">def</span> <span class="nf">find_period</span><span class="p">(</span><span class="n">data</span><span class="p">,</span>
                 <span class="n">min_period</span><span class="o">=</span><span class="mf">0.2</span><span class="p">,</span> <span class="n">max_period</span><span class="o">=</span><span class="mf">32.0</span><span class="p">,</span>
                 <span class="n">coarse_precision</span><span class="o">=</span><span class="mf">1e-5</span><span class="p">,</span> <span class="n">fine_precision</span><span class="o">=</span><span class="mf">1e-9</span><span class="p">,</span>
@@ -305,9 +304,9 @@
         <span class="n">periodogram</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">fine_precision</span><span class="p">,</span>
                     <span class="n">coarse_period</span> <span class="o">-</span> <span class="n">coarse_precision</span><span class="p">,</span>
                     <span class="n">coarse_period</span> <span class="o">+</span> <span class="n">coarse_precision</span><span class="p">,</span>
-                    <span class="n">period_jobs</span><span class="o">=</span><span class="n">period_jobs</span><span class="p">)</span>
+                    <span class="n">period_jobs</span><span class="o">=</span><span class="n">period_jobs</span><span class="p">)</span></div>
 
-</div>
+
 <div class="viewcode-block" id="rephase"><a class="viewcode-back" href="../../api/plotypus.periodogram.html#plotypus.periodogram.rephase">[docs]</a><span class="k">def</span> <span class="nf">rephase</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">col</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="bp">True</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns *data* (or a copy) phased with *period*, and shifted by a</span>
@@ -337,9 +336,9 @@
     <span class="n">rephased</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">copy</span><span class="o">=</span><span class="n">copy</span><span class="p">)</span>
     <span class="n">rephased</span><span class="p">[:,</span> <span class="n">col</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_phase</span><span class="p">(</span><span class="n">rephased</span><span class="p">[:,</span> <span class="n">col</span><span class="p">],</span> <span class="n">period</span><span class="p">,</span> <span class="n">shift</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">rephased</span>
+    <span class="k">return</span> <span class="n">rephased</span></div>
 
-</div>
+
 <div class="viewcode-block" id="get_phase"><a class="viewcode-back" href="../../api/plotypus.periodogram.html#plotypus.periodogram.get_phase">[docs]</a><span class="k">def</span> <span class="nf">get_phase</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">period</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="n">shift</span><span class="o">=</span><span class="mf">0.0</span><span class="p">):</span>
     <span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Returns *time* transformed to phase-space with *period*, after applying a</span>
@@ -370,7 +369,7 @@
     </div>
   <div class="footer">
     &copy; Copyright 2015, Earl Bellinger, Daniel Wysocki.
-    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.2.3.
+    Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.4.4.
   </div>
   
   </body>
