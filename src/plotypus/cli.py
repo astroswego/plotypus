@@ -656,7 +656,12 @@ def process_star(filename,
         data_smooth = result["data_smooth"]
         # if the data are periodic, only output fit points for the first cycle
         if result["periodic"]:
-            data_smooth = next(period_segments(data_smooth, result["period"]))
+            ## Breaks when less than 1 period cycle in data.
+            ## Simply takes the 2nd cycle, as it should be the first full one,
+            ## but that is not guaranteed.
+            segments = period_segments(data_smooth, result["period"])
+            next(segments) # throw away first segment
+            data_smooth = next(segments)
 
         # save the table to a file
         savetxt_lightcurve(filename, data_smooth,
