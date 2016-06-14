@@ -3,6 +3,7 @@ Preprocessors to light curve regression.
 """
 import numpy as np
 from numpy import pi
+from sklearn.base import BaseEstimator
 from sklearn.linear_model import LinearRegression
 from sklearn.pipeline import Pipeline
 from .utils import autocorrelation, rowvec
@@ -12,7 +13,7 @@ __all__ = [
 ]
 
 
-class Fourier():
+class Fourier(BaseEstimator):
     r"""
     Transforms observed data from phase-space to Fourier-space.
 
@@ -21,7 +22,7 @@ class Fourier():
     .. math::
         m(t) = A_0 + \sum_{k=1}^n (a_k \sin(k \omega t) + b_k \cos(k \omega t)),
 
-    phased time observations are transformed into a design matrix
+    time observations are transformed into a design matrix
     :math:`\mathbf{X}` by :func:`Fourier.design_matrix`, such that linear
     regression can be used to solve for coefficients
 
@@ -61,16 +62,22 @@ class Fourier():
     degree_range : 2-tuple or None, optional
         Range of allowed *degree*\s to search via :func:`baart_criteria`, or
         None if single provided *degree* is to be used (default None).
+    period : positive number, optional
+        Period to phase data by. Optional at instantiation time, but must be
+        assigned before "fit" or "transform" methods are called.
     regressor : object with "fit" and "transform" methods, optional
         Regression object used for fitting light curve when selecting *degree*
         via :func:`baart_criteria`. Not used otherwise
         (default
         ``sklearn.linear_model.LinearRegression(fit_intercept=False)``).
     """
-    def __init__(self, degree=3, degree_range=None,
+    def __init__(self,
+                 degree=3, degree_range=None,
+                 period=None,
                  regressor=LinearRegression(fit_intercept=False)):
         self.degree = degree
         self.degree_range = degree_range
+        self.period = period
         self.regressor = regressor
 
     def fit(self, X, y=None):
@@ -89,10 +96,12 @@ class Fourier():
 
         self : returns an instance of self
         """
+        _validate_period(self.period)
+
         # if a range of degrees to search were not provided, use Baart's
         # criteria to search for one
         if self.degree_range is not None:
-            self.degree = self.baart_criteria(X, y)
+            self.degree = self.baart_criteria(X, y, self.period)
 
         return self
 
@@ -105,7 +114,7 @@ class Fourier():
         **Parameters**
 
         X : array-like, shape = [n_samples, 1]
-            Column vector of phases.
+            Column vector of times.
         y : None, optional
             Unused argument for conformity (default None).
 
@@ -114,38 +123,11 @@ class Fourier():
         design_matrix : array-like, shape = [n_samples, 2*degree+1]
             Fourier design matrix produced by :func:`Fourier.design_matrix`.
         """
-        return self.design_matrix(rowvec(X), self.degree)
+        _validate_period(self.period)
 
-    def get_params(self, deep=False):
-        """
-        Get parameters for this preprocessor.
+        return self.design_matrix(rowvec(X), self.period, self.degree)
 
-        **Parameters**
-
-        deep : boolean, optional
-            Only here for scikit-learn compliance. Ignore it (default False).
-
-        **Returns**
-
-        params : dict
-            Mapping of parameter name to value.
-        """
-        return {'degree': self.degree}
-
-    def set_params(self, **params):
-        """
-        Set parameters for this preprocessor.
-
-        **Returns**
-
-        self : returns an instance of self
-        """
-        if 'degree' in params:
-            self.degree = params['degree']
-
-        return self
-
-    def baart_criteria(self, X, y):
+    def baart_criteria(self, X, y, period):
         """
         Returns the optimal Fourier series degree as determined by
         `Baart's Criteria <http://articles.adsabs.harvard.edu/cgi-bin/nph-iarticle_query?1986A%26A...170...59P&amp;data_type=PDF_HIGH&amp;whole_paper=YES&amp;type=PRINTER&amp;filetype=.pdf>`_ [JOP]_.
@@ -168,7 +150,7 @@ class Fourier():
         cutoff = self.baart_tolerance(X)
         # create a simple pipeline for fitting a Fourier series, using the
         # provided regressor
-        pipeline = Pipeline([('Fourier', Fourier()),
+        pipeline = Pipeline([('Fourier', Fourier(period=period)),
                              ('Regressor', self.regressor)])
         # do some probably unnecessary sorting
         sorted_X = np.sort(X, axis=0)
@@ -214,7 +196,7 @@ class Fourier():
         return (2 * (len(X) - 1))**(-1/2)
 
     @staticmethod
-    def design_matrix(phases, degree):
+    def design_matrix(times, period, degree):
         r"""
         Constructs an :math:`N \times 2n+1` matrix of the form:
 
@@ -222,11 +204,11 @@ class Fourier():
 
             \begin{bmatrix}
               1
-            & \sin(1 \cdot 2\pi \cdot \phi_0)
-            & \cos(1 \cdot 2\pi \cdot \phi_0)
+            & \sin(1 \omega t_0)
+            & \cos(1 \omega t_0)
             & \ldots
-            & \sin(n \cdot 2\pi \cdot \phi_0)
-            & \cos(n \cdot 2\pi \cdot \phi_0)
+            & \sin(n \omega t_0)
+            & \cos(n \omega t_0)
             \\
               \vdots
             & \vdots
@@ -236,22 +218,36 @@ class Fourier():
             & \vdots
             \\
               1
-            & \sin(1 \cdot 2\pi \cdot \phi_N)
-            & \cos(1 \cdot 2\pi \cdot \phi_N)
+            & \sin(1 \omega t_N)
+            & \cos(1 \omega t_N)
             & \ldots
-            & \sin(n \cdot 2\pi \cdot \phi_N)
-            & \cos(n \cdot 2\pi \cdot \phi_N)
+            & \sin(n \omega t_N)
+            & \cos(n \omega t_N)
             \end{bmatrix}
 
-        where :math:`n =` *degree*, :math:`N =` *n_samples*, and
-        :math:`\phi_i =` *phases[i]*.
+        where
+        :math:`n =` *degree*,
+        :math:`N =` *n_samples*,
+        :math:`\omega = 2 \pi /` *period*, and
+        :math:`t_i =` *times[i]*.
 
-        Parameters
-        ----------
-        phases : array-like, shape = [n_samples]
+        **Parameters**
+
+        times : array-like, shape = [n_samples]
+
+        period : positive number
+
+        degree : positive integer
+
+        **Returns**
+
+        design_matrix : array-like, shape = [n_samples, 2*degree + 1]
 
         """
-        n_samples = phases.size
+        # pre-compute number of samples
+        n_samples = np.size(times)
+        # convert the period into angular frequency
+        omega = 2*np.pi / period
         # initialize coefficient matrix
         M = np.empty((n_samples, 2*degree+1))
         # indices
@@ -260,16 +256,17 @@ class Fourier():
         # sine and cosine terms
         x = np.empty((n_samples, degree))
         # the Nxn matrix now has N copies of the same row, and each row is
-        # integer multiples of pi counting from 1 to the degree
-        x[:,:] = i*2*np.pi
-        # multiply each row of x by the phases
-        x.T[:,:] *= phases
+        # integer multiples the angular frequency counting from 1 to the degree
+        x[:,:] = i * omega
+        # multiply each row of x by the times
+        x.T[:,:] *= times
         # place 1's in the first column of the coefficient matrix
         M[:,0]    = 1
         # the odd indices of the coefficient matrix have sine terms
         M[:,1::2] = np.sin(x)
         # the even indices of the coefficient matrix have cosine terms
         M[:,2::2] = np.cos(x)
+
         return M
 
     @staticmethod
@@ -413,3 +410,9 @@ class Fourier():
         phase_deltas   %= 2*pi
 
         return ratios
+
+
+def _validate_period(period):
+    if not np.isscalar(period) or period <= 0:
+        raise ValueError("period must be a positive number, not {}"
+                         .format(period))

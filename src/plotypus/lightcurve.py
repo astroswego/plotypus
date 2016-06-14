@@ -77,7 +77,6 @@ def make_predictor(regressor=LassoLarsIC(fit_intercept=False),
     out : object with "fit" and "predict" methods
         The created predictor object.
     """
-    # 
     fourier = Fourier(degree_range=fourier_degree, regressor=regressor) \
               if use_baart else Fourier()
     pipeline = Pipeline([('Fourier', fourier),
@@ -247,14 +246,27 @@ def get_lightcurve(data, copy=False, name=None,
             verbose_print("{}: finding period".format(name),
                           operation="period", verbosity=verbosity)
             _period, pgram = find_period(signal,
-                                        min_period, max_period,
-                                        coarse_precision, fine_precision,
-                                        periodogram, period_processes,
-                                        output_periodogram=output_periodogram)
+                                         min_period, max_period,
+                                         coarse_precision, fine_precision,
+                                         periodogram, period_processes,
+                                         output_periodogram=output_periodogram)
+        # provide period to predictor object
+        # note: Depending on selector used, parameter may be at different level
+        #       of nesting. If selector is a true selector, the "try" block
+        #       should work, and if it is simply a Pipeline, the "except" block
+        #       should work instead.
+        #
+        #       Some refactoring could avoid this issue altogether.
+        try:
+            predictor.set_params(estimator__Fourier__period=_period)
+        except ValueError:
+            predictor.set_params(Fourier__period=_period)
 
         verbose_print("{}: using period {}".format(name, _period),
                       operation="period", verbosity=verbosity)
-        phase, mag, *err = rephase(signal, _period).T
+
+        time, mag, *err = signal.T
+        phase = rephase(signal, _period)[:,0]
 
 # TODO ###
 # Generalize number of bins to function parameter ``coverage_bins``, which
@@ -276,7 +288,7 @@ def get_lightcurve(data, copy=False, name=None,
         # Predict light curve
         with warnings.catch_warnings(record=True) as w:
             try:
-                predictor = predictor.fit(colvec(phase), mag)
+                predictor = predictor.fit(colvec(time), mag)
             except Warning:
                 # not sure if this should be only in verbose mode
                 print(name, w, file=stderr)
@@ -284,7 +296,7 @@ def get_lightcurve(data, copy=False, name=None,
 
         # Reject outliers and repeat the process if there are any
         if sigma:
-            outliers = find_outliers(rephase(data.data, _period), predictor,
+            outliers = find_outliers(data.data, predictor,
                                      sigma, sigma_clipping)
             num_outliers = np.sum(outliers[:,0])
             if num_outliers == 0 or \
@@ -298,25 +310,24 @@ def get_lightcurve(data, copy=False, name=None,
                               verbosity=verbosity)
             data.mask = np.ma.mask_or(data.mask, outliers)
 
-    # replace *phase*, *mag*, and *err* with the newly masked values in *data*
-    phase, mag, *err = data.T
+    # replace *time*, *mag*, and *err* with the newly masked values in *data*
+    time, mag, *err = data.T
+    err = err[0] if len(err) == 1 else np.repeat(0, np.size(time))
 
     # Build predicted light curve and residuals
-    lightcurve = predictor.predict(colvec(phases))
-    residuals = prediction_residuals(phase, mag, predictor)
+    lightcurve = predictor.predict(colvec(_period * phases))
+    residuals = prediction_residuals(time, mag, predictor)
     # determine phase shift for max light, if a specific shift was not provided
     if shift is None:
         arg_max_light = lightcurve.argmin()
         lightcurve = np.concatenate((lightcurve[arg_max_light:],
-                                        lightcurve[:arg_max_light]))
+                                     lightcurve[:arg_max_light]))
         shift = arg_max_light/len(phases)
     # shift observed light curve to max light
-    phase = rephase(data.data, _period, shift).T[0]
+    phase = rephase(data, _period, shift).T[0]
     # use rephased phase points from *data* in residuals
-    residuals = np.column_stack((data.T[0], phase, data.T[1], residuals,
-                                 data.T[2]))
-    data.T[0] = phase
-
+    residuals = np.ma.column_stack((time, phase, mag, residuals, err))
+    data[:,0] = phase
     # Grab the coefficients from the model
     coefficients = predictor.named_steps['Regressor'].coef_ \
         if isinstance(predictor, Pipeline) \
@@ -332,9 +343,10 @@ def get_lightcurve(data, copy=False, name=None,
         if hasattr(predictor, 'best_score_') and predictor.scoring == scoring:
             return predictor.best_score_
         else:
-            return cross_val_score(estimator, colvec(phase), mag,
-                                   cv=scoring_cv, scoring=scoring,
-                                   n_jobs=scoring_processes).mean()
+            return cross_val_score(estimator,
+                       colvec(time.data[~time.mask]), mag.data[~mag.mask],
+                       cv=scoring_cv, scoring=scoring,
+                       n_jobs=scoring_processes).mean()
 
     ## Formatting Coefficients ##
     # convert to phase-shifted form (A_k, Phi_k) if necessary
