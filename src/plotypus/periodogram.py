@@ -11,13 +11,16 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 
+from . import utils
+
 __all__ = [
     'find_period',
     'conditional_entropy',
     'CE',
     'Lomb_Scargle',
     'rephase',
-    'get_phase'
+    'get_phase',
+    'count_periods',
     'plot_periodogram',
     'plot_periodogram_mpl',
     'plot_periodogram_tikz'
@@ -272,7 +275,7 @@ def find_period(data,
             return fine_period, None
 
 
-def rephase(data, period=1.0, shift=0.0, col=0, copy=True):
+def rephase(data, period=1.0, shift=0.0, cycles=1.0, col=0, copy=True):
     """
     Returns *data* (or a copy) phased with *period*, and shifted by a
     phase-shift *shift*.
@@ -286,6 +289,8 @@ def rephase(data, period=1.0, shift=0.0, col=0, copy=True):
         Period to phase *data* by (default 1.0).
     shift : number, optional
         Phase shift to apply to phases (default 0.0).
+    cycles : number, optional
+        The number of period cycles before repeating (default 1.0).
     col : int, optional
         Column in *data* containing the time or phase values to be rephased
         (default 0).
@@ -299,12 +304,15 @@ def rephase(data, period=1.0, shift=0.0, col=0, copy=True):
         Array containing the rephased *data*.
     """
     rephased = np.ma.array(data, copy=copy)
-    rephased.data[:, col] = get_phase(rephased.data[:, col], period, shift)
+    rephased.data[:, col] = get_phase(rephased.data[:, col],
+                                      period=period,
+                                      shift=shift,
+                                      cycles=cycles)
 
     return rephased
 
 
-def get_phase(time, period=1.0, shift=0.0):
+def get_phase(time, period=1.0, shift=0.0, cycles=1.0):
     """
     Returns *time* transformed to phase-space with *period*, after applying a
     phase-shift *shift*.
@@ -317,6 +325,8 @@ def get_phase(time, period=1.0, shift=0.0):
         The period to phase by (default 1.0).
     shift : number, optional
         The phase-shift to apply to the phases (default 0.0).
+    cycles : number, optional
+        The number of period cycles before repeating (default 1.0).
 
     **Returns**
 
@@ -324,7 +334,82 @@ def get_phase(time, period=1.0, shift=0.0):
         *time* transformed into phase-space with *period*, after applying a
         phase-shift *shift*.
     """
-    return (time / period - shift) % 1
+    return (time / period - shift) % cycles
+
+
+def count_periods(time, period):
+    """
+    Returns the number of *period*s which span *time*.
+
+    **Parameters**
+
+    time : array-like
+        The sample times.
+    period : scalar or array-like
+        The period(s) to use. If *periods* is an array-like, uses the shortest
+        one.
+
+    **Returns**
+
+    count : number
+        The number of periods spanned by *time*.
+    """
+    # precompute the time interval
+    interval = np.max(time) - np.min(time)
+    # if period is an array of periods, use the shortest one
+    period = period if np.isscalar else min(period)
+
+    return interval / period
+
+
+def period_segments(data, period, shift=0.0, cycles=1.0):
+    """period_segments(data, period, cycles=1.0)
+
+    Takes *data* with a given *period*, and returns an iterable of the segments
+    of data spanning each period, or *cycles* periods if *cycles* is given.
+
+    **Parameters**
+
+    data : array-like, shape = [n_samples, 2+]
+        The data, with *time* in the first column.
+    period : number
+        The period to divide segments over.
+    cycles : number, optional
+        The number of periods to repeat in each segment (default 1.0).
+
+    **Returns**
+
+    segments : generator
+        *data* divided into segments
+    """
+    # pick out the time column from the original data
+    time = data[:,0]
+    # calculate the starting time
+    t_min = utils.round_down(np.min(time), period*cycles) + shift*period
+    # calculate the interval for each segment
+    interval = cycles*period
+
+    # stop iterating when all data consumed
+    while np.size(data) != 0:
+        # pick out the time column from the remaining data
+        time = data[:,0]
+        # calculate the starting time for the next segment
+        t_next = t_min + interval
+
+        # find the indices which lie on this segment
+        idx = time < t_next
+
+        # pick out the data contained in this segment
+        segment = data[ idx, :]
+
+        # yield the data from this segment if there is any, otherwise skip
+        if np.size(segment) != 0:
+            yield segment
+
+        # remove this segment from *data* for the next iteration
+        data    = data[~idx, :]
+        # update the starting time for the next segment
+        t_min = t_next
 
 
 def plot_periodogram(*args, engine='mpl', **kwargs):

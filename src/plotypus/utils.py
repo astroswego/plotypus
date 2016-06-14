@@ -18,7 +18,9 @@ __all__ = [
     'get_noise',
     'colvec',
     'mad',
-    'autocorrelation'
+    'autocorrelation',
+    'round_up',
+    'round_down'
 ]
 
 
@@ -414,3 +416,37 @@ def sanitize_latex(string):
     for old, new in _latex_replacements:
         sanitized_string = sanitized_string.replace(old, new)
     return sanitized_string
+
+
+def round_up(x, factor):
+    """round_up(x, factor)
+
+    Rounds *x* up to the nearest multiple of *factor*.
+
+    **Parameters**
+
+    x : number
+    factor : number
+
+    **Returns**
+
+    rounded : number
+    """
+    return np.ceil(x / factor) * factor
+
+
+def round_down(x, factor):
+    """round_down(x, factor)
+
+    Rounds *x* down to the nearest multiple of *factor*.
+
+    **Parameters**
+
+    x : number
+    factor : number
+
+    **Returns**
+
+    rounded : number
+    """
+    return np.floor(x / factor) * factor

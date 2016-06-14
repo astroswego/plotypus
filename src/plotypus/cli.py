@@ -16,6 +16,7 @@ from plotypus.lightcurve import (make_predictor, get_lightcurve_from_file,
                                  savetxt_lightcurve, plot_lightcurve,
                                  plot_residual)
 from plotypus.periodogram import (Lomb_Scargle, conditional_entropy,
+                                  period_segments,
                                   plot_periodogram)
 import plotypus
 from plotypus.preprocessing import Fourier
@@ -179,10 +180,10 @@ def get_args():
         default=None,
         help='(optional) location to save the fit residuals plots, '
              'or prefix to filename if any of `--output-*-all` options used.')
-    lightcurve_group.add_argument('--phase-points', type=int,
-        default=100, metavar='N',
-        help='number of phase points to output '
-             '(default = 100)')
+    lightcurve_group.add_argument('--cycles', type=float,
+        default=2.0, metavar='N',
+        help='number of cycles to display in lightcurve plots '
+             '(default = 2.0)')
 
     ## Parameter Group #######################################################
 
@@ -361,7 +362,6 @@ def get_args():
     args.predictor = make_predictor(Selector=Selector,
                                     use_baart=(args.selector == 'Baart'),
                                     **vars(args))
-    args.phases = np.arange(0, 1, 1/args.phase_points)
 
     if args.parameters is not None:
         args.parameters = read_table(args.parameters, args.param_sep,
@@ -649,10 +649,22 @@ def process_star(filename,
         filename = output_table_lightcurve(result["name"], extension)
         # construct the header
         header = kwargs["output_sep"].join(
-            ["Phase", "Magnitude"]
+            ["Time", "Magnitude"]
         )
+
+        # extract the fitted lightcurve from the results
+        data_smooth = result["data_smooth"]
+        # if the data are periodic, only output fit points for the first cycle
+        if result["periodic"]:
+            ## Breaks when less than 1 period cycle in data.
+            ## Simply takes the 2nd cycle, as it should be the first full one,
+            ## but that is not guaranteed.
+            segments = period_segments(data_smooth, result["period"])
+            next(segments) # throw away first segment
+            data_smooth = next(segments)
+
         # save the table to a file
-        savetxt_lightcurve(filename, result["lightcurve"],
+        savetxt_lightcurve(filename, data_smooth,
                            fmt=kwargs["format"],
                            delimiter=kwargs["output_sep"],
                            header=header)
@@ -780,8 +792,8 @@ def print_star(result, max_degree, form, fmt, sep):
         return format_all(result[key] for key in keys)
 
     # count inliers and outliers
-    points   = result['phased_data'][:,0].size
-    outliers = np.ma.count_masked(result['phased_data'][:, 0])
+    points   = result['data'][:,0].size
+    outliers = np.ma.count_masked(result['data'][:, 0])
     inliers  = points - outliers
 
     # get fourier coefficients and compute ratios

@@ -11,7 +11,9 @@ from os import path
 import plotypus.utils
 from .utils import (verbose_print, make_sure_path_exists,
                     get_signal, get_noise, colvec, mad)
-from .periodogram import find_period, Lomb_Scargle, rephase
+from .periodogram import (find_period, Lomb_Scargle,
+                          get_phase, rephase,
+                          count_periods, period_segments)
 from .preprocessing import Fourier
 from sklearn.cross_validation import cross_val_score
 from sklearn.linear_model import LassoLarsIC
@@ -100,7 +102,8 @@ def get_lightcurve(data, copy=False, name=None,
                    sigma=20,
                    fourier_form="sin_cos",
                    shift=None,
-                   min_phase_cover=0.0, min_observations=1, n_phases=100,
+                   min_phase_cover=0.0, min_observations=1,
+                   samples_per_period=50,
                    verbosity=None, **kwargs):
     """get_lightcurve(data, copy=False, name=None, predictor=None, periodogram=Lomb_Scargle, sigma_clipping=mad, scoring='r2', scoring_cv=3, scoring_processes=1, period=None, min_period=0.2, max_period=32, coarse_precision=1e-5, fine_precision=1e-9, period_processes=1, sigma=20, fourier_form="sin_cos", shift=None, min_phase_cover=0.0, n_phases=100, verbosity=None, **kwargs)
 
@@ -217,7 +220,7 @@ def get_lightcurve(data, copy=False, name=None,
                         .format(_allowed_fourier_forms))
 
     data = np.ma.array(data, copy=copy)
-    phases = np.linspace(0, 1, n_phases, endpoint=False)
+    phases = np.linspace(0, 1, 100, endpoint=False)
 # TODO ###
 # Replace dA_0 with error matrix dA
     if predictor is None:
@@ -314,20 +317,26 @@ def get_lightcurve(data, copy=False, name=None,
     time, mag, *err = data.T
     err = err[0] if len(err) == 1 else np.repeat(0, np.size(time))
 
-    # Build predicted light curve and residuals
-    lightcurve = predictor.predict(colvec(_period * phases))
+    # create sample points for smooth predicted lightcurve
+    cycles = count_periods(time.data, _period)
+    n_samples = cycles * samples_per_period
+    time_smooth = np.linspace(min(time), max(time), n_samples, endpoint=True)
+    # build smooth predicted light curve
+    mag_smooth = predictor.predict(colvec(time_smooth))
+    data_smooth = np.column_stack((time_smooth, mag_smooth))
+
+    # compute residuals
     residuals = prediction_residuals(time, mag, predictor)
+
     # determine phase shift for max light, if a specific shift was not provided
     if shift is None:
-        arg_max_light = lightcurve.argmin()
-        lightcurve = np.concatenate((lightcurve[arg_max_light:],
-                                     lightcurve[:arg_max_light]))
-        shift = arg_max_light/len(phases)
+        arg_max_light  = mag_smooth.argmin()
+        time_max_light = time_smooth[arg_max_light]
+        shift = get_phase(time_max_light, _period)
     # shift observed light curve to max light
-    phase = rephase(data, _period, shift).T[0]
+    phase = get_phase(time, _period, shift)
     # use rephased phase points from *data* in residuals
     residuals = np.ma.column_stack((time, phase, mag, residuals, err))
-    data[:,0] = phase
     # grab the regressor used in the model
     regressor = predictor.named_steps['Regressor'] \
         if isinstance(predictor, Pipeline) \
@@ -386,7 +395,7 @@ def get_lightcurve(data, copy=False, name=None,
     # initialize coefficient errors
     coeff_error_matrix = np.zeros_like(coeff_matrix)
     # use SEM(predictions) as err(A_0)
-    coeff_error_matrix[0,0] = sem(lightcurve)
+    coeff_error_matrix[0,0] = sem(mag_smooth)
 
     ## Fourier Ratios ##
     ## Compute the Fourier ratios like R21 and Phi21,
@@ -403,13 +412,16 @@ def get_lightcurve(data, copy=False, name=None,
 
     return {'name':                 name,
             'period':               _period,
+            # when multiple periods implemented, this will not always be True,
+            # but will instead be `commensurable(periods)`
+            'periodic':             True,
             'periodogram':          pgram,
-            'lightcurve':           lightcurve,
             'coefficients':         coeff_matrix,
             'coefficient_errors':   coeff_error_matrix,
             'fourier_ratios':       fourier_ratios,
             'fourier_ratio_errors': fourier_ratio_errors,
-            'phased_data':          data,
+            'data':                 data,
+            'data_smooth':          data_smooth,
             'residuals':            residuals,
             'model':                predictor,
             'R2':                   get_score('r2'),
@@ -630,7 +642,9 @@ def plot_lightcurve(*args, engine='mpl', **kwargs):
         raise KeyError("engine '{}' does not exist".format(engine))
 
 
-def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
+def plot_lightcurve_mpl(name, data, data_smooth,
+                        period=None, periodic=False,
+                        shift=0.0, cycles=2.0,
                         output=None, legend=False, sanitize_latex=False,
                         color=True, n_phases=100,
                         err_const=0.005,
@@ -644,13 +658,18 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
 
     name : str
         Name of the star. Used in plot title.
-    lightcurve : array-like, shape = [n_samples]
-        Fitted lightcurve.
-    period : number
-        Period to phase time by.
-    phased_data : array-like, shape = [n_samples, 2] or [n_samples, 3]
+    data : array-like, shape = [n_samples, 2] or [n_samples, 3]
         Photometry array containing columns *time*, *magnitude*, and
         (optional) *error*. *time* should be unphased.
+    data_smooth : array-like, shape = [n_samples, 2] or [n_samples, 3]
+        Fitted lightcurve.
+    period : number, optional
+        Period to phase time by, or no period if data are to be left in the
+        time domain..
+    shift : number, optional
+        Phase shift to apply, (default 0.0).
+    cycles : number, optional
+        Number of period cycles to display (default 2.0).
     output : str, optional
         File to save plot to (default None).
     legend : boolean, optional
@@ -667,14 +686,34 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
     plot : matplotlib.pyplot.Figure
         Matplotlib Figure object which contains the plot.
     """
-    phases = np.linspace(0, 1, n_phases, endpoint=False)
+    ## NOTES:
+    ##   This function was originally written with phased data as input.
+    ##   Now it takes unphased data, and optionally a period. If a period is
+    ##   given, the data are phased, and if not, they are left as-is.
+    ##
+    ##   As an artifact of the old behavior, there are variables with the word
+    ##   "phase" in them, which may or may not truly be phased. It would be
+    ##   more appropriate to use a word which encompasses "phase" and "time".
+    ##   For lack of such a word, it has been left as "phase" for now, so be
+    ##   aware of that fact, and if you think of a better word, feel free to
+    ##   submit a pull request.
+
+    # if period is None, work in the time instead of phase domain
+    time_domain = period is None
+
+    # phase the data if not working in the time domain
+    if time_domain:
+        phased_data = data
+    else:
+        phased_data = rephase(data, period=period, shift=shift, cycles=cycles)
 
     # initialize Figure and Axes objects
     fig, ax = plt.subplots()
 
     # format the x- and y-axis
     ax.invert_yaxis()
-    ax.set_xlim(0,2)
+    if not time_domain:
+        ax.set_xlim(0,cycles)
 
     # Plot points used
     phase, mag, *err = get_signal(phased_data).T
@@ -682,11 +721,8 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
 
     has_inliers = len(phase) > 0
 
-    inliers = ax.errorbar(np.hstack((phase,1+phase)),
-                          np.hstack((mag, mag)),
-                          yerr=(np.hstack((error, error))
-                                if has_inliers
-                                else None),
+    inliers = ax.errorbar(phase, mag,
+                          yerr=error if has_inliers else None,
                           color="darkblue",
                           ls='None',
                           ms=.01, mew=.01, capsize=0)
@@ -697,28 +733,49 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
 
     has_outliers = len(phase) > 0
 
-    outliers = ax.errorbar(np.hstack((phase,1+phase)),
-                           np.hstack((mag, mag)),
-                           yerr=(np.hstack((error, error))
-                                 if has_outliers
-                                 else None),
+    outliers = ax.errorbar(phase, mag,
+                           error if has_outliers else None,
                            color="darkred",
                            ls='None', marker='o' if color else 'x',
                            ms=.01 if color else 4,
                            mew=.01 if color else 1,
                            capsize=0 if color else 1)
 
-    # Plot the fitted light curve
-    signal, = ax.plot(np.hstack((phases,1+phases)),
-                      np.hstack((lightcurve, lightcurve)),
-                      linewidth=1, color="k")
+    # split the fitted light curve at each period
+    if time_domain:
+        data_smooth_segments = [data_smooth]
+    else:
+        data_smooth_segments = period_segments(data_smooth, period,
+                                               shift=shift, cycles=cycles)
+
+    # if the data are periodic, only plot the second segment, which should be
+    # the first complete one, assuming the data span several periods
+    if periodic and not time_domain:
+        next(data_smooth_segments)
+        data_smooth_segments = [next(data_smooth_segments)]
+
+    for segment in data_smooth_segments:
+        time, mag, *err = segment.T
+
+        if time_domain:
+            phase = time
+        else:
+            phase = get_phase(time, period=period, shift=shift, cycles=cycles)
+
+        # Plot the fitted light curve
+        signal, = ax.plot(phase,
+                          mag,
+                          linewidth=1, color="k")
 
     if legend:
         ax.legend([signal, inliers, outliers],
                   ["Light Curve", "Inliers", "Outliers"],
                   loc='best')
 
-    ax.set_xlabel('Phase ({0:0.7} day period)'.format(period))
+    if time_domain:
+        ax.set_xlabel('Time (days)')
+    else:
+        ax.set_xlabel('Phase ({0:0.7} day period)'.format(period))
     ax.set_ylabel('Magnitude')
 
     ax.xaxis.set_minor_locator(AutoMinorLocator(5))
@@ -733,7 +790,8 @@ def plot_lightcurve_mpl(name, lightcurve, period, phased_data,
     return fig
 
 
-def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
+def plot_lightcurve_tikz(name, data, lightcurve, period, coefficients,
+                         shift=0.0, cycles=2.0,
                          output=None, legend=False, sanitize_latex=False,
                          color=True, n_phases=100,
                          err_const=0.005,
@@ -770,6 +828,9 @@ def plot_lightcurve_tikz(name, lightcurve, period, phased_data, coefficients,
     plot : str
         String containing the TikZ source code for the plot.
     """
+    ## Broken, because of change from phased_data to (unphased) data
+    raise NotImplementedError("TikZ plotting currently not working.")
+
     x_min = round(min(min(lightcurve), min(phased_data[:,1]))-0.05, 2)
     x_max = round(max(max(lightcurve), max(phased_data[:,1]))+0.05, 2)
     yticks = ", ".join("{:.2f}".format(x)
